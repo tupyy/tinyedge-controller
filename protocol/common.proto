@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/tupyy/tinyedge-controller/pkg/grpc/common";
+
+// An empty message
+message Empty {}
+
+message HardwareInfo {
+    string host_name = 1;
+    OsInformation os_information = 2;
+    SystemVendor system_vendor = 3;
+    repeated Interface interfaces = 4;
+}
+
+message OsInformation {
+    string commit_id = 1;
+}
+
+message SystemVendor {
+    string manufacturer = 1;
+    string product_name = 2;
+    string serial_number = 3;
+    bool virtual = 4;
+}
+
+message Interface {
+    string name = 1;
+    bool has_carrier = 2;
+    repeated string ip4_addresses = 3;
+    string mac_address = 4;
+}
+
+enum Status {
+    Deploying = 0;
+    Running = 1;
+    Crashed = 2;
+    Stopped = 3;
+}
+
+message WorkloadStatus {
+    string name = 1;
+    Status status = 2;
+    google.protobuf.Timestamp last_updated = 3;
+}
+
+// Heartbeat
+message HeartbeatInfo {
+    string device_id = 1;
+    HardwareInfo hardware_info = 2;
+}
+
+message ProfileCondition {
+    string name = 1;
+    string expression = 2;
+}
+
+message Profile {
+    string name = 1;
+    repeated ProfileCondition conditions = 2;
+}
+
+message Configuration {
+    repeated Profile profiles = 1;
+    uint32 heartbeat_period = 2;
+}
+
+message Device {}
+
+message DeviceSet {}
+
+message Workload {}
+
+message Secret {}

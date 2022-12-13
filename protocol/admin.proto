@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+option go_package = "github.com/tupyy/tinyedge-controller/pkg/grpc/admin";
+
+import "common.proto";
+
+service AdminService {
+    // GetDevices returns a list of devices.
+    rpc GetDevices(DevicesListRequest) returns (DevicesListResponse) {}
+
+    // GetDevice returns a device.
+    rpc GetDevice(IdRequest) returns (Device) {}
+    
+    // AddWorkloadToSet add a device to a set.
+    rpc AddDeviceToSet(DeviceToSetRequest) returns (Empty) {}
+    
+    // RemoveDeviceFromSet removes a device from a set.
+    rpc RemoveDeviceFromSet(DeviceToSetRequest) returns (Empty) {}
+    
+    // GetDeviceSets returns a list of device sets.
+    rpc GetDeviceSets(SetsListRequest) returns (SetsListResponse) {}
+    
+    // GetDeviceSet returns a device set.
+    rpc GetDeviceSet(IdRequest) returns (DeviceSet) {}
+    
+    // GetWorkloads return a list of workloads
+    rpc GetWorkloads(WorkloadsListRequest) returns (WorkloadsListResponse) {}
+    
+    // GetWorkload return a workload
+    rpc GetWorkload(IdRequest) returns (Workload) {}
+    
+    // AddWorkloadToDevice add a workload to a device.
+    rpc AddWorkloadToDevice(WorkloadToDeviceRequest) returns (Empty) {}
+    
+    // RemoveWorkloadFromDevice removes a workload from a device.
+    rpc RemoveWorkloadFromDevice(WorkloadToDeviceRequest) returns (Empty) {}
+    
+    // AddWorkloadToSet add a workload to a set.
+    rpc AddWorkloadToSet(WorkloadToSetRequest) returns (Empty) {}
+    
+    // RemoveWorkloadFromSet removes a workload from a set.
+    rpc RemoveWorkloadFromSet(WorkloadToSetRequest) returns (Empty) {}
+}
+
+message DevicesListRequest {
+    optional bool registered = 1;
+    optional bool enroled = 2;
+    optional string namespace = 3;
+    optional int32 page = 4;
+    optional int32 size = 5;
+}
+
+message DevicesListResponse {
+    repeated Device devices = 1;
+    int32 page = 2;
+    int32 size = 3;
+    int32 total = 4;
+}
+
+message DeviceToSetRequest {
+    string device_id = 1;
+    string set_id = 2;
+}
+
+message SetsListRequest {
+    optional int32 page = 1;
+    optional int32 size = 2;
+}
+
+message SetsListResponse {
+    repeated DeviceSet device_sets = 1;
+    int32 page = 2;
+    int32 size = 3;
+    int32 total = 4;
+}
+
+message WorkloadsListRequest {
+    optional int32 page = 1;
+    optional int32 size = 2;
+}
+
+message WorkloadToDeviceRequest {
+    string device_id = 1;
+    string workload_id = 2;
+}
+
+message WorkloadToSetRequest {
+    string set_id = 1;
+    string workload_id = 2;
+}
+
+message WorkloadsListResponse {
+    repeated Workload workloads = 1;
+    int32 page = 2;
+    int32 size = 3;
+    int32 total = 4;
+}
+
+
+
+message IdRequest {
+    string id = 1;
+}
+

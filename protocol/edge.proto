@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+import "common.proto";
+
+option go_package = "github.com/tupyy/tinyedge-controller/pkg/grpc/edge";
+
+service EdgeService {
+    // Enrol is called by a worker to send the request to enrol the fleet.
+    rpc Enrol(EnrolRequest) returns (EnrolResponse) {}
+
+    // Register is called by a worker to indicate it is ready and capable of
+    // handling the specified type of work.
+    rpc Register (RegistrationRequest) returns (RegistrationResponse) {}
+
+    // GetConfig can be called by a worker to get the current configuration
+    // state of the dispatcher service.
+    rpc GetConfiguration (ConfigurationRequest) returns (ConfigurationResponse) {}
+
+    // Heartbeat is called by the worker to send the heartbeat information.
+    rpc Heartbeat(HeartbeatInfo) returns (Empty) {}
+}
+
+// A RegistrationRequest message contains information necessary for a client to 
+// request registration.
+message RegistrationRequest {
+    // device id
+    string device_id = 1;
+    // certificate sign request
+    string certificate_request = 2;
+    // hardware info
+    optional HardwareInfo hardware = 3;
+}
+
+// A RegistrationResponse message contains the result of a registration request.
+message RegistrationResponse {
+    string certificate = 1;
+}
+
+// A EnrolRequest message contains information necessary for a client to request enrolment.
+message EnrolRequest {
+    // device id
+    string device_id = 1;
+    // hardware info
+    HardwareInfo hardware = 2;
+}
+
+enum EnrolmentStatus {
+    PENDING = 0;
+    ENROLED = 1;
+    REFUSED = 2;
+    NOT_ENROLED = 3;
+}
+
+message EnrolResponse {
+    EnrolmentStatus enrolment_status = 1;
+}
+
+message ConfigurationRequest {
+    string device_id = 1;
+}
+
+message ConfigurationResponse {
+    // sha256 sum of the configuration
+    string hash = 1;
+    Configuration configuration = 2;
+    repeated Workload workloads = 3;
+    repeated Secret secrets = 4;
+
+}

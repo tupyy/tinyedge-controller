@@ -1,0 +1,124 @@
+# github.com/Songmu/wrapcommander v0.1.0
+## explicit; go 1.12
+github.com/Songmu/wrapcommander
+# github.com/bxcodec/faker/v3 v3.5.0
+## explicit; go 1.12
+github.com/bxcodec/faker/v3
+github.com/bxcodec/faker/v3/support/slice
+# github.com/davecgh/go-spew v1.1.1
+## explicit
+github.com/davecgh/go-spew/spew
+# github.com/denisenkom/go-mssqldb v0.9.0
+## explicit; go 1.11
+github.com/denisenkom/go-mssqldb
+github.com/denisenkom/go-mssqldb/internal/cp
+github.com/denisenkom/go-mssqldb/internal/decimal
+github.com/denisenkom/go-mssqldb/internal/querytext
+# github.com/droundy/goopt v0.0.0-20170604162106-0b8effe182da
+## explicit
+github.com/droundy/goopt
+# github.com/go-sql-driver/mysql v1.6.0
+## explicit; go 1.10
+github.com/go-sql-driver/mysql
+# github.com/gobuffalo/logger v1.0.3
+## explicit; go 1.13
+github.com/gobuffalo/logger
+# github.com/gobuffalo/packd v1.0.0
+## explicit; go 1.13
+github.com/gobuffalo/packd
+github.com/gobuffalo/packd/internal/takeon/github.com/markbates/errx
+# github.com/gobuffalo/packr/v2 v2.8.1
+## explicit; go 1.13
+github.com/gobuffalo/packr/v2
+github.com/gobuffalo/packr/v2/file
+github.com/gobuffalo/packr/v2/file/resolver
+github.com/gobuffalo/packr/v2/file/resolver/encoding/hex
+github.com/gobuffalo/packr/v2/jam/parser
+github.com/gobuffalo/packr/v2/plog
+# github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe
+## explicit
+github.com/golang-sql/civil
+# github.com/iancoleman/strcase v0.1.2
+## explicit
+github.com/iancoleman/strcase
+# github.com/izumin5210/execx v0.1.0
+## explicit; go 1.12
+github.com/izumin5210/execx
+# github.com/izumin5210/gex v0.6.1
+## explicit; go 1.11
+github.com/izumin5210/gex
+github.com/izumin5210/gex/cmd/gex
+github.com/izumin5210/gex/pkg/manager
+github.com/izumin5210/gex/pkg/manager/dep
+github.com/izumin5210/gex/pkg/manager/mod
+github.com/izumin5210/gex/pkg/tool
+# github.com/jimsmart/schema v0.2.0
+## explicit; go 1.16
+github.com/jimsmart/schema
+# github.com/jinzhu/gorm v1.9.16
+## explicit; go 1.12
+github.com/jinzhu/gorm/dialects/mysql
+# github.com/jinzhu/inflection v1.0.0
+## explicit
+github.com/jinzhu/inflection
+# github.com/karrick/godirwalk v1.16.1
+## explicit; go 1.13
+github.com/karrick/godirwalk
+# github.com/lib/pq v1.10.0
+## explicit; go 1.13
+github.com/lib/pq
+github.com/lib/pq/oid
+github.com/lib/pq/scram
+# github.com/logrusorgru/aurora v2.0.3+incompatible
+## explicit
+github.com/logrusorgru/aurora
+# github.com/markbates/errx v1.1.0
+## explicit; go 1.12
+github.com/markbates/errx
+# github.com/markbates/oncer v1.0.0
+## explicit; go 1.12
+github.com/markbates/oncer
+# github.com/markbates/safe v1.0.1
+## explicit
+github.com/markbates/safe
+# github.com/mattn/go-sqlite3 v2.0.3+incompatible
+## explicit
+github.com/mattn/go-sqlite3
+# github.com/ompluscator/dynamic-struct v1.3.0
+## explicit
+github.com/ompluscator/dynamic-struct
+# github.com/pkg/errors v0.9.1
+## explicit
+github.com/pkg/errors
+# github.com/serenize/snaker v0.0.0-20171204205717-a683aaf2d516
+## explicit
+github.com/serenize/snaker
+# github.com/sirupsen/logrus v1.7.0
+## explicit; go 1.13
+github.com/sirupsen/logrus
+# github.com/smallnest/gen v0.9.29
+## explicit; go 1.16
+github.com/smallnest/gen
+github.com/smallnest/gen/dbmeta
+github.com/smallnest/gen/packrd
+github.com/smallnest/gen/utils
+# github.com/spf13/afero v1.2.2
+## explicit
+github.com/spf13/afero
+github.com/spf13/afero/mem
+# github.com/spf13/pflag v1.0.5
+## explicit; go 1.12
+github.com/spf13/pflag
+# golang.org/x/crypto v0.0.0-20201012173705-84dcc777aaee
+## explicit; go 1.11
+golang.org/x/crypto/md4
+golang.org/x/crypto/ssh/terminal
+# golang.org/x/sys v0.0.0-20210112080510-489259a85091
+## explicit; go 1.12
+golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# golang.org/x/text v0.3.3
+## explicit; go 1.11
+golang.org/x/text/transform
+golang.org/x/text/unicode/norm
