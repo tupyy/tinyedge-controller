@@ -44,9 +44,8 @@ vault auth enable approle
 # NOTE: we use artificially low ttl values to demonstrate the credential renewal logic
 vault write auth/approle/role/dev-role \
     token_policies=dev-policy \
-    secret_id_ttl="2m" \
-    token_ttl="2m" \
-    token_max_ttl="6m"
+    secret_id_ttl="24h" \
+    token_ttl="24h"
 
 # Overwrite our role id with a known value to simplify our demo
 vault write auth/approle/role/dev-role/role-id role_id="${APPROLE_ROLE_ID}"

@@ -27,7 +27,7 @@ Table: devices_sets
 
 JSON Sample
 -------------------------------------
-{    "device_id": "ayucqtUtBAAgcSImDIKuGMBEF",    "device_set_id": "leFLKmbhmlfMbjsvausXPWZJA"}
+{    "device_id": "OZDBDBZtrGgRbcOnhGmQiXiDG",    "device_set_id": "HWuBdJRnhwnBbdiAwRieXEmok"}
 
 
 

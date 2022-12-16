@@ -28,7 +28,7 @@ Table: hardware
 
 JSON Sample
 -------------------------------------
-{    "id": "AgaMbaeJtmHEfixBflvAcsRYj",    "os_information_id": "oBQFDMBJAvaTlerrAeRhsBfKA",    "system_vendor_id": "ZBVWuILYbfNwJBtAxivibRxVw"}
+{    "id": "VrOWgSSDCdIXItZNLIZgoWWhH",    "os_information_id": "DeyYKHNZOrpfVvFFDAhZBlDPZ",    "system_vendor_id": "VJwLrgTQuVvDkvSIpeZkxInPT"}
 
 
 

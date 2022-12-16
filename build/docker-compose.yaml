@@ -48,8 +48,6 @@ services:
   
 networks:
   tinyedge:
-  tinyedge-monitoring:
-    driver: host
 
 volumes:
   postgres-tinyedge:

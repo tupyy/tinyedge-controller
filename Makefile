@@ -14,7 +14,7 @@ IMG_TAG ?= latest
 PROTOC ?= /home/cosmin/Downloads/protoc/bin/protoc
 
 # Docker command to use, can be podman
-DOCKER ?= podman
+DOCKER ?= docker
 DOCKER-COMPOSE ?= podman-compose 
 
 OS = $(shell go env GOOS)
@@ -28,8 +28,6 @@ Q=@
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
-
-all: build
 
 ##@ General
 
@@ -80,17 +78,19 @@ lint: ## Check if the go code is properly written, rules are in .golangci.yml
 
 
 ##@ Build
+.PHONY: build run run.infra run.infra.stop docker.build docker.stop
+
 build: ## Build binary.
-	go build -mod=vendor -o bin/tinyedge-controller $(PWD)/main.go
+	go build -mod=vendor -o $(PWD)/bin/tinyedge-controller $(PWD)/main.go
 
 run: ## Run the controller from your host.
-	METRICS_ADDR=":8089" go run $(PWD)/main.go run
+	bin/tinyedge-controller run
 
 run.infra: ## Run the docker compose for the infrastructure
 	PROMETHEUS_CONFIG_FILER=$(CURDIR)/resources/monitoring/prometheus.yaml $(DOCKER-COMPOSE) -f $(CURDIR)/build/docker-compose.yaml up -d
 
 run.infra.stop: ## Stop the infra
-	 $(DOCKER-COMPOSE) -f $(CURDIR)/build/docker-compose.yaml down
+	$(DOCKER-COMPOSE) -f $(CURDIR)/build/docker-compose.yaml down
 
 docker.build: ## Build docker image with the manager.
 	$(DOCKER) build -f build/Dockerfile -t ${IMG}:${IMG_TAG} .
@@ -110,7 +110,7 @@ PGPASSFILE=$(CURDIR)/sql/.pgpass
 PSQL_COMMAND=PGPASSFILE=$(PGPASSFILE) psql --quiet --host=$(DB_HOST) --port=$(DB_PORT) -v ON_ERROR_STOP=on
 
 #help postgres.setup: Setup postgres from scratch
-postgres.setup: postgres.setup.init postgres.setup.tables
+postgres.setup: postgres.setup.init postgres.setup.tables postgres.setup.fixtures
 
 #help postgres.setup.clean: cleans postgres from all created resources
 postgres.setup.clean:
@@ -125,6 +125,10 @@ postgres.setup.init:
 postgres.setup.tables:
 	$(PSQL_COMMAND) --dbname=tinyedge --user=$(ROOT_USER) \
 		-f sql/tables.sql
+
+postgres.setup.fixtures:
+	$(PSQL_COMMAND) --dbname=tinyedge --user=$(ROOT_USER) \
+		-f sql/fixtures.sql
 
 ##@ Tools
 TOOLS_DIR=$(CURDIR)/tools/bin

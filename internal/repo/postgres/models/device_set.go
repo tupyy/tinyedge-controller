@@ -22,12 +22,13 @@ DB Table Details
 
 Table: device_set
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] name                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 1] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 2] namespace_id                                   TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "nfxcxOCoiCqmeIBtitpbJyHdX",    "name": "AEoiZNOrAKoWfngjGfQVXuFuC"}
+{    "id": "xythRXAopqHSZrBgsnYISMBdA",    "configuration_id": "avrcrFoWwCmDVjHxGyUaLUanL",    "namespace_id": "TGahoAYQgEdWfCmDcWMMrRtQB"}
 
 
 
@@ -37,8 +38,10 @@ JSON Sample
 type DeviceSet struct {
 	//[ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
-	//[ 1] name                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	Name string `gorm:"column:name;type:TEXT;"`
+	//[ 1] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	ConfigurationID sql.NullString `gorm:"column:configuration_id;type:TEXT;"`
+	//[ 2] namespace_id                                   TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	NamespaceID sql.NullString `gorm:"column:namespace_id;type:TEXT;"`
 }
 
 var device_setTableInfo = &TableInfo{
@@ -68,10 +71,10 @@ var device_setTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "name",
+			Name:               "configuration_id",
 			Comment:            ``,
 			Notes:              ``,
-			Nullable:           false,
+			Nullable:           true,
 			DatabaseTypeName:   "TEXT",
 			DatabaseTypePretty: "TEXT",
 			IsPrimaryKey:       false,
@@ -79,12 +82,33 @@ var device_setTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "TEXT",
 			ColumnLength:       -1,
-			GoFieldName:        "Name",
-			GoFieldType:        "string",
-			JSONFieldName:      "name",
-			ProtobufFieldName:  "name",
+			GoFieldName:        "ConfigurationID",
+			GoFieldType:        "sql.NullString",
+			JSONFieldName:      "configuration_id",
+			ProtobufFieldName:  "configuration_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
+		},
+
+		&ColumnInfo{
+			Index:              2,
+			Name:               "namespace_id",
+			Comment:            ``,
+			Notes:              ``,
+			Nullable:           true,
+			DatabaseTypeName:   "TEXT",
+			DatabaseTypePretty: "TEXT",
+			IsPrimaryKey:       false,
+			IsAutoIncrement:    false,
+			IsArray:            false,
+			ColumnType:         "TEXT",
+			ColumnLength:       -1,
+			GoFieldName:        "NamespaceID",
+			GoFieldType:        "sql.NullString",
+			JSONFieldName:      "namespace_id",
+			ProtobufFieldName:  "namespace_id",
+			ProtobufType:       "string",
+			ProtobufPos:        3,
 		},
 	},
 }

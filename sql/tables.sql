@@ -11,7 +11,6 @@ DROP TABLE IF EXISTS "network_interface";
 
 CREATE TABLE configuration (
     id TEXT PRIMARY KEY,
-    hash TEXT NOT NULL,
     hardware_profile_scope TEXT DEFAULT 'full', -- full scope
     hardware_profile_include BOOLEAN DEFAULT true,
     heartbeat_period_seconds SMALLINT DEFAULT 30, -- 30s
@@ -42,23 +41,37 @@ CREATE TABLE network_interface (
     ip4 INET[]
 );
 
-CREATE TABLE device (
-    id TEXT PRIMARY KEY,
-    namespace TEXT NOT NULL,
-    enroled_at TIMESTAMP,
-    registered_at TIMESTAMP,
-    enroled BOOLEAN NOT NULL DEFAULT false,
-    registered BOOLEAN NOT NULL DEFAULT false,
-    configuration_id TEXT NOT NULL REFERENCES configuration(id) ON DELETE CASCADE,
-    hardware_id TEXT NOT NULL REFERENCES hardware(id) ON DELETE CASCADE
-);
-
-CREATE INDEX device_configuration_id_idx ON device (configuration_id);
-
 CREATE TABLE workload (
     id TEXT PRIMARY KEY,
     path TEXT NOT NULL
 );
+
+CREATE TABLE namespace (
+    id TEXT PRIMARY KEY,
+    is_default BOOLEAN DEFAULT false,
+    configuration_id TEXT REFERENCES configuration(id) ON DELETE CASCADE
+);
+
+CREATE TABLE device_set (
+    id TEXT PRIMARY KEY,
+    configuration_id TEXT REFERENCES configuration(id) ON DELETE CASCADE,
+    namespace_id TEXT REFERENCES namespace(id) ON DELETE CASCADE
+);
+
+CREATE TABLE device (
+    id TEXT PRIMARY KEY,
+    enroled_at TIMESTAMP,
+    registered_at TIMESTAMP,
+    enroled TEXT NOT NULL DEFAULT 'not_enroled',
+    registered BOOLEAN NOT NULL DEFAULT false,
+    certificate_sn TEXT,
+    namespace_id TEXT REFERENCES namespace(id) ON DELETE CASCADE,
+    device_set_id TEXT REFERENCES device_set(id) ON DELETE CASCADE,
+    configuration_id TEXT REFERENCES configuration(id) ON DELETE SET NULL,
+    hardware_id TEXT REFERENCES hardware(id) ON DELETE SET NULL
+);
+
+CREATE INDEX device_configuration_id_idx ON device (configuration_id);
 
 CREATE TABLE devices_workloads (
     device_id TEXT REFERENCES device ON DELETE CASCADE,
@@ -69,17 +82,21 @@ CREATE TABLE devices_workloads (
     )
 );
 
-CREATE TABLE device_set (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL
+CREATE TABLE namespaces_workloads (
+    namespace_id TEXT REFERENCES namespace(id) ON DELETE CASCADE,
+    workload_id TEXT REFERENCES workload(id) ON DELETE CASCADE,
+    CONSTRAINT namespace_workload_pk PRIMARY KEY(
+        namespace_id,
+        workload_id
+    )
 );
 
-CREATE TABLE devices_sets (
-    device_id TEXT REFERENCES device ON DELETE CASCADE,
-    device_set_id TEXT REFERENCES device_set ON DELETE CASCADE,
-    CONSTRAINT devices_sets_pk PRIMARY KEY (
-        device_id,
-        device_set_id
+CREATE TABLE sets_workloads (
+    device_set_id TEXT REFERENCES device_set(id) ON DELETE CASCADE,
+    workload_id TEXT REFERENCES workload(id) ON DELETE CASCADE,
+    CONSTRAINT device_set_workload_pk PRIMARY KEY(
+        device_set_id,
+        workload_id
     )
 );
 
