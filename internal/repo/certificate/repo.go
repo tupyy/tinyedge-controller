@@ -13,12 +13,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type Client interface {
-	GetCACertificate(ctx context.Context) ([]byte, error)
-	GenerateCertificate(ctx context.Context, cn string, ttl time.Duration) ([]byte, []byte, error)
-	SignCSR(ctx context.Context, csr []byte, cn string, ttl time.Duration) ([]byte, error)
-}
-
 type CertficateRepo struct {
 	vault                *vault.Vault
 	cnSuffix             string
