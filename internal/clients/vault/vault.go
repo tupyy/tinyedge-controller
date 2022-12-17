@@ -1,13 +1,10 @@
 package vault
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"sync"
-	"time"
 
 	vault "github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/approle"
@@ -34,7 +31,7 @@ type VaultParameters struct {
 }
 
 type Vault struct {
-	client     *vault.Client
+	Client     *vault.Client
 	parameters VaultParameters
 	wg         sync.WaitGroup
 }
@@ -56,7 +53,7 @@ func NewVaultAppRoleClient(ctx context.Context, parameters VaultParameters) (*Va
 	parameters.PKIMountPath = "pki_int"
 	parameters.PKIRoleID = "tinyedge-role"
 	vault := &Vault{
-		client:     client,
+		Client:     client,
 		parameters: parameters,
 	}
 
@@ -82,7 +79,7 @@ func NewVaultAppRoleClient(ctx context.Context, parameters VaultParameters) (*Va
 }
 
 func (v *Vault) GetSecret(ctx context.Context, enginePath, name, key string) (string, error) {
-	secret, err := v.client.KVv2(enginePath).Get(ctx, name)
+	secret, err := v.Client.KVv2(enginePath).Get(ctx, name)
 	if err != nil {
 		return "", fmt.Errorf("unable to read secret: %w", err)
 	}
@@ -98,84 +95,6 @@ func (v *Vault) GetSecret(ctx context.Context, enginePath, name, key string) (st
 	}
 
 	return dataString, nil
-}
-
-func (v *Vault) GetCACertificate(ctx context.Context) ([]byte, error) {
-	pathToRead := fmt.Sprintf("%s/cert/ca", v.parameters.PKIMountPath)
-
-	secret, err := v.client.Logical().ReadWithContext(ctx, pathToRead)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	data := secret.Data["certificate"]
-	certificate := bytes.NewBufferString(data.(string)).Bytes()
-
-	return certificate, nil
-}
-
-func (v *Vault) GenerateCertificate(ctx context.Context, cn string, ttl time.Duration) ([]byte, []byte, error) {
-	pathToRead := fmt.Sprintf("%s/cert/%s", v.parameters.PKIMountPath, v.parameters.PKIRoleID)
-
-	data := map[string]interface{}{
-		"common_name":        cn,
-		"issuer_ref":         v.parameters.PKIRoleID,
-		"ttl":                ttl.Seconds(),
-		"format":             "pem",
-		"private_key_format": "pkcs8",
-	}
-
-	secret, err := v.client.Logical().WriteWithContext(ctx, pathToRead, data)
-	if err != nil {
-		return []byte{}, []byte{}, err
-	}
-
-	certificate, _ := extractBytes(secret, "certificate")
-	privateKey, _ := extractBytes(secret, "private_key")
-
-	zap.S().Debugw("certificate generated", "cn", cn, "ttl", ttl)
-
-	return certificate, privateKey, nil
-}
-
-func (v *Vault) GetCertificate(ctx context.Context, sn string) ([]byte, bool, time.Time, error) {
-	pathToRead := fmt.Sprintf("%s/cert/%s", v.parameters.PKIMountPath, sn)
-
-	secret, err := v.client.Logical().ReadWithContext(ctx, pathToRead)
-	if err != nil {
-		return []byte{}, false, time.Time{}, err
-	}
-
-	certificate, _ := extractBytes(secret, "certificate")
-	rev := secret.Data["revocation_time"].(json.Number)
-	revTime, _ := rev.Int64()
-	var revocationTime time.Time
-	if revTime != 0 {
-		revocationTime = time.Unix(revTime, 0)
-	}
-
-	return certificate, revTime != 0, revocationTime, nil
-}
-
-func (v *Vault) SignCSR(ctx context.Context, csr []byte, cn string, ttl time.Duration) ([]byte, error) {
-	pathToRead := fmt.Sprintf("%s/sign/%s", v.parameters.PKIMountPath, v.parameters.PKIRoleID)
-
-	data := map[string]interface{}{
-		"csr":         string(csr),
-		"common_name": cn,
-		"ttl":         ttl.String(),
-	}
-
-	secret, err := v.client.Logical().WriteWithContext(ctx, pathToRead, data)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	certificate, _ := extractBytes(secret, "certificate")
-
-	zap.S().Debugw("certificate request signed", "cn", cn, "ttl", ttl)
-
-	return certificate, nil
 }
 
 // A combination of a RoleID and a SecretID is required to log into Vault
@@ -202,7 +121,7 @@ func (v *Vault) login(ctx context.Context) (*vault.Secret, error) {
 		return nil, fmt.Errorf("unable to initialize approle authentication method: %w", err)
 	}
 
-	authInfo, err := v.client.Auth().Login(ctx, appRoleAuth)
+	authInfo, err := v.Client.Auth().Login(ctx, appRoleAuth)
 	if err != nil {
 		return nil, fmt.Errorf("unable to login using approle auth method: %w", err)
 	}
@@ -268,7 +187,7 @@ func (v *Vault) renewLeases(ctx context.Context, authToken *vault.Secret) (renew
 	defer zap.S().Debug("renew cycle: end")
 
 	// auth token
-	authTokenWatcher, err := v.client.NewLifetimeWatcher(&vault.LifetimeWatcherInput{
+	authTokenWatcher, err := v.Client.NewLifetimeWatcher(&vault.LifetimeWatcherInput{
 		Secret: authToken,
 	})
 	if err != nil {
@@ -299,12 +218,4 @@ func (v *Vault) renewLeases(ctx context.Context, authToken *vault.Secret) (renew
 			zap.S().Debugw("auth token: successfully renewed", "remaining duration", info.Secret.Auth.LeaseDuration)
 		}
 	}
-}
-
-func extractBytes(secret *vault.Secret, key string) ([]byte, error) {
-	data, ok := secret.Data[key]
-	if !ok {
-		return []byte{}, fmt.Errorf("key %q not found", key)
-	}
-	return bytes.NewBufferString(data.(string)).Bytes(), nil
 }

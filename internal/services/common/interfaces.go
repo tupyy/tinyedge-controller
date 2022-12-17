@@ -1,4 +1,4 @@
-package edge
+package common
 
 import (
 	"context"
@@ -28,7 +28,16 @@ type ConfigurationReader interface {
 	Get(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error)
 }
 
+type CertificateReader interface {
+	GetCertificate(ctx context.Context, serialNumber string) ([]byte, bool, time.Time, error)
+}
+
 type CertificateWriter interface {
-	SignCSR(ctx context.Context, csr []byte, cn string, ttl time.Duration) (entity.CertificateGroup, error)
-	GetCertificate(ctx context.Context, serialNumber string) (entity.CertificateGroup, error)
+	GenerateCertificate(ctx context.Context, cn string, ttl time.Duration) ([]byte, []byte, error)
+	SignCSR(ctx context.Context, csr []byte, cn string, ttl time.Duration) ([]byte, error)
+}
+
+type CertificateReaderWriter interface {
+	CertificateReader
+	CertificateWriter
 }

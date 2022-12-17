@@ -130,6 +130,20 @@ postgres.setup.fixtures:
 	$(PSQL_COMMAND) --dbname=tinyedge --user=$(ROOT_USER) \
 		-f sql/fixtures.sql
 
+##@Vault
+
+VAULT_ADDR="http://localhost:8200"
+VAULT_FORMAT=json
+VAULT_CMD=VAULT_ADDR=$(VAULT_ADDR) VAULT_FORMAT=$(VAULT_FORMAT) vault
+
+.PHONY: vault.login vault.secret.id
+
+vault.login:
+	$(VAULT_CMD) login root
+
+vault.secret.id:
+	$(VAULT_CMD) write -f auth/approle/role/dev-role/secret-id | jq '.data.secret_id' | sed 's/"//g'
+
 ##@ Tools
 TOOLS_DIR=$(CURDIR)/tools/bin
 

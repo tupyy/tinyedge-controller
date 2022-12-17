@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
+	"github.com/tupyy/tinyedge-controller/internal/services/certificate"
 	"github.com/tupyy/tinyedge-controller/internal/services/common"
 	"go.uber.org/zap"
 )
@@ -18,12 +19,12 @@ const (
 )
 
 type Service struct {
-	deviceRepo DeviceReaderWriter
-	confReader ConfigurationReader
-	certWriter CertificateWriter
+	deviceRepo  common.DeviceReaderWriter
+	confReader  common.ConfigurationReader
+	certService *certificate.Service
 }
 
-func New(dr DeviceReaderWriter, confReader ConfigurationReader, certWriter CertificateWriter) *Service {
+func New(dr common.DeviceReaderWriter, confReader common.ConfigurationReader, certWriter *certificate.Service) *Service {
 	return &Service{dr, confReader, certWriter}
 }
 
@@ -73,8 +74,12 @@ func (s *Service) Register(ctx context.Context, deviceID string, csr string) (en
 	}
 
 	if device.Registred {
-		certificate, err := s.certWriter.GetCertificate(ctx, device.CertificateSerialNumber)
+		certificate, err := s.certService.GetCertificate(ctx, device.CertificateSerialNumber)
 		if err != nil {
+			if errors.Is(err, common.ErrCertificateNotFound) {
+				zap.S().Warnw("device already registered but the certificate is not found", "device_id", deviceID, "certificate_serial_number", device.CertificateSerialNumber)
+				goto register
+			}
 			return entity.CertificateGroup{}, err
 		}
 		if !certificate.IsRevoked {
@@ -84,12 +89,13 @@ func (s *Service) Register(ctx context.Context, deviceID string, csr string) (en
 		zap.S().Warnw("device's certificate is revoked", "device_id", deviceID, "certificate_serial_number", device.CertificateSerialNumber, "revocation_time", certificate.RevocationTime)
 	}
 
+register:
 	if device.EnrolStatus != entity.EnroledStatus {
 		return entity.CertificateGroup{}, fmt.Errorf("unable to register the device. The device %s is not enroled yet", deviceID)
 	}
 
 	cn := fmt.Sprintf("%s.%s", deviceID, BaseDomain)
-	certificate, err := s.certWriter.SignCSR(ctx, bytes.NewBufferString(csr).Bytes(), cn, DefaultCertificateTTL)
+	certificate, err := s.certService.SignCSR(ctx, bytes.NewBufferString(csr).Bytes(), cn, DefaultCertificateTTL)
 	if err != nil {
 		return entity.CertificateGroup{}, fmt.Errorf("unable to sign the csr: %w", err)
 	}

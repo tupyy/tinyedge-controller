@@ -4,54 +4,27 @@ import (
 	"context"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/tupyy/tinyedge-controller/internal/clients/vault"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
+	"github.com/tupyy/tinyedge-controller/internal/services/common"
 )
 
-type Client interface {
-	GetCACertificate(ctx context.Context) ([]byte, error)
-	GenerateCertificate(ctx context.Context, cn string, ttl time.Duration) ([]byte, []byte, error)
-	SignCSR(ctx context.Context, csr []byte, cn string, ttl time.Duration) ([]byte, error)
+type Service struct {
+	repo common.CertificateReaderWriter
 }
 
-type Manager struct {
-	vaultClient          *vault.Vault
-	cnSuffix             string
-	certificateMountPath string
-}
-
-func New(v *vault.Vault, certificateMountPath, cnSuffix string) *Manager {
-	return &Manager{
-		vaultClient:          v,
-		certificateMountPath: certificateMountPath,
-		cnSuffix:             cnSuffix,
+func New(r common.CertificateReaderWriter) *Service {
+	return &Service{
+		repo: r,
 	}
 }
 
-func (m *Manager) GetCACertificate(ctx context.Context) (entity.CertificateGroup, error) {
-	certificate, err := m.vaultClient.GetCACertificate(ctx)
-	if err != nil {
-		return entity.CertificateGroup{}, err
-	}
-
-	decodedCertficate, _ := pem.Decode(certificate)
-	cert, err := x509.ParseCertificate(decodedCertficate.Bytes)
-	if err != nil {
-		return entity.CertificateGroup{}, fmt.Errorf("unable to parse certificate: %w", err)
-	}
-
-	return entity.CertificateGroup{
-		Certificate:    cert,
-		CertificatePEM: decodedCertficate.Bytes,
-	}, nil
-}
-
-func (m *Manager) GetCertificate(ctx context.Context, serialNumber string) (entity.CertificateGroup, error) {
+func (m *Service) GetCertificate(ctx context.Context, serialNumber string) (entity.CertificateGroup, error) {
 	formatSerialNumber := func(sn string) string {
 		var sb strings.Builder
 		for i := 2; true; i += 2 {
@@ -65,8 +38,11 @@ func (m *Manager) GetCertificate(ctx context.Context, serialNumber string) (enti
 		return sb.String()
 	}
 
-	cert, isRevoked, revTime, err := m.vaultClient.GetCertificate(ctx, formatSerialNumber(serialNumber))
+	cert, isRevoked, revTime, err := m.repo.GetCertificate(ctx, formatSerialNumber(serialNumber))
 	if err != nil {
+		if errors.Is(err, common.ErrCertificateNotFound) {
+			return entity.CertificateGroup{}, err
+		}
 		return entity.CertificateGroup{}, fmt.Errorf("unable to read certificate %q", serialNumber)
 	}
 
@@ -82,7 +58,7 @@ func (m *Manager) GetCertificate(ctx context.Context, serialNumber string) (enti
 }
 
 // GetServerCertificate returns the certificate used in mTLS.
-func (m *Manager) GetServerCertificate(ctx context.Context, ttl time.Duration) (entity.CertificateGroup, error) {
+func (m *Service) GetServerCertificate(ctx context.Context, ttl time.Duration) (entity.CertificateGroup, error) {
 	cn := "operator.home.net"
 	hostname, err := os.Hostname()
 	if err == nil {
@@ -92,12 +68,12 @@ func (m *Manager) GetServerCertificate(ctx context.Context, ttl time.Duration) (
 }
 
 // GenerateRegistrationCertificate returns a certificate used by the agent to registered itself.
-func (m *Manager) GenerateRegistrationCertificate(ctx context.Context, ttl time.Duration) (entity.CertificateGroup, error) {
+func (m *Service) GenerateRegistrationCertificate(ctx context.Context, ttl time.Duration) (entity.CertificateGroup, error) {
 	return m.generateCertificate(ctx, "register.home.net", ttl)
 }
 
-func (m *Manager) SignCSR(ctx context.Context, csr []byte, cn string, ttl time.Duration) (entity.CertificateGroup, error) {
-	cert, err := m.vaultClient.SignCSR(ctx, csr, cn, ttl)
+func (m *Service) SignCSR(ctx context.Context, csr []byte, cn string, ttl time.Duration) (entity.CertificateGroup, error) {
+	cert, err := m.repo.SignCSR(ctx, csr, cn, ttl)
 	if err != nil {
 		return entity.CertificateGroup{}, fmt.Errorf("unable to sign csr: %w", err)
 	}
@@ -105,8 +81,8 @@ func (m *Manager) SignCSR(ctx context.Context, csr []byte, cn string, ttl time.D
 	return m.decode(cert)
 }
 
-func (m *Manager) generateCertificate(ctx context.Context, cn string, ttl time.Duration) (entity.CertificateGroup, error) {
-	certificate, privateKey, err := m.vaultClient.GenerateCertificate(ctx, cn, ttl)
+func (m *Service) generateCertificate(ctx context.Context, cn string, ttl time.Duration) (entity.CertificateGroup, error) {
+	certificate, privateKey, err := m.repo.GenerateCertificate(ctx, cn, ttl)
 
 	decodedCertficate, _ := pem.Decode(certificate)
 	cert, err := x509.ParseCertificate(decodedCertficate.Bytes)
@@ -132,7 +108,7 @@ func (m *Manager) generateCertificate(ctx context.Context, cn string, ttl time.D
 	}, nil
 }
 
-func (m *Manager) decode(cert []byte) (entity.CertificateGroup, error) {
+func (m *Service) decode(cert []byte) (entity.CertificateGroup, error) {
 	decodedCertificate, _ := pem.Decode(cert)
 	if decodedCertificate == nil {
 		return entity.CertificateGroup{}, fmt.Errorf("unable to decode certificate to PEM")

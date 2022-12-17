@@ -6,8 +6,11 @@ package cmd
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"net"
+	"os"
 	"time"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -17,15 +20,18 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/clients/pg"
 	"github.com/tupyy/tinyedge-controller/internal/clients/vault"
 	"github.com/tupyy/tinyedge-controller/internal/configuration"
+	"github.com/tupyy/tinyedge-controller/internal/interceptors"
 	"github.com/tupyy/tinyedge-controller/internal/repo/cache"
-	"github.com/tupyy/tinyedge-controller/internal/repo/certificate"
+	certRepo "github.com/tupyy/tinyedge-controller/internal/repo/certificate"
 	deviceRepo "github.com/tupyy/tinyedge-controller/internal/repo/postgres"
 	"github.com/tupyy/tinyedge-controller/internal/servers"
+	"github.com/tupyy/tinyedge-controller/internal/services/certificate"
 	"github.com/tupyy/tinyedge-controller/internal/services/edge"
 	edgePb "github.com/tupyy/tinyedge-controller/pkg/grpc/edge"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // runCmd represents the run command
@@ -60,15 +66,22 @@ var runCmd = &cobra.Command{
 			Password: "postgres",
 		})
 
-		certificateManager := certificate.New(vaultClient, "pki", "home.net")
+		certRepo := certRepo.New(vaultClient, "pki_int", "home.net")
 		deviceRepo, err := deviceRepo.New(pgClient)
 		if err != nil {
 			zap.S().Fatal(err)
 		}
 		configurationRepo := cache.New()
 
-		edgeService := edge.New(deviceRepo, configurationRepo, certificateManager)
+		certService := certificate.New(certRepo)
+		edgeService := edge.New(deviceRepo, configurationRepo, certService)
 		edgeServer := servers.NewEdgeServer(edgeService)
+
+		tlsConfig, err := initCertificateManager(
+			"/home/cosmin/projects/tinyedge-controller/resources/certificates/ca.pem",
+			"/home/cosmin/projects/tinyedge-controller/resources/certificates/cert.pem",
+			"/home/cosmin/projects/tinyedge-controller/resources/certificates/key.pem",
+		)
 
 		lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 8080))
 		if err != nil {
@@ -76,7 +89,8 @@ var runCmd = &cobra.Command{
 		}
 
 		// start edge server
-		var opts []grpc.ServerOption
+		creds := credentials.NewTLS(tlsConfig)
+		opts := []grpc.ServerOption{grpc.Creds(creds)}
 
 		zapOpts := []grpc_zap.Option{
 			grpc_zap.WithDurationField(func(duration time.Duration) zapcore.Field {
@@ -84,6 +98,7 @@ var runCmd = &cobra.Command{
 			}),
 		}
 		opts = append(opts, grpc_middleware.WithUnaryServerChain(
+			interceptors.AuthInterceptor(),
 			grpc_ctxtags.UnaryServerInterceptor(),
 			grpc_zap.UnaryServerInterceptor(logger, zapOpts...),
 		))
@@ -124,4 +139,44 @@ func setupLogger() *zap.Logger {
 	}
 
 	return plain
+}
+
+func initCertificateManager(caroot, certFile, keyFile string) (*tls.Config, error) {
+	// read certificates
+	caRoot, err := os.ReadFile(caroot)
+	if err != nil {
+		return nil, err
+	}
+
+	pool, err := x509.SystemCertPool()
+	if err != nil {
+		return nil, fmt.Errorf("cannot copy system certificate pool: %w", err)
+	}
+
+	pool.AppendCertsFromPEM(caRoot)
+	config := tls.Config{
+		RootCAs:    pool,
+		ClientCAs:  pool,
+		MinVersion: tls.VersionTLS13,
+		MaxVersion: tls.VersionTLS13,
+	}
+
+	cert, err := os.ReadFile(certFile)
+	if err != nil {
+		return nil, err
+	}
+
+	privateKey, err := os.ReadFile(keyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	cc, err := tls.X509KeyPair(cert, privateKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create x509 key pair: %w", err)
+	}
+
+	config.Certificates = []tls.Certificate{cc}
+
+	return &config, nil
 }
