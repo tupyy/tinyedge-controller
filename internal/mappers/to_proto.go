@@ -19,7 +19,7 @@ func MapConfigurationToProto(conf entity.ConfigurationResponse) *edgepb.Configur
 		response.Secrets = append(response.Secrets, MapSecretToProto(s))
 	}
 	response.Configuration = &common.Configuration{
-		HeartbeatPeriod: uint32(conf.Configuration.HeartbeatConfiguration.Period.Seconds()),
+		HeartbeatPeriod: uint32(conf.Configuration.HeartbeatPeriod.Seconds()),
 	}
 	return response
 }
