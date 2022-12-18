@@ -77,10 +77,6 @@ func (s *Service) Register(ctx context.Context, deviceID string, csr string) (en
 		return entity.CertificateGroup{}, fmt.Errorf("unable to register the device. The device %s is not enroled yet", deviceID)
 	}
 
-	if device.Registred {
-		// TODO revoked the older certficate
-	}
-
 	cn := fmt.Sprintf("%s.%s", deviceID, BaseDomain)
 	certificate, err := s.certService.SignCSR(ctx, bytes.NewBufferString(csr).Bytes(), cn, DefaultCertificateTTL)
 	if err != nil {
@@ -89,7 +85,7 @@ func (s *Service) Register(ctx context.Context, deviceID string, csr string) (en
 
 	device.Registred = true
 	device.RegisteredAt = time.Now().UTC()
-	device.CertificateSerialNumber = fmt.Sprintf("%X", certificate.Certificate.SerialNumber)
+	device.CertificateSerialNumber = certificate.GetSerialNumber()
 	zap.S().Infow("device registered", "device_id", deviceID, "certificate_sn", device.CertificateSerialNumber)
 
 	if err := s.deviceRepo.Update(ctx, device); err != nil {

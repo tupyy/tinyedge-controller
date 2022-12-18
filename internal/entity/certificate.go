@@ -3,6 +3,7 @@ package entity
 import (
 	"crypto/rsa"
 	"crypto/x509"
+	"fmt"
 	"time"
 )
 
@@ -13,4 +14,11 @@ type CertificateGroup struct {
 	PrivateKeyPEM  []byte
 	RevocationTime time.Time
 	IsRevoked      bool
+}
+
+func (c CertificateGroup) GetSerialNumber() string {
+	if c.Certificate == nil {
+		return ""
+	}
+	return fmt.Sprintf("%X", c.Certificate.SerialNumber)
 }
