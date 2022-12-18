@@ -73,25 +73,12 @@ func (s *Service) Register(ctx context.Context, deviceID string, csr string) (en
 		return entity.CertificateGroup{}, err
 	}
 
-	if device.Registred {
-		certificate, err := s.certService.GetCertificate(ctx, device.CertificateSerialNumber)
-		if err != nil {
-			if errors.Is(err, common.ErrCertificateNotFound) {
-				zap.S().Warnw("device already registered but the certificate is not found", "device_id", deviceID, "certificate_serial_number", device.CertificateSerialNumber)
-				goto register
-			}
-			return entity.CertificateGroup{}, err
-		}
-		if !certificate.IsRevoked {
-			zap.S().Debugw("device is already registered", "device_id", deviceID, "certificate_serial_number", device.CertificateSerialNumber)
-			return certificate, nil
-		}
-		zap.S().Warnw("device's certificate is revoked", "device_id", deviceID, "certificate_serial_number", device.CertificateSerialNumber, "revocation_time", certificate.RevocationTime)
-	}
-
-register:
 	if device.EnrolStatus != entity.EnroledStatus {
 		return entity.CertificateGroup{}, fmt.Errorf("unable to register the device. The device %s is not enroled yet", deviceID)
+	}
+
+	if device.Registred {
+		// TODO revoked the older certficate
 	}
 
 	cn := fmt.Sprintf("%s.%s", deviceID, BaseDomain)

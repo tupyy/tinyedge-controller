@@ -29,7 +29,7 @@ func (m *Service) GetCertificate(ctx context.Context, serialNumber string) (enti
 		var sb strings.Builder
 		for i := 2; true; i += 2 {
 			if i >= len(serialNumber) {
-				fmt.Fprintf(&sb, "%s", sn[i-2:i])
+				fmt.Fprintf(&sb, "%s", sn[i-2:len(serialNumber)])
 				break
 			} else {
 				fmt.Fprintf(&sb, "%s:", sn[i-2:i])
@@ -38,7 +38,7 @@ func (m *Service) GetCertificate(ctx context.Context, serialNumber string) (enti
 		return sb.String()
 	}
 
-	cert, isRevoked, revTime, err := m.repo.GetCertificate(ctx, formatSerialNumber(serialNumber))
+	cert, isRevoked, revokedAt, err := m.repo.GetCertificate(ctx, formatSerialNumber(serialNumber))
 	if err != nil {
 		if errors.Is(err, common.ErrCertificateNotFound) {
 			return entity.CertificateGroup{}, err
@@ -52,14 +52,14 @@ func (m *Service) GetCertificate(ctx context.Context, serialNumber string) (enti
 	}
 
 	certificate.IsRevoked = isRevoked
-	certificate.RevocationTime = revTime
+	certificate.RevocationTime = revokedAt
 
 	return certificate, nil
 }
 
 // GetServerCertificate returns the certificate used in mTLS.
 func (m *Service) GetServerCertificate(ctx context.Context, ttl time.Duration) (entity.CertificateGroup, error) {
-	cn := "operator.home.net"
+	cn := "operator.home.net" // TODO fix hardcoded
 	hostname, err := os.Hostname()
 	if err == nil {
 		cn = fmt.Sprintf("%s-%s", hostname, cn)

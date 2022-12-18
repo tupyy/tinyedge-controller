@@ -25,6 +25,7 @@ import (
 	certRepo "github.com/tupyy/tinyedge-controller/internal/repo/certificate"
 	deviceRepo "github.com/tupyy/tinyedge-controller/internal/repo/postgres"
 	"github.com/tupyy/tinyedge-controller/internal/servers"
+	"github.com/tupyy/tinyedge-controller/internal/services/auth"
 	"github.com/tupyy/tinyedge-controller/internal/services/certificate"
 	"github.com/tupyy/tinyedge-controller/internal/services/edge"
 	edgePb "github.com/tupyy/tinyedge-controller/pkg/grpc/edge"
@@ -66,7 +67,7 @@ var runCmd = &cobra.Command{
 			Password: "postgres",
 		})
 
-		certRepo := certRepo.New(vaultClient, "pki_int", "home.net")
+		certRepo := certRepo.New(vaultClient, "pki_int", "home.net", "tinyedge-role")
 		deviceRepo, err := deviceRepo.New(pgClient)
 		if err != nil {
 			zap.S().Fatal(err)
@@ -75,9 +76,10 @@ var runCmd = &cobra.Command{
 
 		certService := certificate.New(certRepo)
 		edgeService := edge.New(deviceRepo, configurationRepo, certService)
+		authService := auth.New(certService, deviceRepo)
 		edgeServer := servers.NewEdgeServer(edgeService)
 
-		tlsConfig, err := initCertificateManager(
+		tlsConfig, err := createTlsConfig(
 			"/home/cosmin/projects/tinyedge-controller/resources/certificates/ca.pem",
 			"/home/cosmin/projects/tinyedge-controller/resources/certificates/cert.pem",
 			"/home/cosmin/projects/tinyedge-controller/resources/certificates/key.pem",
@@ -98,7 +100,7 @@ var runCmd = &cobra.Command{
 			}),
 		}
 		opts = append(opts, grpc_middleware.WithUnaryServerChain(
-			interceptors.AuthInterceptor(),
+			interceptors.AuthInterceptor(authService),
 			grpc_ctxtags.UnaryServerInterceptor(),
 			grpc_zap.UnaryServerInterceptor(logger, zapOpts...),
 		))
@@ -141,7 +143,7 @@ func setupLogger() *zap.Logger {
 	return plain
 }
 
-func initCertificateManager(caroot, certFile, keyFile string) (*tls.Config, error) {
+func createTlsConfig(caroot, certFile, keyFile string) (*tls.Config, error) {
 	// read certificates
 	caRoot, err := os.ReadFile(caroot)
 	if err != nil {
@@ -159,6 +161,7 @@ func initCertificateManager(caroot, certFile, keyFile string) (*tls.Config, erro
 		ClientCAs:  pool,
 		MinVersion: tls.VersionTLS13,
 		MaxVersion: tls.VersionTLS13,
+		ClientAuth: tls.RequireAndVerifyClientCert,
 	}
 
 	cert, err := os.ReadFile(certFile)

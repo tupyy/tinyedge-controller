@@ -20,11 +20,12 @@ type CertficateRepo struct {
 	pkiRoleID            string
 }
 
-func New(v *vault.Vault, certificateMountPath, cnSuffix string) *CertficateRepo {
+func New(v *vault.Vault, certificateMountPath, cnSuffix, pkiRoleID string) *CertficateRepo {
 	return &CertficateRepo{
 		vault:                v,
 		certificateMountPath: certificateMountPath,
 		cnSuffix:             cnSuffix,
+		pkiRoleID:            pkiRoleID,
 	}
 }
 

@@ -5,16 +5,19 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"strings"
 
+	"github.com/tupyy/tinyedge-controller/internal/services/certificate"
 	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	"go.uber.org/zap"
 )
 
 type Service struct {
-	certManager  common.CertificateReader
+	certManager  *certificate.Service
 	deviceReader common.DeviceReader
 }
 
-func New(certManager common.CertificateReader, deviceReader common.DeviceReader) *Service {
+func New(certManager *certificate.Service, deviceReader common.DeviceReader) *Service {
 	return &Service{certManager, deviceReader}
 }
 
@@ -22,37 +25,63 @@ func New(certManager common.CertificateReader, deviceReader common.DeviceReader)
 // It verify that the certificate presented by in client is not revoked and it has the same serial number
 // as the one signed by the operator during the registration phase.
 // Auth is not applied on Enrol and Register methods.
-func (s *Service) Auth(ctx context.Context, method string, deviceID string, certificate []byte) (context.Context, error) {
-	if method == "Enrol" || method == "Register" {
-		return ctx, nil
+func (s *Service) Auth(ctx context.Context, method string, deviceID string, peerCertificates []*x509.Certificate) (context.Context, error) {
+	// put the device id into context to be propagated though layers
+	newCtx := context.WithValue(ctx, "device_id", deviceID)
+
+	presentedCertificate := peerCertificates[0]
+
+	if method == "/EdgeService/Enrol" || method == "/EdgeService/Register" {
+		// we allow *only* registration certificate to authenticate to Register and Enrol methods
+		if !s.isRegistrationCerficate(presentedCertificate) {
+			return newCtx, fmt.Errorf("unable to authenticated the device %q for Enrol/Register methods. The certificate is invalid", deviceID)
+		}
+		return newCtx, nil
+	}
+
+	// registration device is not allowed from here
+	if s.isRegistrationCerficate(presentedCertificate) {
+		return newCtx, fmt.Errorf("unable to authenticated the device %q. It is forbidden to access method %q with a registration certificate", deviceID, method)
 	}
 
 	// get the device
 	device, err := s.deviceReader.Get(ctx, deviceID)
 	if err != nil {
-		return ctx, fmt.Errorf("device %q not found", deviceID)
+		return newCtx, fmt.Errorf("device %q not found", deviceID)
 	}
 
 	// get the real certificate
 	realCertificate, err := s.certManager.GetCertificate(ctx, device.CertificateSerialNumber)
 	if err != nil {
-		return ctx, fmt.Errorf("unable to get device %q certificate with sn %q: %w", deviceID, device.CertificateSerialNumber, err)
+		return newCtx, fmt.Errorf("unable to get device %q certificate with sn %q: %w", deviceID, device.CertificateSerialNumber, err)
 	}
 
-	presentedCertificate, err := s.decodeCertificate(certificate)
-	if err != nil {
-		return ctx, fmt.Errorf("unable to parse certificate: %w", err)
-	}
-
-	if realCertificate.Certificate.SerialNumber != presentedCertificate.SerialNumber {
-		return ctx, fmt.Errorf("certificates don't match")
+	if s.getSerialNumber(realCertificate.Certificate) != s.getSerialNumber(presentedCertificate) {
+		zap.S().Errorw("unable to authenticate. certificates don't match",
+			"device_id", deviceID,
+			"method", method,
+			"presented_certificate_sn", s.getSerialNumber(presentedCertificate),
+			"presented_certificate_cn", presentedCertificate.Subject.CommonName,
+			"device_certificate_sn", s.getSerialNumber(realCertificate.Certificate),
+			"device_certificate_cn", realCertificate.Certificate.Subject.CommonName,
+		)
+		return newCtx, fmt.Errorf("certificates don't match")
 	}
 
 	if realCertificate.IsRevoked {
-		return ctx, fmt.Errorf("unable to authenticate device %q. The presented certificate is revoked.", deviceID)
+		zap.S().Errorw("unable to authenticate device. the certificate is revoked",
+			"device_id", deviceID,
+			"method", method,
+			"certificate_sn", s.getSerialNumber(realCertificate.Certificate),
+			"certificate_cn", realCertificate.Certificate.Subject.CommonName,
+			"certificate_revocation_time", realCertificate.RevocationTime,
+		)
+		return newCtx, fmt.Errorf("unable to authenticate device %q. The presented certificate is revoked.", deviceID)
 	}
 
-	return ctx, nil
+	zap.S().Debugw("device authenticated", "method", method, "device_id", deviceID, "certificate_sn", s.getSerialNumber(realCertificate.Certificate))
+
+	return newCtx, nil
 }
 
 func (s *Service) decodeCertificate(cert []byte) (*x509.Certificate, error) {
@@ -67,4 +96,12 @@ func (s *Service) decodeCertificate(cert []byte) (*x509.Certificate, error) {
 	}
 
 	return certificate, nil
+}
+
+func (s *Service) isRegistrationCerficate(cert *x509.Certificate) bool {
+	return strings.HasPrefix(cert.Subject.CommonName, "registration")
+}
+
+func (s *Service) getSerialNumber(cert *x509.Certificate) string {
+	return fmt.Sprintf("%x", cert.SerialNumber)
 }
