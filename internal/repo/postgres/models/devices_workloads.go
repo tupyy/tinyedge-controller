@@ -27,7 +27,7 @@ Table: devices_workloads
 
 JSON Sample
 -------------------------------------
-{    "device_id": "QiZRSllwUjRMcBfSYKChkXxWH",    "workload_id": "LhsDtgTWluCBhesILKHBJmQvu"}
+{    "device_id": "sfJqnvetbKkBcNtegbryPOmGO",    "workload_id": "HBVxRYRilZgwSqrIdPEKTOPxJ"}
 
 
 

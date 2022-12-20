@@ -22,14 +22,12 @@ DB Table Details
 
 Table: configuration
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] hardware_profile_scope                         TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: [full]
-[ 2] hardware_profile_include                       BOOL                 null: true   primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: [true]
-[ 3] heartbeat_period_seconds                       INT2                 null: true   primary: false  isArray: false  auto: false  col: INT2            len: -1      default: [30]
+[ 1] heartbeat_period_seconds                       INT2                 null: true   primary: false  isArray: false  auto: false  col: INT2            len: -1      default: [30]
 
 
 JSON Sample
 -------------------------------------
-{    "id": "btIWSRMneAIkMPeLaawcqMWHc",    "hardware_profile_scope": "FuhWaQAmmGPVaSyAAGBymJiiU",    "hardware_profile_include": false,    "heartbeat_period_seconds": 36}
+{    "id": "JQfCRHxJVDQfbFoWhRYKhUZYU",    "heartbeat_period_seconds": 58}
 
 
 
@@ -39,11 +37,7 @@ JSON Sample
 type Configuration struct {
 	//[ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
-	//[ 1] hardware_profile_scope                         TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: [full]
-	HardwareProfileScope sql.NullString `gorm:"column:hardware_profile_scope;type:TEXT;default:full;"`
-	//[ 2] hardware_profile_include                       BOOL                 null: true   primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: [true]
-	HardwareProfileInclude sql.NullBool `gorm:"column:hardware_profile_include;type:BOOL;default:true;"`
-	//[ 3] heartbeat_period_seconds                       INT2                 null: true   primary: false  isArray: false  auto: false  col: INT2            len: -1      default: [30]
+	//[ 1] heartbeat_period_seconds                       INT2                 null: true   primary: false  isArray: false  auto: false  col: INT2            len: -1      default: [30]
 	HeartbeatPeriodSeconds sql.NullInt64 `gorm:"column:heartbeat_period_seconds;type:INT2;default:30;"`
 }
 
@@ -74,48 +68,6 @@ var configurationTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "hardware_profile_scope",
-			Comment:            ``,
-			Notes:              ``,
-			Nullable:           true,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
-			IsPrimaryKey:       false,
-			IsAutoIncrement:    false,
-			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
-			GoFieldName:        "HardwareProfileScope",
-			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "hardware_profile_scope",
-			ProtobufFieldName:  "hardware_profile_scope",
-			ProtobufType:       "string",
-			ProtobufPos:        2,
-		},
-
-		&ColumnInfo{
-			Index:              2,
-			Name:               "hardware_profile_include",
-			Comment:            ``,
-			Notes:              ``,
-			Nullable:           true,
-			DatabaseTypeName:   "BOOL",
-			DatabaseTypePretty: "BOOL",
-			IsPrimaryKey:       false,
-			IsAutoIncrement:    false,
-			IsArray:            false,
-			ColumnType:         "BOOL",
-			ColumnLength:       -1,
-			GoFieldName:        "HardwareProfileInclude",
-			GoFieldType:        "sql.NullBool",
-			JSONFieldName:      "hardware_profile_include",
-			ProtobufFieldName:  "hardware_profile_include",
-			ProtobufType:       "bool",
-			ProtobufPos:        3,
-		},
-
-		&ColumnInfo{
-			Index:              3,
 			Name:               "heartbeat_period_seconds",
 			Comment:            ``,
 			Notes:              ``,
@@ -132,7 +84,7 @@ var configurationTableInfo = &TableInfo{
 			JSONFieldName:      "heartbeat_period_seconds",
 			ProtobufFieldName:  "heartbeat_period_seconds",
 			ProtobufType:       "int32",
-			ProtobufPos:        4,
+			ProtobufPos:        2,
 		},
 	},
 }

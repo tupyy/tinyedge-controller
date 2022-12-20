@@ -31,7 +31,7 @@ Table: network_interface
 
 JSON Sample
 -------------------------------------
-{    "id": "VkvaJLxbuAeRjdcjrFZMaciGV",    "hardware_id": "FHMBQoKuNrPhtPYSXIYAsNdOI",    "name": "wGybVvxAVtZnGlGvjxwINXWev",    "mac_address": "fDkTltmBcQExFKuvIrwegqvVN",    "has_carrier": true}
+{    "id": "WVRnxkPSAvtJJqKkOnliwRbYw",    "hardware_id": "PwLbcfOQCEhyKbWiwhnOWJqDw",    "name": "jhaXtKcNFUyXwOvlyKbJCmguX",    "mac_address": "nfOGMljLbEKoylhiKkFuQKWyQ",    "has_carrier": false}
 
 
 

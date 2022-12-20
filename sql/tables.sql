@@ -11,8 +11,6 @@ DROP TABLE IF EXISTS "network_interface";
 
 CREATE TABLE configuration (
     id TEXT PRIMARY KEY,
-    hardware_profile_scope TEXT DEFAULT 'full', -- full scope
-    hardware_profile_include BOOLEAN DEFAULT true,
     heartbeat_period_seconds SMALLINT DEFAULT 30, -- 30s
     CHECK (heartbeat_period_seconds > 0)
 );
@@ -99,5 +97,10 @@ CREATE TABLE sets_workloads (
         workload_id
     )
 );
+
+CREATE TABLE configuration_cache (
+    device_id TEXT PRIMARY KEY,
+    configuration BYTEA
+)
 
 COMMIT;

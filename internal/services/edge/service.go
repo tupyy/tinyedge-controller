@@ -16,6 +16,7 @@ import (
 const (
 	DefaultCertificateTTL = 3600 * 24 * 365 * time.Second
 	BaseDomain            = "home.net"
+	defaultNamespace      = "default"
 )
 
 type Service struct {
@@ -39,7 +40,7 @@ func (s *Service) Enrol(ctx context.Context, deviceID string) (status entity.Enr
 		// device not found. create the device
 		device := entity.Device{
 			ID:          deviceID,
-			Namespace:   "default",
+			Namespace:   defaultNamespace,
 			EnrolStatus: entity.EnroledStatus,
 			EnroledAt:   time.Now().UTC(),
 		}

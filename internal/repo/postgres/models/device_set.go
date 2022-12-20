@@ -28,7 +28,7 @@ Table: device_set
 
 JSON Sample
 -------------------------------------
-{    "id": "xythRXAopqHSZrBgsnYISMBdA",    "configuration_id": "avrcrFoWwCmDVjHxGyUaLUanL",    "namespace_id": "TGahoAYQgEdWfCmDcWMMrRtQB"}
+{    "id": "ouLrlTDTdUcqSfdmsZrIqRWXG",    "configuration_id": "MTBOORGocFfJqQepTJFDDmLBC",    "namespace_id": "pVVCOMedsZryUBcdVmmkLgdGc"}
 
 
 

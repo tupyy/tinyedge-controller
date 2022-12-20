@@ -77,7 +77,6 @@ var runCmd = &cobra.Command{
 		certService := certificate.New(certRepo)
 		edgeService := edge.New(deviceRepo, configurationRepo, certService)
 		authService := auth.New(certService, deviceRepo)
-		edgeServer := servers.NewEdgeServer(edgeService)
 
 		tlsConfig, err := createTlsConfig(
 			"/home/cosmin/projects/tinyedge-controller/resources/certificates/ca.pem",
@@ -96,7 +95,7 @@ var runCmd = &cobra.Command{
 
 		zapOpts := []grpc_zap.Option{
 			grpc_zap.WithDurationField(func(duration time.Duration) zapcore.Field {
-				return zap.Int64("grpc.time_ns", duration.Nanoseconds())
+				return zap.Float64("grpc.time_s", duration.Seconds())
 			}),
 		}
 		opts = append(opts, grpc_middleware.WithUnaryServerChain(
@@ -104,9 +103,10 @@ var runCmd = &cobra.Command{
 			grpc_ctxtags.UnaryServerInterceptor(),
 			grpc_zap.UnaryServerInterceptor(logger, zapOpts...),
 		))
-		// Make sure that log statements internal to gRPC library are logged using the zapLogger as well.
+
 		grpc_zap.ReplaceGrpcLoggerV2(logger)
 		grpcServer := grpc.NewServer(opts...)
+		edgeServer := servers.NewEdgeServer(edgeService)
 		edgePb.RegisterEdgeServiceServer(grpcServer, edgeServer)
 		grpcServer.Serve(lis)
 	},
