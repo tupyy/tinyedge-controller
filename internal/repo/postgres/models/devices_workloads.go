@@ -22,12 +22,12 @@ DB Table Details
 
 Table: devices_workloads
 [ 0] device_id                                      TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] workload_id                                    TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 1] manifest_work_id                               TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "device_id": "sfJqnvetbKkBcNtegbryPOmGO",    "workload_id": "HBVxRYRilZgwSqrIdPEKTOPxJ"}
+{    "device_id": "LftrkZCVtFSaoWavviRkZNKAq",    "manifest_work_id": "chICdVPMPWjQUoBZkoVRqkaaD"}
 
 
 
@@ -37,8 +37,8 @@ JSON Sample
 type DevicesWorkloads struct {
 	//[ 0] device_id                                      TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	DeviceID string `gorm:"primary_key;column:device_id;type:TEXT;"`
-	//[ 1] workload_id                                    TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	WorkloadID string `gorm:"primary_key;column:workload_id;type:TEXT;"`
+	//[ 1] manifest_work_id                               TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+	ManifestWorkID string `gorm:"primary_key;column:manifest_work_id;type:TEXT;"`
 }
 
 var devices_workloadsTableInfo = &TableInfo{
@@ -68,7 +68,7 @@ var devices_workloadsTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "workload_id",
+			Name:               "manifest_work_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
@@ -79,10 +79,10 @@ var devices_workloadsTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "TEXT",
 			ColumnLength:       -1,
-			GoFieldName:        "WorkloadID",
+			GoFieldName:        "ManifestWorkID",
 			GoFieldType:        "string",
-			JSONFieldName:      "workload_id",
-			ProtobufFieldName:  "workload_id",
+			JSONFieldName:      "manifest_work_id",
+			ProtobufFieldName:  "manifest_work_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},

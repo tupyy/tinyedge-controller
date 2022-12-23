@@ -63,11 +63,24 @@ type Device struct {
 	Workloads []Workload
 	//HardwareInfo holds the information about the host's hardware
 	HardwareInfo HardwareInfo
+	ManifestIDS  []string
 }
 
-type Group struct {
+type Set struct {
 	// Name of the group
-	Name string
-	// List of the devices in the group
-	Devices []Device
+	Name            string
+	ConfigurationID *string
+	NamespaceID     string
+	// List of the id of devices in the group
+	DeviceIDs   []string
+	ManifestIDS []string
+}
+
+type Namespace struct {
+	Name            string
+	IsDefault       bool
+	ConfigurationID *string
+	SetIDs          []string
+	DeviceIDs       []string
+	ManifestIDS     []string
 }

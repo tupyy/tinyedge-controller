@@ -14,10 +14,10 @@ type Workload struct {
 	Name string
 	// Rootless is true if workload is to be executed in podman rootless
 	Rootless bool
+	// Configmaps
+	Configmaps []string
 	// secrets
 	Secrets map[string]string
-	// image registries auth file
-	ImageRegistryAuth string
 	// Workload labels
 	Labels map[string]string
 	// Workload profiles
@@ -50,7 +50,6 @@ func (p Workload) Hash() string {
 		fmt.Fprintf(&sb, "%s%s", k, v)
 	}
 
-	fmt.Fprintf(&sb, "%s", p.ImageRegistryAuth)
 	fmt.Fprintf(&sb, "%s", p.Specification.String())
 	fmt.Fprintf(&sb, "%+v", p.WorkloadProfiles)
 	fmt.Fprintf(&sb, "%v", p.Rootless)

@@ -32,9 +32,9 @@ func New(dr common.DeviceReaderWriter, confReader common.ConfigurationReader, ce
 // Enrol tries to enrol a device. If enable-auto-enrolment is true then the device is automatically
 // enrolled. If false, the device is created but not enroled yet.
 func (s *Service) Enrol(ctx context.Context, deviceID string) (status entity.EnrolStatus, err error) {
-	d, err := s.deviceRepo.Get(ctx, deviceID)
+	d, err := s.deviceRepo.GetDevice(ctx, deviceID)
 	if err != nil {
-		if !errors.Is(err, common.ErrDeviceNotFound) {
+		if !errors.Is(err, common.ErrResourceNotFound) {
 			return entity.NotEnroledStatus, err
 		}
 		// device not found. create the device
@@ -58,9 +58,9 @@ func (s *Service) Enrol(ctx context.Context, deviceID string) (status entity.Enr
 }
 
 func (s *Service) IsEnroled(ctx context.Context, deviceID string) (bool, error) {
-	device, err := s.deviceRepo.Get(ctx, deviceID)
+	device, err := s.deviceRepo.GetDevice(ctx, deviceID)
 	if err != nil {
-		if errors.Is(err, common.ErrDeviceNotFound) {
+		if errors.Is(err, common.ErrResourceNotFound) {
 			return false, nil
 		}
 		return false, err
@@ -69,7 +69,7 @@ func (s *Service) IsEnroled(ctx context.Context, deviceID string) (bool, error) 
 }
 
 func (s *Service) Register(ctx context.Context, deviceID string, csr string) (entity.CertificateGroup, error) {
-	device, err := s.deviceRepo.Get(ctx, deviceID)
+	device, err := s.deviceRepo.GetDevice(ctx, deviceID)
 	if err != nil {
 		return entity.CertificateGroup{}, err
 	}
@@ -97,7 +97,7 @@ func (s *Service) Register(ctx context.Context, deviceID string, csr string) (en
 }
 
 func (s *Service) IsRegistered(ctx context.Context, deviceID string) (bool, error) {
-	device, err := s.deviceRepo.Get(ctx, deviceID)
+	device, err := s.deviceRepo.GetDevice(ctx, deviceID)
 	if err != nil {
 		return false, err
 	}

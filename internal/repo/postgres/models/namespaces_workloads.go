@@ -22,12 +22,12 @@ DB Table Details
 
 Table: namespaces_workloads
 [ 0] namespace_id                                   TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] workload_id                                    TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 1] manifest_work_id                               TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "namespace_id": "uGMHwCjydSJgGUYpriuDkoBVq",    "workload_id": "axYpXMXRlvjRKxQjZImUQEsRe"}
+{    "namespace_id": "VFrKCtVhnImXolJpptOOTnOfr",    "manifest_work_id": "nDaMIMoeQdJlVZkOBaesXAvVS"}
 
 
 
@@ -37,8 +37,8 @@ JSON Sample
 type NamespacesWorkloads struct {
 	//[ 0] namespace_id                                   TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	NamespaceID string `gorm:"primary_key;column:namespace_id;type:TEXT;"`
-	//[ 1] workload_id                                    TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	WorkloadID string `gorm:"primary_key;column:workload_id;type:TEXT;"`
+	//[ 1] manifest_work_id                               TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+	ManifestWorkID string `gorm:"primary_key;column:manifest_work_id;type:TEXT;"`
 }
 
 var namespaces_workloadsTableInfo = &TableInfo{
@@ -68,7 +68,7 @@ var namespaces_workloadsTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "workload_id",
+			Name:               "manifest_work_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
@@ -79,10 +79,10 @@ var namespaces_workloadsTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "TEXT",
 			ColumnLength:       -1,
-			GoFieldName:        "WorkloadID",
+			GoFieldName:        "ManifestWorkID",
 			GoFieldType:        "string",
-			JSONFieldName:      "workload_id",
-			ProtobufFieldName:  "workload_id",
+			JSONFieldName:      "manifest_work_id",
+			ProtobufFieldName:  "manifest_work_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},

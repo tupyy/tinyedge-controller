@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/guregu/null"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
+	"gorm.io/gorm"
 )
 
 var (
@@ -30,12 +31,11 @@ Table: device
 [ 6] namespace_id                                   TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 7] device_set_id                                  TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 8] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 9] hardware_id                                    TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "dXcwPudRdqKTjWkXguaxCusYS",    "enroled_at": "2134-09-24T09:17:26.078688166+02:00",    "registered_at": "2171-04-30T12:06:27.21114028+02:00",    "enroled": "KemYHQodPuieUDSALKoJTUnSX",    "registered": false,    "certificate_sn": "CPkBpqlFjtgJnOwOVwcguLhFp",    "namespace_id": "kHlcyHIHUUivXKHIdfiAyekGX",    "device_set_id": "nrcXvPcaOyPZnwxnXxApcqhaV",    "configuration_id": "kdhIOyNBliKUWtDUqmfEPbhsh",    "hardware_id": "JMIuHsVntWHEIOiNZuHXQHBvr"}
+{    "id": "KUWsRcqJUknPawoPDXLcmEbjj",    "enroled_at": "2058-07-18T09:22:57.025293544+02:00",    "registered_at": "2173-10-20T23:34:02.119981895+02:00",    "enroled": "KVZOJdIqNmMlTkMjBduPVqDLM",    "registered": true,    "certificate_sn": "dReQYQDwOLSwYMYERTsSGquoD",    "namespace_id": "RyhxODEyuLiaYyjGNOTGgFaoQ",    "device_set_id": "URGpbKQspEKkhfCHGXpotpOmR",    "configuration_id": "GBkrhCveCnxBjpjOvQCbAiRba"}
 
 
 
@@ -61,8 +61,6 @@ type Device struct {
 	DeviceSetID sql.NullString `gorm:"column:device_set_id;type:TEXT;"`
 	//[ 8] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ConfigurationID sql.NullString `gorm:"column:configuration_id;type:TEXT;"`
-	//[ 9] hardware_id                                    TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	HardwareID sql.NullString `gorm:"column:hardware_id;type:TEXT;"`
 }
 
 var deviceTableInfo = &TableInfo{
@@ -257,27 +255,6 @@ var deviceTableInfo = &TableInfo{
 			ProtobufType:       "string",
 			ProtobufPos:        9,
 		},
-
-		&ColumnInfo{
-			Index:              9,
-			Name:               "hardware_id",
-			Comment:            ``,
-			Notes:              ``,
-			Nullable:           true,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
-			IsPrimaryKey:       false,
-			IsAutoIncrement:    false,
-			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
-			GoFieldName:        "HardwareID",
-			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "hardware_id",
-			ProtobufFieldName:  "hardware_id",
-			ProtobufType:       "string",
-			ProtobufPos:        10,
-		},
 	},
 }
 
@@ -287,7 +264,7 @@ func (d *Device) TableName() string {
 }
 
 // BeforeSave invoked before saving, return an error if field is not populated.
-func (d *Device) BeforeSave() error {
+func (d *Device) BeforeSave(db *gorm.DB) error {
 	return nil
 }
 

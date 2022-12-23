@@ -43,3 +43,33 @@ func MapModelToEntity(device models.Device) entity.Device {
 	}
 	return e
 }
+
+func SetModelToEntity(s models.DeviceSet, deviceIDs, manifests []string) entity.Set {
+	set := entity.Set{
+		Name:        s.ID,
+		NamespaceID: s.NamespaceID,
+		DeviceIDs:   deviceIDs,
+		ManifestIDS: manifests,
+	}
+	if s.ConfigurationID.Valid {
+		set.ConfigurationID = &s.ConfigurationID.String
+	}
+	return set
+}
+
+func NamespaceModelToEntity(n models.Namespace, sets, devices, manifests []string) entity.Namespace {
+	namespace := entity.Namespace{
+		Name:      n.ID,
+		IsDefault: false,
+	}
+	if n.ConfigurationID.Valid {
+		namespace.ConfigurationID = &n.ConfigurationID.String
+	}
+	if n.IsDefault.Valid {
+		namespace.IsDefault = n.IsDefault.Bool
+	}
+	namespace.SetIDs = sets
+	namespace.DeviceIDs = devices
+	namespace.ManifestIDS = manifests
+	return namespace
+}

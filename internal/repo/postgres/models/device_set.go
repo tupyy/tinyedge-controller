@@ -23,12 +23,12 @@ DB Table Details
 Table: device_set
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 1] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 2] namespace_id                                   TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 2] namespace_id                                   TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "ouLrlTDTdUcqSfdmsZrIqRWXG",    "configuration_id": "MTBOORGocFfJqQepTJFDDmLBC",    "namespace_id": "pVVCOMedsZryUBcdVmmkLgdGc"}
+{    "id": "pMkyYbCFYLdCIMCnxIhfKtlTy",    "configuration_id": "EQrLZaixZjeXfJuwDJPddJBpQ",    "namespace_id": "CpALwGIsQTuCdEARWweRtFnjD"}
 
 
 
@@ -40,8 +40,8 @@ type DeviceSet struct {
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
 	//[ 1] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ConfigurationID sql.NullString `gorm:"column:configuration_id;type:TEXT;"`
-	//[ 2] namespace_id                                   TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	NamespaceID sql.NullString `gorm:"column:namespace_id;type:TEXT;"`
+	//[ 2] namespace_id                                   TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	NamespaceID string `gorm:"column:namespace_id;type:TEXT;"`
 }
 
 var device_setTableInfo = &TableInfo{
@@ -95,7 +95,7 @@ var device_setTableInfo = &TableInfo{
 			Name:               "namespace_id",
 			Comment:            ``,
 			Notes:              ``,
-			Nullable:           true,
+			Nullable:           false,
 			DatabaseTypeName:   "TEXT",
 			DatabaseTypePretty: "TEXT",
 			IsPrimaryKey:       false,
@@ -104,7 +104,7 @@ var device_setTableInfo = &TableInfo{
 			ColumnType:         "TEXT",
 			ColumnLength:       -1,
 			GoFieldName:        "NamespaceID",
-			GoFieldType:        "sql.NullString",
+			GoFieldType:        "string",
 			JSONFieldName:      "namespace_id",
 			ProtobufFieldName:  "namespace_id",
 			ProtobufType:       "string",

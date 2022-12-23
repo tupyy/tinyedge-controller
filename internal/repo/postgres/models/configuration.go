@@ -23,11 +23,12 @@ DB Table Details
 Table: configuration
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 1] heartbeat_period_seconds                       INT2                 null: true   primary: false  isArray: false  auto: false  col: INT2            len: -1      default: [30]
+[ 2] log_level                                      TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: [info]
 
 
 JSON Sample
 -------------------------------------
-{    "id": "JQfCRHxJVDQfbFoWhRYKhUZYU",    "heartbeat_period_seconds": 58}
+{    "id": "BUyhrZWoaxaAjCfbwHHhvIXcw",    "heartbeat_period_seconds": 18,    "log_level": "OVkSxoqUoLqkoplVaWdLlJgcX"}
 
 
 
@@ -39,6 +40,8 @@ type Configuration struct {
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
 	//[ 1] heartbeat_period_seconds                       INT2                 null: true   primary: false  isArray: false  auto: false  col: INT2            len: -1      default: [30]
 	HeartbeatPeriodSeconds sql.NullInt64 `gorm:"column:heartbeat_period_seconds;type:INT2;default:30;"`
+	//[ 2] log_level                                      TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: [info]
+	LogLevel sql.NullString `gorm:"column:log_level;type:TEXT;default:info;"`
 }
 
 var configurationTableInfo = &TableInfo{
@@ -85,6 +88,27 @@ var configurationTableInfo = &TableInfo{
 			ProtobufFieldName:  "heartbeat_period_seconds",
 			ProtobufType:       "int32",
 			ProtobufPos:        2,
+		},
+
+		&ColumnInfo{
+			Index:              2,
+			Name:               "log_level",
+			Comment:            ``,
+			Notes:              ``,
+			Nullable:           true,
+			DatabaseTypeName:   "TEXT",
+			DatabaseTypePretty: "TEXT",
+			IsPrimaryKey:       false,
+			IsAutoIncrement:    false,
+			IsArray:            false,
+			ColumnType:         "TEXT",
+			ColumnLength:       -1,
+			GoFieldName:        "LogLevel",
+			GoFieldType:        "sql.NullString",
+			JSONFieldName:      "log_level",
+			ProtobufFieldName:  "log_level",
+			ProtobufType:       "string",
+			ProtobufPos:        3,
 		},
 	},
 }

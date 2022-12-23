@@ -22,12 +22,15 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/configuration"
 	"github.com/tupyy/tinyedge-controller/internal/interceptors"
 	"github.com/tupyy/tinyedge-controller/internal/repo/cache"
-	certRepo "github.com/tupyy/tinyedge-controller/internal/repo/certificate"
-	deviceRepo "github.com/tupyy/tinyedge-controller/internal/repo/postgres"
+	"github.com/tupyy/tinyedge-controller/internal/repo/git"
+	pgRepo "github.com/tupyy/tinyedge-controller/internal/repo/postgres"
+	certRepo "github.com/tupyy/tinyedge-controller/internal/repo/vault/certificate"
 	"github.com/tupyy/tinyedge-controller/internal/servers"
 	"github.com/tupyy/tinyedge-controller/internal/services/auth"
 	"github.com/tupyy/tinyedge-controller/internal/services/certificate"
 	"github.com/tupyy/tinyedge-controller/internal/services/edge"
+	"github.com/tupyy/tinyedge-controller/internal/services/workload"
+	"github.com/tupyy/tinyedge-controller/internal/workers"
 	edgePb "github.com/tupyy/tinyedge-controller/pkg/grpc/edge"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -68,15 +71,28 @@ var runCmd = &cobra.Command{
 		})
 
 		certRepo := certRepo.New(vaultClient, "pki_int", "home.net", "tinyedge-role")
-		deviceRepo, err := deviceRepo.New(pgClient)
+		deviceRepo, err := pgRepo.NewDeviceRepo(pgClient)
 		if err != nil {
 			zap.S().Fatal(err)
 		}
+		manifestRepo, err := pgRepo.NewManifestRepo(pgClient)
+		if err != nil {
+			zap.S().Fatal(err)
+		}
+
+		// git repo
+		gr := git.New("/home/cosmin/tmp/git")
+
 		configurationRepo := cache.New()
 
 		certService := certificate.New(certRepo)
+		workService := workload.New(deviceRepo, manifestRepo, gr)
 		edgeService := edge.New(deviceRepo, configurationRepo, certService)
 		authService := auth.New(certService, deviceRepo)
+
+		scheduler := workers.New(5 * time.Second)
+		scheduler.AddWorker(workers.NewGitOpsWorker(workService))
+		go scheduler.Start(ctx)
 
 		tlsConfig, err := createTlsConfig(
 			"/home/cosmin/projects/tinyedge-controller/resources/certificates/ca.pem",
