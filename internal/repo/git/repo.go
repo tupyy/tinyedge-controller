@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -47,7 +48,7 @@ func (g *GitRepo) Open(ctx context.Context, r entity.Repository) (entity.Reposit
 	return r, nil
 }
 
-// Pull pull from origin the repo. If repo not found in stores, than is will clone it.
+// Pull pull from origin the repo.
 func (g *GitRepo) Pull(ctx context.Context, r entity.Repository) error {
 	repo, err := g.openRepository(ctx, r)
 	if err != nil {
@@ -58,9 +59,14 @@ func (g *GitRepo) Pull(ctx context.Context, r entity.Repository) error {
 		return err
 	}
 	err = w.Pull(&git.PullOptions{
-		RemoteName: "origin",
+		RemoteName:      "origin",
+		SingleBranch:    true,
+		InsecureSkipTLS: true,
 	})
 	if err != nil {
+		if errors.Is(err, git.NoErrAlreadyUpToDate) {
+			return nil
+		}
 		return fmt.Errorf("unable to pull from origin of repo %q: %w", r.Url, err)
 	}
 	return nil
@@ -121,7 +127,6 @@ func (g *GitRepo) clone(ctx context.Context, r entity.Repository) (entity.Reposi
 	zap.S().Infof("clone repo %q to local storage %q", r.Url, g.localStorage)
 	clone, err := git.PlainClone(path.Join(g.localStorage, r.Id), false, &git.CloneOptions{
 		URL:               r.Url,
-		Depth:             1,
 		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 	})
 	mainBranch, err := g.getMainBranch(clone)
@@ -167,6 +172,7 @@ func (g *GitRepo) createManifestWork(content []byte, filename, basePath string) 
 		fullResources = append(fullResources, resource...)
 	}
 	manifest.Resources = fullResources
+	manifest.Path = filename
 	hash := sha256.New()
 	hash.Write(bytes.NewBufferString(fmt.Sprintf("%s", filename)).Bytes())
 	manifest.Id = fmt.Sprintf("%x", hash.Sum(nil))

@@ -46,6 +46,7 @@ type CertificateReaderWriter interface {
 
 type ManifestReader interface {
 	GetManifests(ctx context.Context) ([]entity.ManifestWorkV1, error)
+	GetManifest(ctx context.Context, id string) (entity.ManifestWorkV1, error)
 	GetRepoManifests(ctx context.Context, r entity.Repository) ([]entity.ManifestWorkV1, error)
 	GetRepositories(ctx context.Context) ([]entity.Repository, error)
 }
@@ -61,6 +62,9 @@ type ManifestWriter interface {
 	CreateNamespaceRelation(ctx context.Context, namespace, manifestID string) error
 	CreateSetRelation(ctx context.Context, set, manifestID string) error
 	CreateDeviceRelation(ctx context.Context, deviceID, manifestID string) error
+	DeleteNamespaceRelation(ctx context.Context, namespace, manifestID string) error
+	DeleteSetRelation(ctx context.Context, set, manifestID string) error
+	DeleteDeviceRelation(ctx context.Context, deviceID, manifestID string) error
 }
 
 type ManifestReaderWriter interface {

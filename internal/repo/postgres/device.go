@@ -55,7 +55,7 @@ func (d *DeviceRepo) GetSet(ctx context.Context, id string) (entity.Set, error) 
 		return entity.Set{}, common.ErrPostgresNotAvailable
 	}
 
-	s := []SetJoin{}
+	s := []models.SetJoin{}
 
 	tx := d.getDb(ctx).Table("device_set").
 		Select(`device_set.*, device.id as device_id, sets_workloads.manifest_work_id as manifest_id`).
@@ -101,7 +101,7 @@ func (d *DeviceRepo) GetNamespace(ctx context.Context, id string) (entity.Namesp
 		return entity.Namespace{}, common.ErrPostgresNotAvailable
 	}
 
-	n := []NamespaceJoin{}
+	n := []models.NamespaceJoin{}
 	tx := d.getDb(ctx).Table("namespace").
 		Select(`device_set.*, device.id as device_id, device_set.id as device_set_id, namespaces_workloads.manifest_work_id as manifest_id`).
 		Joins("LEFT JOIN device ON device.namespace_id = namespace.id").

@@ -25,15 +25,18 @@ type Repository struct {
 }
 
 type ManifestWorkV1 struct {
-	Id          string
-	Version     string           `yaml:"version"`
-	Name        string           `yaml:"name"`
-	Description string           `yaml:"description"`
-	Selector    Selector         `yaml:"selectors"`
-	Secrets     []ManifestSecret `yaml:"secrets"`
-	Resources   []Resource       `yaml:"resources"`
-	Repo        Repository
-	Path        string
+	Id           string
+	Version      string           `yaml:"version"`
+	Name         string           `yaml:"name"`
+	Description  string           `yaml:"description"`
+	Selector     Selector         `yaml:"selectors"`
+	Secrets      []ManifestSecret `yaml:"secrets"`
+	Resources    []Resource       `yaml:"resources"`
+	Repo         Repository       `yaml:"-"`
+	Path         string           `yaml:"-"`
+	DeviceIDs    []string         `yaml:"-"`
+	SetIDs       []string         `yaml:"-"`
+	NamespaceIDs []string         `yaml:"-"`
 }
 
 func (m ManifestWorkV1) Hash() string {
@@ -59,6 +62,12 @@ func (m ManifestWorkV1) Decode(str string) (ManifestWorkV1, error) {
 		return ManifestWorkV1{}, err
 	}
 	return mm, nil
+}
+
+type Relation[T any] struct {
+	ObjectType T
+	ManifestID string
+	ObjectID   string
 }
 
 type Selector struct {

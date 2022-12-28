@@ -90,7 +90,7 @@ CREATE TABLE sets_workloads (
 
 CREATE TABLE configuration_cache (
     device_id TEXT PRIMARY KEY,
-    configuration BYTEA
+    workload BYTEA
 );
 
 COMMIT;

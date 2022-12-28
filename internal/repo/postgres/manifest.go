@@ -36,9 +36,10 @@ func (m *ManifestRepo) GetManifests(ctx context.Context) ([]entity.ManifestWorkV
 		return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
 	}
 
-	manifests := []models.ManifestWork{}
+	manifests := []models.ManifestJoin{}
 
-	if err := m.getDb(ctx).Find(&manifests).Error; err != nil {
+	tx := newManifestQuery(ctx, m.db).Build()
+	if err := tx.Find(&manifests).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
 		}
@@ -49,17 +50,40 @@ func (m *ManifestRepo) GetManifests(ctx context.Context) ([]entity.ManifestWorkV
 		return []entity.ManifestWorkV1{}, nil
 	}
 
-	entities := make([]entity.ManifestWorkV1, 0, len(manifests))
-	for _, m := range manifests {
-		e, err := mappers.ManifestModelToEntity(m)
-		if err != nil {
-			zap.S().Errorw("unable to map manifest model to entity", "error", err, "content", m.Content)
-			continue
-		}
-		entities = append(entities, e)
+	e, err := mappers.ManifestModelsToEntities(manifests)
+	if err != nil {
+		return []entity.ManifestWorkV1{}, err
 	}
 
-	return entities, nil
+	return e, nil
+
+}
+
+func (m *ManifestRepo) GetManifest(ctx context.Context, id string) (entity.ManifestWorkV1, error) {
+	if !m.circuitBreaker.IsAvailable() {
+		return entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+	}
+
+	manifests := []models.ManifestJoin{}
+
+	tx := newManifestQuery(ctx, m.db).WithManifestID(id).Build()
+	if err := tx.Find(&manifests).Error; err != nil {
+		if m.checkNetworkError(err) {
+			return entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+		}
+		return entity.ManifestWorkV1{}, err
+	}
+
+	if len(manifests) == 0 {
+		return entity.ManifestWorkV1{}, common.ErrResourceNotFound
+	}
+
+	e, err := mappers.ManifestModelToEntity(manifests)
+	if err != nil {
+		return entity.ManifestWorkV1{}, err
+	}
+
+	return e, nil
 }
 
 func (m *ManifestRepo) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
@@ -93,9 +117,10 @@ func (m *ManifestRepo) GetRepoManifests(ctx context.Context, r entity.Repository
 		return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
 	}
 
-	manifests := []models.ManifestWork{}
+	manifests := []models.ManifestJoin{}
 
-	if err := m.getDb(ctx).Where("repo_id = ?", r.Id).Find(&manifests).Error; err != nil {
+	tx := newManifestQuery(ctx, m.db).WithRepoId(r.Id).Build()
+	if err := tx.Find(&manifests).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
 		}
@@ -106,18 +131,12 @@ func (m *ManifestRepo) GetRepoManifests(ctx context.Context, r entity.Repository
 		return []entity.ManifestWorkV1{}, nil
 	}
 
-	entities := make([]entity.ManifestWorkV1, 0, len(manifests))
-	for _, m := range manifests {
-		e, err := mappers.ManifestModelToEntity(m)
-		if err != nil {
-			zap.S().Errorw("unable to map manifest model to entity", "error", err, "content", m.Content)
-			continue
-		}
-		entities = append(entities, e)
+	e, err := mappers.ManifestModelsToEntities(manifests)
+	if err != nil {
+		return []entity.ManifestWorkV1{}, err
 	}
 
-	return entities, nil
-
+	return e, nil
 }
 
 func (m *ManifestRepo) InsertRepo(ctx context.Context, r entity.Repository) error {
@@ -201,6 +220,86 @@ func (m *ManifestRepo) DeleteManifest(ctx context.Context, manifest entity.Manif
 	return nil
 }
 
+func (m *ManifestRepo) GetNamespaceManifests(ctx context.Context, namespaceID string) ([]entity.ManifestWorkV1, error) {
+	if !m.circuitBreaker.IsAvailable() {
+		return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+	}
+
+	models := []models.ManifestJoin{}
+	tx := newManifestQuery(ctx, m.db).WithNamespaceID(namespaceID).Build()
+	if err := tx.Find(&models).Error; err != nil {
+		if m.checkNetworkError(err) {
+			return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+		}
+		return []entity.ManifestWorkV1{}, err
+	}
+
+	if len(models) == 0 {
+		return []entity.ManifestWorkV1{}, nil
+	}
+
+	e, err := mappers.ManifestModelsToEntities(models)
+	if err != nil {
+		return []entity.ManifestWorkV1{}, err
+	}
+
+	return e, nil
+}
+
+func (m *ManifestRepo) GetSetManifiests(ctx context.Context, setID string) ([]entity.ManifestWorkV1, error) {
+	if !m.circuitBreaker.IsAvailable() {
+		return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+	}
+
+	models := []models.ManifestJoin{}
+
+	tx := newManifestQuery(ctx, m.db).WithSetID(setID).Build()
+	if err := tx.Find(&models).Error; err != nil {
+		if m.checkNetworkError(err) {
+			return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+		}
+		return []entity.ManifestWorkV1{}, err
+	}
+
+	if len(models) == 0 {
+		return []entity.ManifestWorkV1{}, nil
+	}
+
+	e, err := mappers.ManifestModelsToEntities(models)
+	if err != nil {
+		return []entity.ManifestWorkV1{}, err
+	}
+
+	return e, nil
+}
+
+func (m *ManifestRepo) GetDeviceManifests(ctx context.Context, deviceID string) ([]entity.ManifestWorkV1, error) {
+	if !m.circuitBreaker.IsAvailable() {
+		return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+	}
+
+	models := []models.ManifestJoin{}
+
+	tx := newManifestQuery(ctx, m.db).WithDeviceID(deviceID).Build()
+	if err := tx.Find(&models).Error; err != nil {
+		if m.checkNetworkError(err) {
+			return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+		}
+		return []entity.ManifestWorkV1{}, err
+	}
+
+	if len(models) == 0 {
+		return []entity.ManifestWorkV1{}, nil
+	}
+
+	e, err := mappers.ManifestModelsToEntities(models)
+	if err != nil {
+		return []entity.ManifestWorkV1{}, err
+	}
+
+	return e, nil
+}
+
 func (m *ManifestRepo) CreateNamespaceRelation(ctx context.Context, namespaceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
@@ -212,6 +311,22 @@ func (m *ManifestRepo) CreateNamespaceRelation(ctx context.Context, namespaceID,
 	}
 
 	if err := m.getDb(ctx).Create(&model).Error; err != nil {
+		if m.checkNetworkError(err) {
+			return common.ErrPostgresNotAvailable
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *ManifestRepo) DeleteNamespaceRelation(ctx context.Context, namespaceID, manifestID string) error {
+	if !m.circuitBreaker.IsAvailable() {
+		return common.ErrPostgresNotAvailable
+	}
+
+	model := models.NamespacesWorkloads{}
+	if err := m.getDb(ctx).Where("namespace_id = ? AND manifest_work_id = ?", namespaceID, manifestID).Delete(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return common.ErrPostgresNotAvailable
 		}
@@ -241,6 +356,22 @@ func (m *ManifestRepo) CreateSetRelation(ctx context.Context, setID, manifestID 
 	return nil
 }
 
+func (m *ManifestRepo) DeleteSetRelation(ctx context.Context, setID, manifestID string) error {
+	if !m.circuitBreaker.IsAvailable() {
+		return common.ErrPostgresNotAvailable
+	}
+
+	model := models.SetsWorkloads{}
+	if err := m.getDb(ctx).Where("device_set_id = ? AND manifest_work_id = ?", setID, manifestID).Delete(&model).Error; err != nil {
+		if m.checkNetworkError(err) {
+			return common.ErrPostgresNotAvailable
+		}
+		return err
+	}
+
+	return nil
+}
+
 func (m *ManifestRepo) CreateDeviceRelation(ctx context.Context, deviceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
@@ -261,6 +392,22 @@ func (m *ManifestRepo) CreateDeviceRelation(ctx context.Context, deviceID, manif
 	return nil
 }
 
+func (m *ManifestRepo) DeleteDeviceRelation(ctx context.Context, deviceID, manifestID string) error {
+	if !m.circuitBreaker.IsAvailable() {
+		return common.ErrPostgresNotAvailable
+	}
+
+	model := models.DevicesWorkloads{}
+	if err := m.getDb(ctx).Where("device_id = ? AND manifest_work_id = ?", deviceID, manifestID).Delete(&model).Error; err != nil {
+		if m.checkNetworkError(err) {
+			return common.ErrPostgresNotAvailable
+		}
+		return err
+	}
+
+	return nil
+}
+
 func (m *ManifestRepo) checkNetworkError(err error) (isOpen bool) {
 	isOpen = m.circuitBreaker.BreakOnNetworkError(err)
 	if isOpen {
@@ -271,4 +418,64 @@ func (m *ManifestRepo) checkNetworkError(err error) (isOpen bool) {
 
 func (m *ManifestRepo) getDb(ctx context.Context) *gorm.DB {
 	return m.db.Session(&gorm.Session{SkipHooks: true}).WithContext(ctx)
+}
+
+func getManifest[T any](db *gorm.DB, searchKey, id string) ([]T, error) {
+	models := []T{}
+
+	if err := db.Where(searchKey, id).Find(&models).Error; err != nil {
+		return models, err
+	}
+
+	if len(models) == 0 {
+		return models, nil
+	}
+
+	return models, nil
+}
+
+type manifestQueryBuilder struct {
+	tx *gorm.DB
+}
+
+func newManifestQuery(ctx context.Context, db *gorm.DB) *manifestQueryBuilder {
+	tx := db.Session(&gorm.Session{SkipHooks: true}).WithContext(ctx).Table("manifest_work").
+		Select(`manifest_work.*, devices_workloads.device_id as device_id, sets_workloads.device_set_id as set_id, namespaces_workloads.namespace_id as namespace_id,
+		repo.id as repo_id, repo.url as repo_url, repo.branch as repo_branch, repo.local_path as repo_local_path,
+		repo.current_head_sha as repo_current_head_sha, repo.target_head_sha as repo_target_head_sha,
+		repo.pull_period_seconds as repo_pull_period_seconds`).
+		Joins("LEFT JOIN namespaces_workloads ON namespaces_workloads.manifest_work_id = manifest_work.id").
+		Joins("LEFT JOIN sets_workloads ON sets_workloads.manifest_work_id = manifest_work.id").
+		Joins("LEFT JOIN devices_workloads ON devices_workloads.manifest_work_id = manifest_work.id").
+		Joins("JOIN repo ON repo.id = manifest_work.repo_id")
+	return &manifestQueryBuilder{tx}
+}
+
+func (mm *manifestQueryBuilder) WithRepoId(id string) *manifestQueryBuilder {
+	mm.tx.Where("repo_id = ?", id)
+	return mm
+}
+
+func (mm *manifestQueryBuilder) WithManifestID(id string) *manifestQueryBuilder {
+	mm.tx.Where("manifest_work.id = ?", id)
+	return mm
+}
+
+func (mm *manifestQueryBuilder) WithNamespaceID(id string) *manifestQueryBuilder {
+	mm.tx.Where("namespace.id = ?", id)
+	return mm
+}
+
+func (mm *manifestQueryBuilder) WithDeviceID(id string) *manifestQueryBuilder {
+	mm.tx.Where("device.id = ?", id)
+	return mm
+}
+
+func (mm *manifestQueryBuilder) WithSetID(id string) *manifestQueryBuilder {
+	mm.tx.Where("set.id = ?", id)
+	return mm
+}
+
+func (mm *manifestQueryBuilder) Build() *gorm.DB {
+	return mm.tx
 }

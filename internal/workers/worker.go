@@ -2,17 +2,20 @@ package workers
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/tupyy/tinyedge-controller/internal/repo/git"
 	"github.com/tupyy/tinyedge-controller/internal/services/workload"
 	"go.uber.org/zap"
 )
 
 type GitOpsWorker struct {
 	service *workload.WorkloadService
+	gitRepo *git.GitRepo
 }
 
-func NewGitOpsWorker(s *workload.WorkloadService) *GitOpsWorker {
-	return &GitOpsWorker{s}
+func NewGitOpsWorker(s *workload.WorkloadService, g *git.GitRepo) *GitOpsWorker {
+	return &GitOpsWorker{s, g}
 }
 
 func (g *GitOpsWorker) Do(ctx context.Context) error {
@@ -22,30 +25,72 @@ func (g *GitOpsWorker) Do(ctx context.Context) error {
 	}
 
 	for _, repo := range repos {
-		if err := g.service.UpdateRepository(ctx, repo); err != nil {
-			zap.S().Errorw("unable to update repository", "error", err, "repo_id", repo.Id)
+		// _, err := g.gitRepo.Open(ctx, repo)
+		// if err != nil {
+		// 	zap.S().Errorw("unable to open repo", "error", err, "repo_id", repo.Id, "repo_url", repo.Url)
+		// }
+
+		err = g.gitRepo.Pull(ctx, repo)
+		if err != nil {
+			zap.S().Errorw("unable to pull from origin", "error", err, "repo_id", repo.Id, "repo_url", repo.Url)
 			continue
 		}
-		if err := g.service.UpdateManifestsFromGit(ctx, repo); err != nil {
+
+		headSha, err := g.gitRepo.GetHeadSha(ctx, repo)
+		if err != nil {
+			zap.S().Errorw("unable to get head from repo", "error", err, "repo_id", repo.Id, "repo_url", repo.Url)
+			continue
+		}
+
+		if headSha == repo.CurrentHeadSha {
+			zap.S().Debugw("repo is up to date. skipping...", "repo.url", repo.Url, "head_sha", repo.TargetHeadSha)
+			continue
+		}
+
+		zap.S().Infow("repo has been updated", "repo_url", repo.Url, "head sha", headSha, "repo_current_sha", repo.CurrentHeadSha)
+
+		repo.TargetHeadSha = headSha
+		if err := g.service.UpdateRepository(ctx, repo); err != nil {
+			zap.S().Errorw("unable to update target sha of the repository", "error", err, "repo_id", repo.Id, "repo_url", repo.Url)
+			continue
+		}
+
+		// get all the manifest from the git repository
+		gitManifests, err := g.gitRepo.GetManifests(ctx, repo)
+		if err != nil {
+			zap.S().Errorw("unable to fetch manifest from git repository", "error", err, "repo_id", repo.Id, "repo_url", repo.Url)
+			continue
+		}
+
+		created, updated, _, err := g.service.UpdateManifests(ctx, repo, gitManifests)
+		if err != nil {
 			zap.S().Errorw("unable to update repository's manifests", "error", err, "repo_id", repo.Id)
 			continue
 		}
 
-		// get manifest and create relations
-		manifests, err := g.service.GetManifests(ctx, repo)
-		if err != nil {
-			zap.S().Errorw("unable to get repository's manifests", "error", err, "repo_id", repo.Id)
-			continue
-		}
-
-		for _, m := range manifests {
+		// create relations between namespaces, sets and devices for the new manifests
+		for _, m := range created {
 			zap.S().Infof("create relations from manifest %q", m.Name)
 			if err := g.service.CreateRelations(ctx, m); err != nil {
-				zap.S().Errorw("unable to create relations", "error", err, "repo_id", repo.Id)
+				return fmt.Errorf("unable to create relations for manifest %q: %w", repo.Id, err)
 			}
 		}
 
-		// zap.S().Infow("repository and manifests updated", "repo_id", repo.Id)
+		// update the relations of the existing manifests
+		for _, m := range updated {
+			zap.S().Infof("update relations for manifest %q", m.Name)
+			if err := g.service.UpdateRelations(ctx, m); err != nil {
+				return fmt.Errorf("unable to update relations for manifest %q: %w", repo.Id, err)
+			}
+		}
+
+		// all done. set current sha to target sha
+		repo.CurrentHeadSha = headSha
+		if err := g.service.UpdateRepository(ctx, repo); err != nil {
+			zap.S().Errorw("unable to update current sha of the repository", "error", err, "repo_id", repo.Id)
+		}
+
+		zap.S().Infow("repository and manifests updated", "repo_id", repo.Id, "repo_url", repo.Url, "repo_current_sha", repo.CurrentHeadSha)
 	}
 	return nil
 }

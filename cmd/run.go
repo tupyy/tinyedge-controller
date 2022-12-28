@@ -86,12 +86,12 @@ var runCmd = &cobra.Command{
 		configurationRepo := cache.New()
 
 		certService := certificate.New(certRepo)
-		workService := workload.New(deviceRepo, manifestRepo, gr)
+		workService := workload.New(deviceRepo, manifestRepo)
 		edgeService := edge.New(deviceRepo, configurationRepo, certService)
 		authService := auth.New(certService, deviceRepo)
 
 		scheduler := workers.New(5 * time.Second)
-		scheduler.AddWorker(workers.NewGitOpsWorker(workService))
+		scheduler.AddWorker(workers.NewGitOpsWorker(workService, gr))
 		go scheduler.Start(ctx)
 
 		tlsConfig, err := createTlsConfig(

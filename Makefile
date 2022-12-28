@@ -142,7 +142,7 @@ vault.login:
 	$(VAULT_CMD) login root
 
 vault.secret.id:
-	$(VAULT_CMD) write -f auth/approle/role/dev-role/secret-id | jq '.data.secret_id' | sed 's/"//g'
+	@$(VAULT_CMD) write -f auth/approle/role/dev-role/secret-id | jq '.data.secret_id' | sed 's/"//g'
 
 ##@ Tools
 TOOLS_DIR=$(CURDIR)/tools/bin
