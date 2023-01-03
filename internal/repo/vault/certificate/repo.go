@@ -59,8 +59,8 @@ func (c *CertficateRepo) GenerateCertificate(ctx context.Context, cn string, ttl
 		return []byte{}, []byte{}, err
 	}
 
-	certificate, _ := extractBytes(secret, "certificate")
-	privateKey, _ := extractBytes(secret, "private_key")
+	certificate, _ := extract(secret, "certificate")
+	privateKey, _ := extract(secret, "private_key")
 
 	zap.S().Debugw("certificate generated", "cn", cn, "ttl", ttl)
 
@@ -79,7 +79,7 @@ func (c *CertficateRepo) GetCertificate(ctx context.Context, sn string) ([]byte,
 		return []byte{}, false, time.Time{}, fmt.Errorf("device certificate %q not found: %w", sn, common.ErrCertificateNotFound)
 	}
 
-	certificate, _ := extractBytes(secret, "certificate")
+	certificate, _ := extract(secret, "certificate")
 	rev := secret.Data["revocation_time"].(json.Number)
 	revTime, _ := rev.Int64()
 	var revocationTime time.Time
@@ -104,14 +104,14 @@ func (c *CertficateRepo) SignCSR(ctx context.Context, csr []byte, cn string, ttl
 		return []byte{}, err
 	}
 
-	certificate, _ := extractBytes(secret, "certificate")
+	certificate, _ := extract(secret, "certificate")
 
 	zap.S().Debugw("certificate request signed", "cn", cn, "ttl", ttl)
 
 	return certificate, nil
 }
 
-func extractBytes(secret *vvault.Secret, key string) ([]byte, error) {
+func extract(secret *vvault.Secret, key string) ([]byte, error) {
 	data, ok := secret.Data[key]
 	if !ok {
 		return []byte{}, fmt.Errorf("key %q not found", key)
