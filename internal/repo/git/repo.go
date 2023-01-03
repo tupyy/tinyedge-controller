@@ -18,7 +18,6 @@ import (
 	goyaml "github.com/go-yaml/yaml"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	"go.uber.org/zap"
-	"sigs.k8s.io/yaml"
 )
 
 type GitRepo struct {
@@ -252,31 +251,14 @@ func (g *GitRepo) getResource(filename string, basePath string) ([]entity.Resour
 			continue
 		}
 
-		var v string
-		switch kind {
-		case "ConfigMap":
-			fallthrough
-		case "Pod":
-			fallthrough
-		case "Deployment":
-			v = fmt.Sprintf("%s", part)
-		}
 		resources = append(resources, entity.Resource{
 			Kind:         kind,
 			Ref:          filename,
-			KubeResource: v,
+			KubeResource: fmt.Sprintf("%s", part),
 		})
 	}
 
 	return resources, nil
-}
-
-func unmarshal[T any](data []byte) (T, error) {
-	var v T
-	if err := yaml.Unmarshal(data, &v); err != nil {
-		return v, err
-	}
-	return v, nil
 }
 
 func (g *GitRepo) splitYAML(resources []byte) ([][]byte, error) {
