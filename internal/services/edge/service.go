@@ -87,11 +87,12 @@ func (s *Service) Register(ctx context.Context, deviceID string, csr string) (en
 	device.Registred = true
 	device.RegisteredAt = time.Now().UTC()
 	device.CertificateSerialNumber = certificate.GetSerialNumber()
-	zap.S().Infow("device registered", "device_id", deviceID, "certificate_sn", device.CertificateSerialNumber)
 
 	if err := s.deviceRepo.Update(ctx, device); err != nil {
 		return entity.CertificateGroup{}, fmt.Errorf("unable to update device %q: %w", deviceID, err)
 	}
+
+	zap.S().Infow("device registered", "device_id", deviceID, "certificate_sn", device.CertificateSerialNumber)
 
 	return certificate, nil
 }
