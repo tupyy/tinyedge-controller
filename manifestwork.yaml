@@ -1,0 +1,26 @@
+version: v1
+
+name: dasdaot
+
+description: |
+  blabla
+
+selectors:
+  namespaces:
+    - test
+    - ggg
+  sets:
+    - ttt
+    - fff
+  devices:
+    - toto
+
+secrets:
+  - name: name
+    path: tinyedge/workloads1/name
+    key: key
+
+resources:
+  - $ref: /dep/configmap.yaml
+  - $ref: /dep/nginx.yaml
+  - $ref: /dep/postgres.yaml

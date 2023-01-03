@@ -23,12 +23,12 @@ DB Table Details
 Table: namespace
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 1] is_default                                     BOOL                 null: true   primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: [false]
-[ 2] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 2] configuration_id                               TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "ngAmEGDPoiriPqKlGeBFhZEth",    "is_default": false,    "configuration_id": "sOmZSyqEoXOAjMfuZfFxPWPDx"}
+{    "id": "ZDYYureVlcGiomCDLxFrsSQUs",    "is_default": false,    "configuration_id": "GxjxeDcZChiRFVFntppairBsn"}
 
 
 
@@ -40,8 +40,8 @@ type Namespace struct {
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
 	//[ 1] is_default                                     BOOL                 null: true   primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: [false]
 	IsDefault sql.NullBool `gorm:"column:is_default;type:BOOL;default:false;"`
-	//[ 2] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	ConfigurationID sql.NullString `gorm:"column:configuration_id;type:TEXT;"`
+	//[ 2] configuration_id                               TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	ConfigurationID string `gorm:"column:configuration_id;type:TEXT;"`
 }
 
 var namespaceTableInfo = &TableInfo{
@@ -95,7 +95,7 @@ var namespaceTableInfo = &TableInfo{
 			Name:               "configuration_id",
 			Comment:            ``,
 			Notes:              ``,
-			Nullable:           true,
+			Nullable:           false,
 			DatabaseTypeName:   "TEXT",
 			DatabaseTypePretty: "TEXT",
 			IsPrimaryKey:       false,
@@ -104,7 +104,7 @@ var namespaceTableInfo = &TableInfo{
 			ColumnType:         "TEXT",
 			ColumnLength:       -1,
 			GoFieldName:        "ConfigurationID",
-			GoFieldType:        "sql.NullString",
+			GoFieldType:        "string",
 			JSONFieldName:      "configuration_id",
 			ProtobufFieldName:  "configuration_id",
 			ProtobufType:       "string",

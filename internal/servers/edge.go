@@ -47,7 +47,7 @@ func (e *EdgeServer) Register(ctx context.Context, req *pb.RegistrationRequest) 
 			return nil, status.Errorf(codes.InvalidArgument, "unable to register device %q. Device is not enroled", req.DeviceId)
 		}
 
-		if errors.Is(err, errService.ErrDeviceNotFound) {
+		if errors.Is(err, errService.ErrResourceNotFound) {
 			return nil, status.Errorf(codes.NotFound, "device %q not found. Please enrol the device first.", req.DeviceId)
 		}
 

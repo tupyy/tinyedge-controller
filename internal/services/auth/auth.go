@@ -45,7 +45,7 @@ func (s *Service) Auth(ctx context.Context, method string, deviceID string, peer
 	}
 
 	// get the device
-	device, err := s.deviceReader.Get(ctx, deviceID)
+	device, err := s.deviceReader.GetDevice(ctx, deviceID)
 	if err != nil {
 		return newCtx, fmt.Errorf("device %q not found", deviceID)
 	}

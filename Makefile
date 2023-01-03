@@ -103,7 +103,7 @@ docker.push: ## Push docker image with the manager.
 .PHONY: postgres.setup.clean postgres.setup.init postgres.setup.tables postgres.setup.migrations
 
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=5433
 ROOT_USER=postgres
 ROOT_PWD=postgres
 PGPASSFILE=$(CURDIR)/sql/.pgpass
@@ -142,7 +142,7 @@ vault.login:
 	$(VAULT_CMD) login root
 
 vault.secret.id:
-	$(VAULT_CMD) write -f auth/approle/role/dev-role/secret-id | jq '.data.secret_id' | sed 's/"//g'
+	@$(VAULT_CMD) write -f auth/approle/role/dev-role/secret-id | jq '.data.secret_id' | sed 's/"//g'
 
 ##@ Tools
 TOOLS_DIR=$(CURDIR)/tools/bin

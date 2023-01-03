@@ -30,12 +30,11 @@ Table: device
 [ 6] namespace_id                                   TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 7] device_set_id                                  TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 8] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 9] hardware_id                                    TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "dXcwPudRdqKTjWkXguaxCusYS",    "enroled_at": "2134-09-24T09:17:26.078688166+02:00",    "registered_at": "2171-04-30T12:06:27.21114028+02:00",    "enroled": "KemYHQodPuieUDSALKoJTUnSX",    "registered": false,    "certificate_sn": "CPkBpqlFjtgJnOwOVwcguLhFp",    "namespace_id": "kHlcyHIHUUivXKHIdfiAyekGX",    "device_set_id": "nrcXvPcaOyPZnwxnXxApcqhaV",    "configuration_id": "kdhIOyNBliKUWtDUqmfEPbhsh",    "hardware_id": "JMIuHsVntWHEIOiNZuHXQHBvr"}
+{    "id": "skXHfpWkwcFYJDMvemESFZNhK",    "enroled_at": "2305-04-30T08:27:44.61348959+02:00",    "registered_at": "2198-10-10T01:24:06.252049751+02:00",    "enroled": "NokleHhEpjTeVWLqFenQkhoKH",    "registered": true,    "certificate_sn": "MMgJWhhMrmWHEsxDShoyKSegt",    "namespace_id": "JMjuIxjefGNmNkBwmVJorCIqe",    "device_set_id": "fbtoQARguvhHchGWyPdaEcQdS",    "configuration_id": "AoWwLKuLbgyWyDDPKQeOioPoU"}
 
 
 
@@ -61,8 +60,6 @@ type Device struct {
 	DeviceSetID sql.NullString `gorm:"column:device_set_id;type:TEXT;"`
 	//[ 8] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ConfigurationID sql.NullString `gorm:"column:configuration_id;type:TEXT;"`
-	//[ 9] hardware_id                                    TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	HardwareID sql.NullString `gorm:"column:hardware_id;type:TEXT;"`
 }
 
 var deviceTableInfo = &TableInfo{
@@ -256,27 +253,6 @@ var deviceTableInfo = &TableInfo{
 			ProtobufFieldName:  "configuration_id",
 			ProtobufType:       "string",
 			ProtobufPos:        9,
-		},
-
-		&ColumnInfo{
-			Index:              9,
-			Name:               "hardware_id",
-			Comment:            ``,
-			Notes:              ``,
-			Nullable:           true,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
-			IsPrimaryKey:       false,
-			IsAutoIncrement:    false,
-			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
-			GoFieldName:        "HardwareID",
-			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "hardware_id",
-			ProtobufFieldName:  "hardware_id",
-			ProtobufType:       "string",
-			ProtobufPos:        10,
 		},
 	},
 }
