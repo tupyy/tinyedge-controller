@@ -310,6 +310,12 @@ func (m *ManifestRepo) CreateNamespaceRelation(ctx context.Context, namespaceID,
 		ManifestWorkID: manifestID,
 	}
 
+	// check if the relation already exists
+	var dummy models.NamespacesWorkloads
+	if err := m.getDb(ctx).Where("namespace_id = ? AND manifest_work_id = ?", namespaceID, manifestID).First(&dummy).Error; err == nil {
+		return nil
+	}
+
 	if err := m.getDb(ctx).Create(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return common.ErrPostgresNotAvailable
@@ -346,6 +352,12 @@ func (m *ManifestRepo) CreateSetRelation(ctx context.Context, setID, manifestID 
 		ManifestWorkID: manifestID,
 	}
 
+	// check if the relation already exists
+	var dummy models.SetsWorkloads
+	if err := m.getDb(ctx).Where("device_set_id = ? AND manifest_work_id = ?", setID, manifestID).First(&dummy).Error; err == nil {
+		return nil
+	}
+
 	if err := m.getDb(ctx).Create(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return common.ErrPostgresNotAvailable
@@ -380,6 +392,12 @@ func (m *ManifestRepo) CreateDeviceRelation(ctx context.Context, deviceID, manif
 	model := models.DevicesWorkloads{
 		DeviceID:       deviceID,
 		ManifestWorkID: manifestID,
+	}
+
+	// check if the relation already exists
+	var dummy models.DevicesWorkloads
+	if err := m.getDb(ctx).Where("device_id = ? AND manifest_work_id = ?", deviceID, manifestID).First(&dummy).Error; err == nil {
+		return nil
 	}
 
 	if err := m.getDb(ctx).Create(&model).Error; err != nil {
