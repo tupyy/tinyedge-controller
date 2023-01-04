@@ -2,4 +2,5 @@ bin/
 tools/bin
 sql/.pgpass
 resources/certificates
+*.pem
 
