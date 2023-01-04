@@ -6,6 +6,7 @@ import (
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	"go.uber.org/zap"
 )
 
 type ConfigurationService struct {
@@ -28,36 +29,77 @@ func (c *ConfigurationService) GetConfiguration(ctx context.Context, deviceID st
 		if !errors.Is(err, common.ErrResourceNotFound) {
 			return entity.ConfigurationResponse{}, err
 		}
+
 		// create configuration from pg and save it to cache
+		device, err := c.deviceReader.GetDevice(ctx, deviceID)
+		if err != nil {
+			return entity.ConfigurationResponse{}, err
+		}
+		configuration, err := c.getConfiguration(ctx, device)
+		if err != nil {
+			return entity.ConfigurationResponse{}, err
+		}
+		manifests, err := c.getManifests(ctx, device)
+		if err != nil {
+			return entity.ConfigurationResponse{}, err
+		}
+		confResponse := createConfigurationResponse(configuration, manifests)
+
+		err := c.cacheReadWriter.Put(ctx, confResponse, device.ID)
+		if err != nil {
+			zap.S().Errorw("unable to save configuration to cache", "error", err)
+		}
+		return confResponse, nil
+
 	}
 	return conf, nil
 }
 
-func (c *ConfigurationService) createConfiguration(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error) {
-	device, err := c.deviceReader.GetDevice(ctx, deviceID)
-	if err != nil {
-		return entity.ConfigurationResponse{}, err
+func (c *ConfigurationService) getConfiguration(ctx context.Context, device entity.Device) (entity.Configuration, error) {
+
+	if device.Configuration != nil {
+		return *device.Configuration, nil
 	}
 
-	set, err := c.deviceReader.GetSet(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	conf := set.Configuration
-	if set.Configuration == nil {
-		// get namespace's configuration
-		namespace, err := c.deviceReader.GetNamespace(ctx, set.NamespaceID)
+	// if device has no configuration look at the set of the device
+	if device.SetID != nil {
+		set, err := c.deviceReader.GetSet(ctx, *device.SetID)
 		if err != nil {
-			return err
+			return entity.Configuration{}, err
 		}
-		conf = &namespace.Configuration
+		if set.Configuration != nil {
+			return *set.Configuration, nil
+		}
 	}
 
-	manifests, err := c.manifestReader.GetSetManifests(ctx, id)
+	// if the device has no set or the set has no configuration just grab the configuration from namespace
+	namespace, err := c.deviceReader.GetNamespace(ctx, device.NamespaceID)
 	if err != nil {
-		return err
+		return entity.Configuration{}, err
 	}
 
-	return c.cacheReadWriter.Put(ctx, id, createConfigurationResponse(*conf, manifests))
+	// namespace always has a configuration
+	return namespace.Configuration, nil
+}
+
+func (c *ConfigurationService) getManifests(ctx context.Context, device entity.Device) ([]entity.ManifestWorkV1, error) {
+	if len(device.ManifestIDS) > 0 {
+		manifests, err := c.manifestReader.GetDeviceManifests(ctx, device.ID)
+		if err != nil {
+			return []entity.ManifestWorkV1{}, err
+		}
+		return manifests, nil
+	}
+
+	if device.SetID != nil {
+		manifests, err := c.manifestReader.GetSetManifests(ctx, *device.SetID)
+		if err != nil {
+			return []entity.ManifestWorkV1{}, err
+		}
+		return manifests, nil
+	}
+
+	// TODO for each manifest get the secrets from vault
+
+	return c.manifestReader.GetNamespaceManifests(ctx, device.NamespaceID)
 }

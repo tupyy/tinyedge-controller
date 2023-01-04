@@ -51,14 +51,14 @@ type Device struct {
 	// RegisteredAt represents the time when the device registered.
 	RegisteredAt time.Time
 	// Namespace in which the device is placed.
-	Namespace string
+	NamespaceID string
 	// CertificateSerialNumber holds the SN of the certificate used for authorization.
 	// This is the certificate generate at registration time.
 	CertificateSerialNumber string
 	// ID of set in which the device is present
-	Set string
+	SetID *string
 	// Configuration of the device
-	Configuration Configuration
+	Configuration *Configuration
 	// List of workloads
 	Workloads []Workload
 	//HardwareInfo holds the information about the host's hardware
