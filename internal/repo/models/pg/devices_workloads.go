@@ -1,4 +1,4 @@
-package models
+package pg
 
 import (
 	"database/sql"
@@ -20,29 +20,29 @@ DB Table Details
 -------------------------------------
 
 
-Table: configuration_cache
+Table: devices_workloads
 [ 0] device_id                                      TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] workload                                       BYTEA                null: true   primary: false  isArray: false  auto: false  col: BYTEA           len: -1      default: []
+[ 1] manifest_work_id                               TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "device_id": "uJqficNqEOjGcixESPauJpAYP",    "workload": "LQULdaxetZVfIVFkkWDwrKWKV"}
+{    "device_id": "stTnsqtjjyGktekTRybuddkvW",    "manifest_work_id": "YZojDuuxGirdAmFTrjqGBIUaR"}
 
 
 
 */
 
-// ConfigurationCache struct is a row record of the configuration_cache table in the tinyedge database
-type ConfigurationCache struct {
+// DevicesWorkloads struct is a row record of the devices_workloads table in the tinyedge database
+type DevicesWorkloads struct {
 	//[ 0] device_id                                      TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	DeviceID string `gorm:"primary_key;column:device_id;type:TEXT;"`
-	//[ 1] workload                                       BYTEA                null: true   primary: false  isArray: false  auto: false  col: BYTEA           len: -1      default: []
-	Workload sql.NullString `gorm:"column:workload;type:BYTEA;"`
+	//[ 1] manifest_work_id                               TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+	ManifestWorkID string `gorm:"primary_key;column:manifest_work_id;type:TEXT;"`
 }
 
-var configuration_cacheTableInfo = &TableInfo{
-	Name: "configuration_cache",
+var devices_workloadsTableInfo = &TableInfo{
+	Name: "devices_workloads",
 	Columns: []*ColumnInfo{
 
 		&ColumnInfo{
@@ -68,21 +68,21 @@ var configuration_cacheTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "workload",
+			Name:               "manifest_work_id",
 			Comment:            ``,
 			Notes:              ``,
-			Nullable:           true,
-			DatabaseTypeName:   "BYTEA",
-			DatabaseTypePretty: "BYTEA",
-			IsPrimaryKey:       false,
+			Nullable:           false,
+			DatabaseTypeName:   "TEXT",
+			DatabaseTypePretty: "TEXT",
+			IsPrimaryKey:       true,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "BYTEA",
+			ColumnType:         "TEXT",
 			ColumnLength:       -1,
-			GoFieldName:        "Workload",
-			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "workload",
-			ProtobufFieldName:  "workload",
+			GoFieldName:        "ManifestWorkID",
+			GoFieldType:        "string",
+			JSONFieldName:      "manifest_work_id",
+			ProtobufFieldName:  "manifest_work_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},
@@ -90,25 +90,25 @@ var configuration_cacheTableInfo = &TableInfo{
 }
 
 // TableName sets the insert table name for this struct type
-func (c *ConfigurationCache) TableName() string {
-	return "configuration_cache"
+func (d *DevicesWorkloads) TableName() string {
+	return "devices_workloads"
 }
 
 // BeforeSave invoked before saving, return an error if field is not populated.
-func (c *ConfigurationCache) BeforeSave() error {
+func (d *DevicesWorkloads) BeforeSave() error {
 	return nil
 }
 
 // Prepare invoked before saving, can be used to populate fields etc.
-func (c *ConfigurationCache) Prepare() {
+func (d *DevicesWorkloads) Prepare() {
 }
 
 // Validate invoked before performing action, return an error if field is not populated.
-func (c *ConfigurationCache) Validate(action Action) error {
+func (d *DevicesWorkloads) Validate(action Action) error {
 	return nil
 }
 
 // TableInfo return table meta data
-func (c *ConfigurationCache) TableInfo() *TableInfo {
-	return configuration_cacheTableInfo
+func (d *DevicesWorkloads) TableInfo() *TableInfo {
+	return devices_workloadsTableInfo
 }

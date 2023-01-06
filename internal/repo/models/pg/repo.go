@@ -1,4 +1,4 @@
-package models
+package pg
 
 import (
 	"database/sql"
@@ -32,7 +32,7 @@ Table: repo
 
 JSON Sample
 -------------------------------------
-{    "id": "BFXyiUEHLXlWtaoVnZddOqTgV",    "url": "latXiLEEoojvtSrWIHFCYtKvs",    "branch": "bMMCUeWNHSJAcaSGAJwcsAxAB",    "local_path": "HJvmFNdEZyIyqmqeVFJjrnxJk",    "current_head_sha": "KNQLvDOMrsHIEfQIwjPaVgflu",    "target_head_sha": "AhoFBeMyvMuoMqDAScYxwGOgA",    "pull_period_seconds": 58}
+{    "id": "QigWQgfqXTPrslqjaIHLZaCyf",    "url": "otHygOxfDLmKhgWCLFIhIyiBG",    "branch": "pttMJUwZmhPoeJjQCnJNNpZYC",    "local_path": "OTJBpMMeaYjQixpVKgwJpWINB",    "current_head_sha": "QTwPltowFQnHAVHKMLIQJINxx",    "target_head_sha": "fljgSpahFojKPuEaGattyeFQD",    "pull_period_seconds": 18}
 
 
 

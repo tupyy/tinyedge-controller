@@ -1,4 +1,4 @@
-package models
+package pg
 
 import (
 	"database/sql"
@@ -20,26 +20,29 @@ DB Table Details
 -------------------------------------
 
 
-Table: system_vendor
+Table: configuration_cache
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 1] workload                                       BYTEA                null: true   primary: false  isArray: false  auto: false  col: BYTEA           len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "RyqyeZeiFDSfvxkvmavnXKuFx"}
+{    "id": "nieLCkEuaELADmttTtSFwngtU",    "workload": "pHFZFUTHHoRBxtNCpJVdLxwHH"}
 
 
 
 */
 
-// SystemVendor struct is a row record of the system_vendor table in the tinyedge database
-type SystemVendor struct {
+// ConfigurationCache struct is a row record of the configuration_cache table in the tinyedge database
+type ConfigurationCache struct {
 	//[ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
+	//[ 1] workload                                       BYTEA                null: true   primary: false  isArray: false  auto: false  col: BYTEA           len: -1      default: []
+	Workload sql.NullString `gorm:"column:workload;type:BYTEA;"`
 }
 
-var system_vendorTableInfo = &TableInfo{
-	Name: "system_vendor",
+var configuration_cacheTableInfo = &TableInfo{
+	Name: "configuration_cache",
 	Columns: []*ColumnInfo{
 
 		&ColumnInfo{
@@ -62,29 +65,50 @@ var system_vendorTableInfo = &TableInfo{
 			ProtobufType:       "string",
 			ProtobufPos:        1,
 		},
+
+		&ColumnInfo{
+			Index:              1,
+			Name:               "workload",
+			Comment:            ``,
+			Notes:              ``,
+			Nullable:           true,
+			DatabaseTypeName:   "BYTEA",
+			DatabaseTypePretty: "BYTEA",
+			IsPrimaryKey:       false,
+			IsAutoIncrement:    false,
+			IsArray:            false,
+			ColumnType:         "BYTEA",
+			ColumnLength:       -1,
+			GoFieldName:        "Workload",
+			GoFieldType:        "sql.NullString",
+			JSONFieldName:      "workload",
+			ProtobufFieldName:  "workload",
+			ProtobufType:       "string",
+			ProtobufPos:        2,
+		},
 	},
 }
 
 // TableName sets the insert table name for this struct type
-func (s *SystemVendor) TableName() string {
-	return "system_vendor"
+func (c *ConfigurationCache) TableName() string {
+	return "configuration_cache"
 }
 
 // BeforeSave invoked before saving, return an error if field is not populated.
-func (s *SystemVendor) BeforeSave() error {
+func (c *ConfigurationCache) BeforeSave() error {
 	return nil
 }
 
 // Prepare invoked before saving, can be used to populate fields etc.
-func (s *SystemVendor) Prepare() {
+func (c *ConfigurationCache) Prepare() {
 }
 
 // Validate invoked before performing action, return an error if field is not populated.
-func (s *SystemVendor) Validate(action Action) error {
+func (c *ConfigurationCache) Validate(action Action) error {
 	return nil
 }
 
 // TableInfo return table meta data
-func (s *SystemVendor) TableInfo() *TableInfo {
-	return system_vendorTableInfo
+func (c *ConfigurationCache) TableInfo() *TableInfo {
+	return configuration_cacheTableInfo
 }

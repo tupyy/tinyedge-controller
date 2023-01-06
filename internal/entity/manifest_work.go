@@ -1,15 +1,13 @@
 package entity
 
 import (
+	"bytes"
 	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
+	"strings"
 	"time"
 
-	goyaml "github.com/go-yaml/yaml"
-	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -28,110 +26,114 @@ type Repository struct {
 	PullPeriod     time.Duration
 }
 
-type ManifestWorkV1 struct {
-	Id           string
-	Version      string           `yaml:"version"`
-	Name         string           `yaml:"name"`
-	Description  string           `yaml:"description"`
-	Selector     Selector         `yaml:"selectors"`
-	Secrets      []ManifestSecret `yaml:"secrets"`
-	Resources    []Resource       `yaml:"resources"`
-	Repo         Repository       `yaml:"-"`
-	Path         string           `yaml:"-"`
-	DeviceIDs    []string         `yaml:"-"`
-	SetIDs       []string         `yaml:"-"`
-	NamespaceIDs []string         `yaml:"-"`
+// PgManifest maps the manifest entry from postgres
+type PgManifest struct {
+	Id    string
+	Valid bool
+	Hash  string
+	Repo  Repository
+	// Path - filepath of the manifest in the local storage
+	Path string
+	// DeviceIDs - list of devices on which this manifest is applied.
+	DeviceIDs []string
+	// SetIDs - list of sets on which this manifest is applied.
+	SetIDs []string
+	// NamespaceIDs - list of namespaces on which this manifest is applied.
+	NamespaceIDs []string
 }
 
-func (m ManifestWorkV1) Hash() string {
-	hash := sha256.New()
-	content, _ := goyaml.Marshal(m)
-	hash.Write(content)
-	return string(hash.Sum(nil))
+type ManifestWork struct {
+	// Id - id of the manifest which is the hash of the filepath
+	Id string
+	// Version
+	Version string
+	// Name - name of the manifest
+	Name string
+	// Hash of the manifest
+	Hash string
+	// Description - description of the manifest
+	Description string
+	// Valid is true if the manifest content is valid
+	Valid bool
+	// Selectors list of selectors
+	Selectors []Selector
+	// Rootless - set the mode of podman execution: rootless or rootfull
+	Rootless bool
+	// Secrets - list of secrets without values. Values are retrieve from Vault.
+	Secrets []Secret
+	// Labels
+	Labels map[string]string
+	// Pods - list of pods
+	Pods []v1.Pod
+	// ConfigMaps -list of configmaps
+	ConfigMaps []v1.ConfigMap
+	// Repo - parent repo
+	Repo Repository
+	// Path - filepath of the manifest in the local storage
+	Path string
+	// DeviceIDs - list of devices on which this manifest is applied.
+	DeviceIDs []string
+	// SetIDs - list of sets on which this manifest is applied.
+	SetIDs []string
+	// NamespaceIDs - list of namespaces on which this manifest is applied.
+	NamespaceIDs []string
 }
 
-func (m ManifestWorkV1) Encode() string {
-	content, _ := goyaml.Marshal(m)
-	return base64.StdEncoding.EncodeToString(content)
-}
+func (m ManifestWork) Workloads() []Workload {
+	workloads := make([]Workload, 0, len(m.Pods))
 
-func (m ManifestWorkV1) Decode(str string) (ManifestWorkV1, error) {
-	content, err := base64.StdEncoding.DecodeString(str)
-	if err != nil {
-		return ManifestWorkV1{}, err
-	}
-	var mm ManifestWorkV1
-	err = goyaml.Unmarshal(content, &mm)
-	if err != nil {
-		return ManifestWorkV1{}, err
-	}
-	return mm, nil
-}
-
-func (m ManifestWorkV1) Workloads() []Workload {
-	workloads := make([]Workload, 0, len(m.Resources))
-	configmaps := make([]string, 0, len(m.Resources))
-
-	idx := 1
-	for _, resource := range m.Resources {
-		if resource.Kind == "ConfigMap" {
-			configmaps = append(configmaps, resource.KubeResource)
+	for i, p := range m.Pods {
+		w := Workload{
+			Name:          fmt.Sprintf("%s-%d", m.Name, i),
+			Specification: p.Spec,
+			Rootless:      true,
+			Labels:        m.Labels,
 		}
-		if resource.Kind == "Pod" {
-			var p v1.PodSpec
-			err := yaml.Unmarshal([]byte(resource.KubeResource), &p)
-			if err != nil {
-				zap.S().Errorf("unable to unmarshal %q to podspec: %v", resource.KubeResource, err)
-				continue
-			}
-			w := Workload{
-				Name:          fmt.Sprintf("%s-%d", m.Name, idx),
-				Specification: p,
-				Rootless:      true,
-				Labels: map[string]string{
-					"tinyedge.io": "true",
-				},
-			}
-			workloads = append(workloads, w)
-			idx++
-		}
-	}
-
-	secrets := make(map[string]string)
-	for _, s := range m.Secrets {
-		secrets[s.Key] = s.Value
+		w.Hash = m.computeHash(w)
+		w.ID = fmt.Sprintf("%s-%s", w.Name, w.Hash[:12])
+		workloads = append(workloads, w)
 	}
 
 	for i := 0; i < len(workloads); i++ {
 		w := &workloads[i]
-		w.Secrets = secrets
-		w.Configmaps = configmaps
+		w.Configmaps = m.ConfigMaps
 	}
 
 	return workloads
 }
 
-type Relation[T any] struct {
-	ObjectType T
-	ManifestID string
-	ObjectID   string
+func (m ManifestWork) computeHash(w Workload) string {
+	var sb strings.Builder
+
+	fmt.Fprintf(&sb, "%s", w.Name)
+
+	for k, v := range w.Labels {
+		fmt.Fprintf(&sb, "%s%s", k, v)
+	}
+
+	fmt.Fprintf(&sb, "%s", w)
+	fmt.Fprintf(&sb, "%+v", w.WorkloadProfiles)
+	fmt.Fprintf(&sb, "%v", w.Rootless)
+
+	sum := sha256.Sum256(bytes.NewBufferString(sb.String()).Bytes())
+	return fmt.Sprintf("%x", sum)
 }
+
+type SelectorType int
+
+const (
+	NamespaceSelector SelectorType = iota
+	SetSelector
+	DeviceSelector
+)
 
 type Selector struct {
-	Namespaces []string `yaml:"namespaces"`
-	Sets       []string `yaml:"sets"`
-	Devices    []string `yaml:"devices"`
+	Type  SelectorType
+	Value string
 }
 
-type ManifestSecret struct {
-	Name  string `yaml:"name"`
-	Path  string `yaml:"path"`
-	Key   string `yaml:"key"`
-	Value string `yaml:"-"`
-}
-
-type Resource struct {
-	Ref          string `yaml:"$ref"`
-	Kind         string
-	KubeResource string
+type Secret struct {
+	Name string
+	Path string
+	Key  string
 }

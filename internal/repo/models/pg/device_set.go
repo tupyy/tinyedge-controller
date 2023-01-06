@@ -1,4 +1,4 @@
-package models
+package pg
 
 import (
 	"database/sql"
@@ -20,32 +20,32 @@ DB Table Details
 -------------------------------------
 
 
-Table: hardware
+Table: device_set
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] os_information_id                              TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 2] system_vendor_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 1] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 2] namespace_id                                   TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "xfIwqKbQZSdUCRwmnKTZMEmHr",    "os_information_id": "keQHkNutlSHlhitIECYwZCGDh",    "system_vendor_id": "UdIeWgmCUZtXmoasfYleKwqxL"}
+{    "id": "VrVPcaPcndIjuxYfVvVfttNqk",    "configuration_id": "yIuUZHNRPNOIqraDoqSUMKcIm",    "namespace_id": "xSQXMrywyoqBfrrxMHvOwfFyh"}
 
 
 
 */
 
-// Hardware struct is a row record of the hardware table in the tinyedge database
-type Hardware struct {
+// DeviceSet struct is a row record of the device_set table in the tinyedge database
+type DeviceSet struct {
 	//[ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
-	//[ 1] os_information_id                              TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	OsInformationID sql.NullString `gorm:"column:os_information_id;type:TEXT;"`
-	//[ 2] system_vendor_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	SystemVendorID sql.NullString `gorm:"column:system_vendor_id;type:TEXT;"`
+	//[ 1] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	ConfigurationID sql.NullString `gorm:"column:configuration_id;type:TEXT;"`
+	//[ 2] namespace_id                                   TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	NamespaceID string `gorm:"column:namespace_id;type:TEXT;"`
 }
 
-var hardwareTableInfo = &TableInfo{
-	Name: "hardware",
+var device_setTableInfo = &TableInfo{
+	Name: "device_set",
 	Columns: []*ColumnInfo{
 
 		&ColumnInfo{
@@ -71,7 +71,7 @@ var hardwareTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "os_information_id",
+			Name:               "configuration_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           true,
@@ -82,20 +82,20 @@ var hardwareTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "TEXT",
 			ColumnLength:       -1,
-			GoFieldName:        "OsInformationID",
+			GoFieldName:        "ConfigurationID",
 			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "os_information_id",
-			ProtobufFieldName:  "os_information_id",
+			JSONFieldName:      "configuration_id",
+			ProtobufFieldName:  "configuration_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},
 
 		&ColumnInfo{
 			Index:              2,
-			Name:               "system_vendor_id",
+			Name:               "namespace_id",
 			Comment:            ``,
 			Notes:              ``,
-			Nullable:           true,
+			Nullable:           false,
 			DatabaseTypeName:   "TEXT",
 			DatabaseTypePretty: "TEXT",
 			IsPrimaryKey:       false,
@@ -103,10 +103,10 @@ var hardwareTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "TEXT",
 			ColumnLength:       -1,
-			GoFieldName:        "SystemVendorID",
-			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "system_vendor_id",
-			ProtobufFieldName:  "system_vendor_id",
+			GoFieldName:        "NamespaceID",
+			GoFieldType:        "string",
+			JSONFieldName:      "namespace_id",
+			ProtobufFieldName:  "namespace_id",
 			ProtobufType:       "string",
 			ProtobufPos:        3,
 		},
@@ -114,25 +114,25 @@ var hardwareTableInfo = &TableInfo{
 }
 
 // TableName sets the insert table name for this struct type
-func (h *Hardware) TableName() string {
-	return "hardware"
+func (d *DeviceSet) TableName() string {
+	return "device_set"
 }
 
 // BeforeSave invoked before saving, return an error if field is not populated.
-func (h *Hardware) BeforeSave() error {
+func (d *DeviceSet) BeforeSave() error {
 	return nil
 }
 
 // Prepare invoked before saving, can be used to populate fields etc.
-func (h *Hardware) Prepare() {
+func (d *DeviceSet) Prepare() {
 }
 
 // Validate invoked before performing action, return an error if field is not populated.
-func (h *Hardware) Validate(action Action) error {
+func (d *DeviceSet) Validate(action Action) error {
 	return nil
 }
 
 // TableInfo return table meta data
-func (h *Hardware) TableInfo() *TableInfo {
-	return hardwareTableInfo
+func (d *DeviceSet) TableInfo() *TableInfo {
+	return device_setTableInfo
 }

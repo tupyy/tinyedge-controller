@@ -1,4 +1,4 @@
-package models
+package pg
 
 import (
 	"database/sql"
@@ -28,7 +28,7 @@ Table: namespace
 
 JSON Sample
 -------------------------------------
-{    "id": "ZDYYureVlcGiomCDLxFrsSQUs",    "is_default": false,    "configuration_id": "GxjxeDcZChiRFVFntppairBsn"}
+{    "id": "axAZwgQjEBCbbNgJOoQLwOetX",    "is_default": false,    "configuration_id": "dUIaIBGDxSlxRmcOaPOXsUiaL"}
 
 
 

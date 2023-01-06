@@ -31,8 +31,9 @@ CREATE TABLE repo (
 CREATE TABLE manifest_work (
     id TEXT PRIMARY KEY,
     repo_id TEXT REFERENCES repo(id) NOT NULL,
-    path_manifest_work TEXT NOT NULL,
-    content TEXT NOT NULL
+    valid BOOLEAN NOT NULL,
+    hash TEXT NOT NULL,
+    path_manifest_work TEXT NOT NULL
 );
 
 CREATE TABLE namespace (

@@ -21,6 +21,7 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/clients/vault"
 	"github.com/tupyy/tinyedge-controller/internal/configuration"
 	"github.com/tupyy/tinyedge-controller/internal/interceptors"
+	"github.com/tupyy/tinyedge-controller/internal/repo/cache"
 	"github.com/tupyy/tinyedge-controller/internal/repo/git"
 	pgRepo "github.com/tupyy/tinyedge-controller/internal/repo/postgres"
 	certRepo "github.com/tupyy/tinyedge-controller/internal/repo/vault/certificate"
@@ -79,10 +80,7 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			zap.S().Fatal(err)
 		}
-		cacheRepo, err := pgRepo.NewCacheRepo(pgClient)
-		if err != nil {
-			zap.S().Fatal(err)
-		}
+		cacheRepo := cache.NewCacheRepo()
 
 		// git repo
 		gr := git.New("/home/cosmin/tmp/git")
@@ -90,7 +88,7 @@ var runCmd = &cobra.Command{
 		certService := certificate.New(certRepo)
 		workService := workload.New(deviceRepo, manifestRepo)
 		configurationService := confService.New(deviceRepo, manifestRepo, cacheRepo)
-		edgeService := edge.New(deviceRepo, cacheRepo, certService)
+		edgeService := edge.New(deviceRepo, configurationService, certService)
 		authService := auth.New(certService, deviceRepo)
 
 		scheduler := workers.New(5 * time.Second)

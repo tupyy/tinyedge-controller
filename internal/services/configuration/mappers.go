@@ -2,7 +2,7 @@ package configuration
 
 import "github.com/tupyy/tinyedge-controller/internal/entity"
 
-func createConfigurationResponse(c entity.Configuration, manifests []entity.ManifestWorkV1) entity.ConfigurationResponse {
+func createConfigurationResponse(c entity.Configuration, manifests []entity.ManifestWork) entity.ConfigurationResponse {
 	confResponse := entity.ConfigurationResponse{
 		Configuration: c,
 		Workloads:     make([]entity.Workload, 0, len(manifests)),
@@ -16,8 +16,7 @@ func createConfigurationResponse(c entity.Configuration, manifests []entity.Mani
 	for _, m := range manifests {
 		for _, s := range m.Secrets {
 			confResponse.Secrets = append(confResponse.Secrets, entity.Secret{
-				Key:   s.Key,
-				Value: s.Value,
+				Key: s.Key,
 			})
 		}
 	}

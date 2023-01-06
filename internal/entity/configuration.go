@@ -47,8 +47,3 @@ type ProfileCondition struct {
 	// Expression is the boolean expression for the condition
 	Expression string `json:"expression"`
 }
-
-type Secret struct {
-	Key   string
-	Value string
-}

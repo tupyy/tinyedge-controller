@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	"github.com/tupyy/tinyedge-controller/internal/mappers"
+	"github.com/tupyy/tinyedge-controller/internal/servers/mappers"
 	errService "github.com/tupyy/tinyedge-controller/internal/services/common"
 	"github.com/tupyy/tinyedge-controller/internal/services/edge"
 	"github.com/tupyy/tinyedge-controller/pkg/grpc/common"

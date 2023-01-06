@@ -1,4 +1,4 @@
-package models
+package pg
 
 import (
 	"database/sql"
@@ -20,32 +20,32 @@ DB Table Details
 -------------------------------------
 
 
-Table: device_set
+Table: configuration
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 2] namespace_id                                   TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 1] heartbeat_period_seconds                       INT2                 null: true   primary: false  isArray: false  auto: false  col: INT2            len: -1      default: [30]
+[ 2] log_level                                      TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: [info]
 
 
 JSON Sample
 -------------------------------------
-{    "id": "DdMCiYSyIxMkCePpcqsVldeFF",    "configuration_id": "uwgBfwbSCDDTaluTfWrFpYbZU",    "namespace_id": "HyEbNnwYyqvpFIgMNBcREmNKe"}
+{    "id": "lvDxwnyAoUyDbsoiKKXnioKtj",    "heartbeat_period_seconds": 85,    "log_level": "PkJsNnBnTEmCFdtOrCBegwXEf"}
 
 
 
 */
 
-// DeviceSet struct is a row record of the device_set table in the tinyedge database
-type DeviceSet struct {
+// Configuration struct is a row record of the configuration table in the tinyedge database
+type Configuration struct {
 	//[ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
-	//[ 1] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	ConfigurationID sql.NullString `gorm:"column:configuration_id;type:TEXT;"`
-	//[ 2] namespace_id                                   TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	NamespaceID string `gorm:"column:namespace_id;type:TEXT;"`
+	//[ 1] heartbeat_period_seconds                       INT2                 null: true   primary: false  isArray: false  auto: false  col: INT2            len: -1      default: [30]
+	HeartbeatPeriodSeconds sql.NullInt64 `gorm:"column:heartbeat_period_seconds;type:INT2;default:30;"`
+	//[ 2] log_level                                      TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: [info]
+	LogLevel sql.NullString `gorm:"column:log_level;type:TEXT;default:info;"`
 }
 
-var device_setTableInfo = &TableInfo{
-	Name: "device_set",
+var configurationTableInfo = &TableInfo{
+	Name: "configuration",
 	Columns: []*ColumnInfo{
 
 		&ColumnInfo{
@@ -71,7 +71,28 @@ var device_setTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "configuration_id",
+			Name:               "heartbeat_period_seconds",
+			Comment:            ``,
+			Notes:              ``,
+			Nullable:           true,
+			DatabaseTypeName:   "INT2",
+			DatabaseTypePretty: "INT2",
+			IsPrimaryKey:       false,
+			IsAutoIncrement:    false,
+			IsArray:            false,
+			ColumnType:         "INT2",
+			ColumnLength:       -1,
+			GoFieldName:        "HeartbeatPeriodSeconds",
+			GoFieldType:        "sql.NullInt64",
+			JSONFieldName:      "heartbeat_period_seconds",
+			ProtobufFieldName:  "heartbeat_period_seconds",
+			ProtobufType:       "int32",
+			ProtobufPos:        2,
+		},
+
+		&ColumnInfo{
+			Index:              2,
+			Name:               "log_level",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           true,
@@ -82,31 +103,10 @@ var device_setTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "TEXT",
 			ColumnLength:       -1,
-			GoFieldName:        "ConfigurationID",
+			GoFieldName:        "LogLevel",
 			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "configuration_id",
-			ProtobufFieldName:  "configuration_id",
-			ProtobufType:       "string",
-			ProtobufPos:        2,
-		},
-
-		&ColumnInfo{
-			Index:              2,
-			Name:               "namespace_id",
-			Comment:            ``,
-			Notes:              ``,
-			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
-			IsPrimaryKey:       false,
-			IsAutoIncrement:    false,
-			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
-			GoFieldName:        "NamespaceID",
-			GoFieldType:        "string",
-			JSONFieldName:      "namespace_id",
-			ProtobufFieldName:  "namespace_id",
+			JSONFieldName:      "log_level",
+			ProtobufFieldName:  "log_level",
 			ProtobufType:       "string",
 			ProtobufPos:        3,
 		},
@@ -114,25 +114,25 @@ var device_setTableInfo = &TableInfo{
 }
 
 // TableName sets the insert table name for this struct type
-func (d *DeviceSet) TableName() string {
-	return "device_set"
+func (c *Configuration) TableName() string {
+	return "configuration"
 }
 
 // BeforeSave invoked before saving, return an error if field is not populated.
-func (d *DeviceSet) BeforeSave() error {
+func (c *Configuration) BeforeSave() error {
 	return nil
 }
 
 // Prepare invoked before saving, can be used to populate fields etc.
-func (d *DeviceSet) Prepare() {
+func (c *Configuration) Prepare() {
 }
 
 // Validate invoked before performing action, return an error if field is not populated.
-func (d *DeviceSet) Validate(action Action) error {
+func (c *Configuration) Validate(action Action) error {
 	return nil
 }
 
 // TableInfo return table meta data
-func (d *DeviceSet) TableInfo() *TableInfo {
-	return device_setTableInfo
+func (c *Configuration) TableInfo() *TableInfo {
+	return configurationTableInfo
 }

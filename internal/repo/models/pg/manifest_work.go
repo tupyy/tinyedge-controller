@@ -1,4 +1,4 @@
-package models
+package pg
 
 import (
 	"database/sql"
@@ -23,13 +23,14 @@ DB Table Details
 Table: manifest_work
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 1] repo_id                                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 2] path_manifest_work                             TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 3] content                                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 2] valid                                          BOOL                 null: false  primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: []
+[ 3] hash                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 4] path_manifest_work                             TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "BFOfjBhDcUUfNEQXDTGMXjqHC",    "repo_id": "itwWmNCngFOIyBcAZswXTjQBA",    "path_manifest_work": "uBJnTWfsNhJjmKwDobgdKdqtP",    "content": "XcQNXCCTXLIwlcJwUpPHJaYSX"}
+{    "id": "vguawkbqwRmiGNAjuGoBsZuTc",    "repo_id": "vKXCTXauJmTscFJwNTwaoyafI",    "valid": true,    "hash": "dBiLERXanvCnJYrXBZrtBoxPp",    "path_manifest_work": "LmVljuAqpPemuGFaALJMiRVoH"}
 
 
 
@@ -41,10 +42,12 @@ type ManifestWork struct {
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
 	//[ 1] repo_id                                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	RepoID string `gorm:"column:repo_id;type:TEXT;"`
-	//[ 2] path_manifest_work                             TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	//[ 2] valid                                          BOOL                 null: false  primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: []
+	Valid bool `gorm:"column:valid;type:BOOL;"`
+	//[ 3] hash                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	Hash string `gorm:"column:hash;type:TEXT;"`
+	//[ 4] path_manifest_work                             TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	PathManifestWork string `gorm:"column:path_manifest_work;type:TEXT;"`
-	//[ 3] content                                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	Content string `gorm:"column:content;type:TEXT;"`
 }
 
 var manifest_workTableInfo = &TableInfo{
@@ -95,6 +98,48 @@ var manifest_workTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              2,
+			Name:               "valid",
+			Comment:            ``,
+			Notes:              ``,
+			Nullable:           false,
+			DatabaseTypeName:   "BOOL",
+			DatabaseTypePretty: "BOOL",
+			IsPrimaryKey:       false,
+			IsAutoIncrement:    false,
+			IsArray:            false,
+			ColumnType:         "BOOL",
+			ColumnLength:       -1,
+			GoFieldName:        "Valid",
+			GoFieldType:        "bool",
+			JSONFieldName:      "valid",
+			ProtobufFieldName:  "valid",
+			ProtobufType:       "bool",
+			ProtobufPos:        3,
+		},
+
+		&ColumnInfo{
+			Index:              3,
+			Name:               "hash",
+			Comment:            ``,
+			Notes:              ``,
+			Nullable:           false,
+			DatabaseTypeName:   "TEXT",
+			DatabaseTypePretty: "TEXT",
+			IsPrimaryKey:       false,
+			IsAutoIncrement:    false,
+			IsArray:            false,
+			ColumnType:         "TEXT",
+			ColumnLength:       -1,
+			GoFieldName:        "Hash",
+			GoFieldType:        "string",
+			JSONFieldName:      "hash",
+			ProtobufFieldName:  "hash",
+			ProtobufType:       "string",
+			ProtobufPos:        4,
+		},
+
+		&ColumnInfo{
+			Index:              4,
 			Name:               "path_manifest_work",
 			Comment:            ``,
 			Notes:              ``,
@@ -111,28 +156,7 @@ var manifest_workTableInfo = &TableInfo{
 			JSONFieldName:      "path_manifest_work",
 			ProtobufFieldName:  "path_manifest_work",
 			ProtobufType:       "string",
-			ProtobufPos:        3,
-		},
-
-		&ColumnInfo{
-			Index:              3,
-			Name:               "content",
-			Comment:            ``,
-			Notes:              ``,
-			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
-			IsPrimaryKey:       false,
-			IsAutoIncrement:    false,
-			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
-			GoFieldName:        "Content",
-			GoFieldType:        "string",
-			JSONFieldName:      "content",
-			ProtobufFieldName:  "content",
-			ProtobufType:       "string",
-			ProtobufPos:        4,
+			ProtobufPos:        5,
 		},
 	},
 }

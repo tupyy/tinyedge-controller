@@ -17,7 +17,10 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	goyaml "github.com/go-yaml/yaml"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
+	manifestv1 "github.com/tupyy/tinyedge-controller/internal/repo/models/manifest/v1"
 	"go.uber.org/zap"
+	v1 "k8s.io/api/core/v1"
+	k8syaml "sigs.k8s.io/yaml"
 )
 
 type GitRepo struct {
@@ -96,26 +99,37 @@ func (g *GitRepo) GetHeadSha(ctx context.Context, r entity.Repository) (string, 
 
 // GetManifestWorks returns all the manifest work found in the repo.
 // Only the valid manifest works are returned
-func (g *GitRepo) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.ManifestWorkV1, error) {
-	manifests, err := g.findManifestWorks(ctx, repo.LocalPath)
+func (g *GitRepo) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.ManifestWork, error) {
+	manifestFiles, err := g.findManifestFiles(ctx, repo.LocalPath)
 	if err != nil {
 		return nil, err
 	}
 
-	entities := make([]entity.ManifestWorkV1, 0, len(manifests))
-	for _, m := range manifests {
+	computeHash := func(b []byte) string {
+		hash := sha256.New()
+		hash.Write(b)
+		return fmt.Sprintf("%x", hash.Sum(nil))
+	}
+
+	entities := make([]entity.ManifestWork, 0, len(manifestFiles))
+	for _, m := range manifestFiles {
 		content, err := os.ReadFile(m)
 		if err != nil {
 			zap.S().Errorw("unable to read manifest file from repo", "file", m, "error", err)
 			continue
 		}
-		manifestWork, err := g.createManifestWork(content, m, repo.LocalPath)
+		manifest, err := g.parse(content, m, repo.LocalPath)
 		if err != nil {
-			zap.S().Errorw("unable to create manifest work", "file", m, "error", err)
+			zap.S().Errorw("unable to parse manifest work", "file", m, "error", err)
 			continue
 		}
-		manifestWork.Repo = repo
-		entities = append(entities, manifestWork)
+
+		manifest.Repo = repo
+		manifest.Hash = computeHash(content)
+		manifest.Id = computeHash(bytes.NewBufferString(m).Bytes())
+		manifest.Path = m
+
+		entities = append(entities, manifest)
 	}
 
 	return entities, nil
@@ -156,29 +170,66 @@ func (g *GitRepo) openRepository(ctx context.Context, r entity.Repository) (*git
 	return repo, nil
 }
 
-func (g *GitRepo) createManifestWork(content []byte, filename, basePath string) (entity.ManifestWorkV1, error) {
-	var manifest entity.ManifestWorkV1
+// parse parses the manifest file and verify that all the resources defined are valid k8s manifestv1.
+// Returns false if one resource is not a valid ConfigMap or Pod.
+func (g *GitRepo) parse(content []byte, filename, basePath string) (entity.ManifestWork, error) {
+	var manifest manifestv1.Manifest
+
 	if err := goyaml.Unmarshal(content, &manifest); err != nil {
-		return entity.ManifestWorkV1{}, err
+		return entity.ManifestWork{}, err
 	}
-	fullResources := make([]entity.Resource, 0, len(manifest.Resources))
-	for _, r := range manifest.Resources {
-		resource, err := g.getResource(r.Ref, basePath)
-		if err != nil {
-			return entity.ManifestWorkV1{}, err
+
+	e := entity.ManifestWork{
+		Version:     manifest.Version,
+		Description: manifest.Description,
+		Name:        manifest.Name,
+		Selectors:   make([]entity.Selector, 0),
+		Valid:       true,
+	}
+
+	for i := 0; true; i++ {
+		keepGoing := false
+		if i < len(manifest.Selector.Namespaces) {
+			e.Selectors = append(e.Selectors, entity.Selector{
+				Type:  entity.NamespaceSelector,
+				Value: manifest.Selector.Namespaces[i],
+			})
+			keepGoing = true
 		}
-		fullResources = append(fullResources, resource...)
+		if i < len(manifest.Selector.Sets) {
+			e.Selectors = append(e.Selectors, entity.Selector{
+				Type:  entity.SetSelector,
+				Value: manifest.Selector.Sets[i],
+			})
+			keepGoing = true
+		}
+		if i < len(manifest.Selector.Devices) {
+			e.Selectors = append(e.Selectors, entity.Selector{
+				Type:  entity.DeviceSelector,
+				Value: manifest.Selector.Devices[i],
+			})
+			keepGoing = true
+		}
+		if !keepGoing {
+			break
+		}
 	}
-	manifest.Resources = fullResources
-	manifest.Path = filename
-	hash := sha256.New()
-	hash.Write(bytes.NewBufferString(fmt.Sprintf("%s", filename)).Bytes())
-	manifest.Id = fmt.Sprintf("%x", hash.Sum(nil))
-	return manifest, nil
+
+	for _, r := range manifest.Resources {
+		configmaps, pods, err := g.parseResource(r.Ref, basePath)
+		if err != nil {
+			e.Valid = false
+			return e, err
+		}
+		e.ConfigMaps = append(e.ConfigMaps, configmaps...)
+		e.Pods = append(e.Pods, pods...)
+	}
+
+	return e, nil
 }
 
-// findManifestWorks returns the list of all manifestworks files found in the repo
-func (g *GitRepo) findManifestWorks(ctx context.Context, path string) ([]string, error) {
+// findManifestFiles returns the list of all manifestworks files found in the repo
+func (g *GitRepo) findManifestFiles(ctx context.Context, path string) ([]string, error) {
 	searchFn := func(ctx context.Context, root string, output chan string, errCh chan error, doneCh chan struct{}, filename string) {
 		err := filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
 			if err != nil {
@@ -227,38 +278,50 @@ func (g *GitRepo) findManifestWorks(ctx context.Context, path string) ([]string,
 	return manifestWorks, nil
 }
 
-func (g *GitRepo) getResource(filename string, basePath string) ([]entity.Resource, error) {
-	content, err := os.ReadFile(path.Join(basePath, filename))
+func (g *GitRepo) parseResource(filename string, basePath string) ([]v1.ConfigMap, []v1.Pod, error) {
+	filepath := path.Join(basePath, filename)
+	content, err := os.ReadFile(filepath)
 	if err != nil {
-		return []entity.Resource{}, err
+		return []v1.ConfigMap{}, []v1.Pod{}, fmt.Errorf("unable to read resource file %q: %w", filepath, err)
 	}
+
 	parts, err := g.splitYAML(content)
 	if err != nil {
-		return []entity.Resource{}, fmt.Errorf("unable to decode resource file %q: %w", filename, err)
+		return []v1.ConfigMap{}, []v1.Pod{}, fmt.Errorf("unable to decode resource file %q: %w", filepath, err)
 	}
 
-	resources := make([]entity.Resource, 0, len(parts))
+	configMaps := make([]v1.ConfigMap, 0, len(parts))
+	pods := make([]v1.Pod, 0, len(parts))
 
-	allowedKinds := "ConfigMap|Pods|Deployment"
+	allowedKinds := "ConfigMap|Pods"
 	for _, part := range parts {
 		kind, err := g.getKind(part)
 		if err != nil {
-			zap.S().Errorf("unable to get \"kind\" from yaml with error %q", err)
-			continue
+			return configMaps, pods, fmt.Errorf("unable to get \"kind\" from yaml with error %q", err)
 		}
 		if kind == "" || !strings.Contains(allowedKinds, kind) {
-			zap.S().Errorf("kind %q not allowed in manifest work", kind)
+			zap.S().Warnf("kind %q not allowed in manifest work and it will be ignored", kind)
 			continue
 		}
-
-		resources = append(resources, entity.Resource{
-			Kind:         kind,
-			Ref:          filename,
-			KubeResource: fmt.Sprintf("%s", part),
-		})
+		switch kind {
+		case "ConfigMap":
+			var c v1.ConfigMap
+			err := k8syaml.Unmarshal(part, &c)
+			if err != nil {
+				return configMaps, pods, fmt.Errorf("unable to unmarshal part %q: %v", string(part), err)
+			}
+			configMaps = append(configMaps, c)
+		case "Pod":
+			var p v1.Pod
+			err := k8syaml.Unmarshal(part, &p)
+			if err != nil {
+				return configMaps, pods, fmt.Errorf("unable to unmarshal part %q: %v", string(part), err)
+			}
+			pods = append(pods, p)
+		}
 	}
 
-	return resources, nil
+	return configMaps, pods, nil
 }
 
 func (g *GitRepo) splitYAML(resources []byte) ([][]byte, error) {

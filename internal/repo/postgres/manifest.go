@@ -5,8 +5,8 @@ import (
 
 	pgclient "github.com/tupyy/tinyedge-controller/internal/clients/pg"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
+	models "github.com/tupyy/tinyedge-controller/internal/repo/models/pg"
 	"github.com/tupyy/tinyedge-controller/internal/repo/postgres/mappers"
-	"github.com/tupyy/tinyedge-controller/internal/repo/postgres/models"
 	"github.com/tupyy/tinyedge-controller/internal/services/common"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -31,9 +31,9 @@ func NewManifestRepo(client pgclient.Client) (*ManifestRepo, error) {
 	return &ManifestRepo{gormDB, client, client.GetCircuitBreaker()}, nil
 }
 
-func (m *ManifestRepo) GetManifests(ctx context.Context) ([]entity.ManifestWorkV1, error) {
+func (m *ManifestRepo) GetManifests(ctx context.Context) ([]entity.ManifestWork, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+		return []entity.ManifestWork{}, common.ErrPostgresNotAvailable
 	}
 
 	manifests := []models.ManifestJoin{}
@@ -41,27 +41,27 @@ func (m *ManifestRepo) GetManifests(ctx context.Context) ([]entity.ManifestWorkV
 	tx := newManifestQuery(ctx, m.db).Build()
 	if err := tx.Find(&manifests).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+			return []entity.ManifestWork{}, common.ErrPostgresNotAvailable
 		}
-		return []entity.ManifestWorkV1{}, err
+		return []entity.ManifestWork{}, err
 	}
 
 	if len(manifests) == 0 {
-		return []entity.ManifestWorkV1{}, nil
+		return []entity.ManifestWork{}, nil
 	}
 
 	e, err := mappers.ManifestModelsToEntities(manifests)
 	if err != nil {
-		return []entity.ManifestWorkV1{}, err
+		return []entity.ManifestWork{}, err
 	}
 
 	return e, nil
 
 }
 
-func (m *ManifestRepo) GetManifest(ctx context.Context, id string) (entity.ManifestWorkV1, error) {
+func (m *ManifestRepo) GetManifest(ctx context.Context, id string) (entity.ManifestWork, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+		return entity.ManifestWork{}, common.ErrPostgresNotAvailable
 	}
 
 	manifests := []models.ManifestJoin{}
@@ -69,18 +69,18 @@ func (m *ManifestRepo) GetManifest(ctx context.Context, id string) (entity.Manif
 	tx := newManifestQuery(ctx, m.db).WithManifestID(id).Build()
 	if err := tx.Find(&manifests).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+			return entity.ManifestWork{}, common.ErrPostgresNotAvailable
 		}
-		return entity.ManifestWorkV1{}, err
+		return entity.ManifestWork{}, err
 	}
 
 	if len(manifests) == 0 {
-		return entity.ManifestWorkV1{}, common.ErrResourceNotFound
+		return entity.ManifestWork{}, common.ErrResourceNotFound
 	}
 
 	e, err := mappers.ManifestModelToEntity(manifests)
 	if err != nil {
-		return entity.ManifestWorkV1{}, err
+		return entity.ManifestWork{}, err
 	}
 
 	return e, nil
@@ -112,9 +112,9 @@ func (m *ManifestRepo) GetRepositories(ctx context.Context) ([]entity.Repository
 	return entities, nil
 }
 
-func (m *ManifestRepo) GetRepoManifests(ctx context.Context, r entity.Repository) ([]entity.ManifestWorkV1, error) {
+func (m *ManifestRepo) GetRepoManifests(ctx context.Context, r entity.Repository) ([]entity.ManifestWork, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+		return []entity.ManifestWork{}, common.ErrPostgresNotAvailable
 	}
 
 	manifests := []models.ManifestJoin{}
@@ -122,18 +122,18 @@ func (m *ManifestRepo) GetRepoManifests(ctx context.Context, r entity.Repository
 	tx := newManifestQuery(ctx, m.db).WithRepoId(r.Id).Build()
 	if err := tx.Find(&manifests).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+			return []entity.ManifestWork{}, common.ErrPostgresNotAvailable
 		}
-		return []entity.ManifestWorkV1{}, err
+		return []entity.ManifestWork{}, err
 	}
 
 	if len(manifests) == 0 {
-		return []entity.ManifestWorkV1{}, nil
+		return []entity.ManifestWork{}, nil
 	}
 
 	e, err := mappers.ManifestModelsToEntities(manifests)
 	if err != nil {
-		return []entity.ManifestWorkV1{}, err
+		return []entity.ManifestWork{}, err
 	}
 
 	return e, nil
@@ -172,7 +172,7 @@ func (m *ManifestRepo) UpdateRepo(ctx context.Context, r entity.Repository) erro
 	return nil
 }
 
-func (m *ManifestRepo) InsertManifest(ctx context.Context, manifest entity.ManifestWorkV1) error {
+func (m *ManifestRepo) InsertManifest(ctx context.Context, manifest entity.ManifestWork) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -188,7 +188,7 @@ func (m *ManifestRepo) InsertManifest(ctx context.Context, manifest entity.Manif
 	return nil
 }
 
-func (m *ManifestRepo) UpdateManifest(ctx context.Context, manifest entity.ManifestWorkV1) error {
+func (m *ManifestRepo) UpdateManifest(ctx context.Context, manifest entity.ManifestWork) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -205,7 +205,7 @@ func (m *ManifestRepo) UpdateManifest(ctx context.Context, manifest entity.Manif
 	return nil
 }
 
-func (m *ManifestRepo) DeleteManifest(ctx context.Context, manifest entity.ManifestWorkV1) error {
+func (m *ManifestRepo) DeleteManifest(ctx context.Context, manifest entity.ManifestWork) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -220,35 +220,35 @@ func (m *ManifestRepo) DeleteManifest(ctx context.Context, manifest entity.Manif
 	return nil
 }
 
-func (m *ManifestRepo) GetNamespaceManifests(ctx context.Context, namespaceID string) ([]entity.ManifestWorkV1, error) {
+func (m *ManifestRepo) GetNamespaceManifests(ctx context.Context, namespaceID string) ([]entity.ManifestWork, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+		return []entity.ManifestWork{}, common.ErrPostgresNotAvailable
 	}
 
 	models := []models.ManifestJoin{}
 	tx := newManifestQuery(ctx, m.db).WithNamespaceID(namespaceID).Build()
 	if err := tx.Find(&models).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+			return []entity.ManifestWork{}, common.ErrPostgresNotAvailable
 		}
-		return []entity.ManifestWorkV1{}, err
+		return []entity.ManifestWork{}, err
 	}
 
 	if len(models) == 0 {
-		return []entity.ManifestWorkV1{}, nil
+		return []entity.ManifestWork{}, nil
 	}
 
 	e, err := mappers.ManifestModelsToEntities(models)
 	if err != nil {
-		return []entity.ManifestWorkV1{}, err
+		return []entity.ManifestWork{}, err
 	}
 
 	return e, nil
 }
 
-func (m *ManifestRepo) GetSetManifests(ctx context.Context, setID string) ([]entity.ManifestWorkV1, error) {
+func (m *ManifestRepo) GetSetManifests(ctx context.Context, setID string) ([]entity.ManifestWork, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+		return []entity.ManifestWork{}, common.ErrPostgresNotAvailable
 	}
 
 	models := []models.ManifestJoin{}
@@ -256,26 +256,26 @@ func (m *ManifestRepo) GetSetManifests(ctx context.Context, setID string) ([]ent
 	tx := newManifestQuery(ctx, m.db).WithSetID(setID).Build()
 	if err := tx.Find(&models).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+			return []entity.ManifestWork{}, common.ErrPostgresNotAvailable
 		}
-		return []entity.ManifestWorkV1{}, err
+		return []entity.ManifestWork{}, err
 	}
 
 	if len(models) == 0 {
-		return []entity.ManifestWorkV1{}, nil
+		return []entity.ManifestWork{}, nil
 	}
 
 	e, err := mappers.ManifestModelsToEntities(models)
 	if err != nil {
-		return []entity.ManifestWorkV1{}, err
+		return []entity.ManifestWork{}, err
 	}
 
 	return e, nil
 }
 
-func (m *ManifestRepo) GetDeviceManifests(ctx context.Context, deviceID string) ([]entity.ManifestWorkV1, error) {
+func (m *ManifestRepo) GetDeviceManifests(ctx context.Context, deviceID string) ([]entity.ManifestWork, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+		return []entity.ManifestWork{}, common.ErrPostgresNotAvailable
 	}
 
 	models := []models.ManifestJoin{}
@@ -283,18 +283,18 @@ func (m *ManifestRepo) GetDeviceManifests(ctx context.Context, deviceID string) 
 	tx := newManifestQuery(ctx, m.db).WithDeviceID(deviceID).Build()
 	if err := tx.Find(&models).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return []entity.ManifestWorkV1{}, common.ErrPostgresNotAvailable
+			return []entity.ManifestWork{}, common.ErrPostgresNotAvailable
 		}
-		return []entity.ManifestWorkV1{}, err
+		return []entity.ManifestWork{}, err
 	}
 
 	if len(models) == 0 {
-		return []entity.ManifestWorkV1{}, nil
+		return []entity.ManifestWork{}, nil
 	}
 
 	e, err := mappers.ManifestModelsToEntities(models)
 	if err != nil {
-		return []entity.ManifestWorkV1{}, err
+		return []entity.ManifestWork{}, err
 	}
 
 	return e, nil

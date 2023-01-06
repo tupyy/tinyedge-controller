@@ -1,13 +1,22 @@
 package mappers
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
+	"io"
+	"os"
+	"path"
+	"strings"
 	"time"
 
+	goyaml "github.com/go-yaml/yaml"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	"github.com/tupyy/tinyedge-controller/internal/repo/postgres/models"
+	manifestv1 "github.com/tupyy/tinyedge-controller/internal/repo/models/manifest/v1"
+	models "github.com/tupyy/tinyedge-controller/internal/repo/models/pg"
 	"go.uber.org/zap"
+	v1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/yaml"
 )
 
 type uniqueIds map[string]struct{}
@@ -23,11 +32,11 @@ func (u uniqueIds) add(id string, prefix string) {
 	u[_id] = struct{}{}
 }
 
-func ManifestModelToEntity(mm []models.ManifestJoin) (entity.ManifestWorkV1, error) {
+func ManifestModelToEntity(mm []models.ManifestJoin) (entity.ManifestWork, error) {
 	m := mm[0]
 	e, err := basicManifestModelToEntity(m)
 	if err != nil {
-		return entity.ManifestWorkV1{}, err
+		return entity.ManifestWork{}, err
 	}
 
 	e.DeviceIDs = make([]string, 0, len(mm))
@@ -54,8 +63,8 @@ func ManifestModelToEntity(mm []models.ManifestJoin) (entity.ManifestWorkV1, err
 	return e, err
 }
 
-func ManifestModelsToEntities(mm []models.ManifestJoin) ([]entity.ManifestWorkV1, error) {
-	entities := make(map[string]entity.ManifestWorkV1)
+func ManifestModelsToEntities(mm []models.ManifestJoin) ([]entity.ManifestWork, error) {
+	entities := make(map[string]entity.ManifestWork)
 	// makes sure that we add only once the id of the devices, sets or namespaces
 	idMap := make(uniqueIds)
 	for _, m := range mm {
@@ -82,17 +91,26 @@ func ManifestModelsToEntities(mm []models.ManifestJoin) ([]entity.ManifestWorkV1
 		entities[m.ID] = manifest
 	}
 
-	ee := make([]entity.ManifestWorkV1, 0, len(entities))
+	ee := make([]entity.ManifestWork, 0, len(entities))
 	for _, v := range entities {
 		ee = append(ee, v)
 	}
 	return ee, nil
 }
 
-func basicManifestModelToEntity(m models.ManifestJoin) (entity.ManifestWorkV1, error) {
-	e, err := entity.ManifestWorkV1{}.Decode(m.Content)
+func basicManifestModelToEntity(m models.ManifestJoin) (entity.ManifestWork, error) {
+	content, err := os.ReadFile(m.PathManifestWork)
 	if err != nil {
-		return entity.ManifestWorkV1{}, err
+		return entity.ManifestWork{}, fmt.Errorf("unable to read manifest file %q from repo: %w", m.PathManifestWork, err)
+	}
+	gitModel := manifestv1.Manifest{}
+	if err := yaml.Unmarshal(content, &gitModel); err != nil {
+		return entity.ManifestWork{}, fmt.Errorf("unable to unmarshal content of file %q: %w", m.PathManifestWork, err)
+	}
+
+	e := entity.ManifestWork{
+		ConfigMaps: make([]v1.ConfigMap, 0),
+		Pods:       make([]v1.Pod, 0),
 	}
 	e.Id = m.ID
 	e.Repo = entity.Repository{
@@ -114,19 +132,110 @@ func basicManifestModelToEntity(m models.ManifestJoin) (entity.ManifestWorkV1, e
 	if m.Repo_PullPeriodSeconds.Valid {
 		e.Repo.PullPeriod = time.Duration(m.Repo_PullPeriodSeconds.Int64) * time.Second
 	}
+	// create resources
+	for _, resource := range gitModel.Resources {
+		configmaps, pods, err := createResources(resource, m.Repo_LocalPath.String)
+		if err != nil {
+			return entity.ManifestWork{}, err
+		}
+		e.ConfigMaps = append(e.ConfigMaps, configmaps...)
+		e.Pods = append(e.Pods, pods...)
+	}
+
 	e.Path = m.PathManifestWork
 	e.DeviceIDs = make([]string, 0)
 	e.NamespaceIDs = make([]string, 0)
 	e.SetIDs = make([]string, 0)
+	e.Hash = m.Hash
+	e.Path = m.PathManifestWork
 	return e, nil
 }
 
-func ManifestEntityToModel(e entity.ManifestWorkV1) models.ManifestWork {
+func createResources(resource manifestv1.Resource, basePath string) ([]v1.ConfigMap, []v1.Pod, error) {
+	content, err := os.ReadFile(path.Join(basePath, resource.Ref))
+	if err != nil {
+		return []v1.ConfigMap{}, []v1.Pod{}, fmt.Errorf("unable to read file %q: %w", resource.Ref, err)
+	}
+
+	parts, err := splitYAML(content)
+	if err != nil {
+		return []v1.ConfigMap{}, []v1.Pod{}, fmt.Errorf("unable to decode resource file %q: %w", resource.Ref, err)
+	}
+
+	configMaps := make([]v1.ConfigMap, 0)
+	pods := make([]v1.Pod, 0)
+	allowedKinds := "ConfigMap|Pods"
+	for _, part := range parts {
+		kind, err := getKind(part)
+		if err != nil {
+			zap.S().Errorf("unable to get \"kind\" from yaml with error %q", err)
+			continue
+		}
+		if kind == "" || !strings.Contains(allowedKinds, kind) {
+			zap.S().Errorf("kind %q not allowed in manifest work", kind)
+			continue
+		}
+		switch kind {
+		case "ConfigMap":
+			var c v1.ConfigMap
+			err := yaml.Unmarshal(part, &c)
+			if err != nil {
+				return []v1.ConfigMap{}, []v1.Pod{}, fmt.Errorf("unable to unmarshal part %q: %v", string(part), err)
+			}
+			configMaps = append(configMaps, c)
+		case "Pod":
+			var p v1.Pod
+			err := yaml.Unmarshal(part, &p)
+			if err != nil {
+				return []v1.ConfigMap{}, []v1.Pod{}, fmt.Errorf("unable to unmarshal part %q: %v", string(part), err)
+			}
+			pods = append(pods, p)
+		}
+	}
+
+	return configMaps, pods, nil
+}
+
+func getKind(content []byte) (string, error) {
+	type anonymousStruct struct {
+		Kind string `yaml:"kind"`
+	}
+	var a anonymousStruct
+	if err := goyaml.Unmarshal(content, &a); err != nil {
+		return "", fmt.Errorf("unknown struct: %s", err)
+	}
+	return a.Kind, nil
+}
+
+func splitYAML(resources []byte) ([][]byte, error) {
+	dec := goyaml.NewDecoder(bytes.NewReader(resources))
+
+	var res [][]byte
+	for {
+		var value interface{}
+		err := dec.Decode(&value)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		valueBytes, err := goyaml.Marshal(value)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, valueBytes)
+	}
+	return res, nil
+}
+
+func ManifestEntityToModel(e entity.ManifestWork) models.ManifestWork {
 	m := models.ManifestWork{
 		ID:               e.Id,
 		PathManifestWork: e.Path,
 		RepoID:           e.Repo.Id,
-		Content:          e.Encode(),
+		Valid:            e.Valid,
+		Hash:             e.Hash,
 	}
 	return m
 }

@@ -6,22 +6,22 @@ import (
 
 	"github.com/tupyy/tinyedge-controller/internal/repo/git"
 	"github.com/tupyy/tinyedge-controller/internal/services/configuration"
-	"github.com/tupyy/tinyedge-controller/internal/services/workload"
+	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
 	"go.uber.org/zap"
 )
 
 type GitOpsWorker struct {
-	workload    *workload.WorkloadService
-	confService *configuration.ConfigurationService
-	gitRepo     *git.GitRepo
+	manifestService *manifest.Service
+	confService     *configuration.ConfigurationService
+	gitRepo         *git.GitRepo
 }
 
-func NewGitOpsWorker(w *workload.WorkloadService, c *configuration.ConfigurationService, g *git.GitRepo) *GitOpsWorker {
+func NewGitOpsWorker(w *manifest.Service, c *configuration.ConfigurationService, g *git.GitRepo) *GitOpsWorker {
 	return &GitOpsWorker{w, c, g}
 }
 
 func (g *GitOpsWorker) Do(ctx context.Context) error {
-	repos, err := g.workload.GetRepositories(ctx)
+	repos, err := g.manifestService.GetRepositories(ctx)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func (g *GitOpsWorker) Do(ctx context.Context) error {
 		zap.S().Infow("repo has been updated", "repo_url", repo.Url, "head sha", headSha, "repo_current_sha", repo.CurrentHeadSha)
 
 		repo.TargetHeadSha = headSha
-		if err := g.workload.UpdateRepository(ctx, repo); err != nil {
+		if err := g.manifestService.UpdateRepository(ctx, repo); err != nil {
 			zap.S().Errorw("unable to update target sha of the repository", "error", err, "repo_id", repo.Id, "repo_url", repo.Url)
 			continue
 		}
@@ -64,7 +64,7 @@ func (g *GitOpsWorker) Do(ctx context.Context) error {
 			continue
 		}
 
-		created, updated, _, err := g.workload.UpdateManifests(ctx, repo, gitManifests)
+		created, updated, _, err := g.manifestService.UpdateManifests(ctx, repo, gitManifests)
 		if err != nil {
 			zap.S().Errorw("unable to update repository's manifests", "error", err, "repo_id", repo.Id)
 			continue
@@ -73,7 +73,7 @@ func (g *GitOpsWorker) Do(ctx context.Context) error {
 		// create relations between namespaces, sets and devices for the new manifests
 		for _, m := range created {
 			zap.S().Infof("create relations from manifest %q", m.Name)
-			if err := g.workload.CreateRelations(ctx, m); err != nil {
+			if err := g.manifestService.CreateRelations(ctx, m); err != nil {
 				return fmt.Errorf("unable to create relations for manifest %q: %w", repo.Id, err)
 			}
 		}
@@ -81,28 +81,14 @@ func (g *GitOpsWorker) Do(ctx context.Context) error {
 		// update the relations of the existing manifests
 		for _, m := range updated {
 			zap.S().Infof("update relations for manifest %+v", m)
-			if err := g.workload.UpdateRelations(ctx, m); err != nil {
+			if err := g.manifestService.UpdateRelations(ctx, m); err != nil {
 				return fmt.Errorf("unable to update relations for manifest %q: %w", repo.Id, err)
-			}
-		}
-
-		// get all repo's manifests
-		manifests, err := g.workload.GetManifests(ctx, repo)
-		if err != nil {
-			return err
-		}
-
-		for _, m := range manifests {
-			for _, id := range m.SetIDs {
-				if err := g.confService.WriteConfigurationForSet(ctx, id); err != nil {
-					return fmt.Errorf("unable to write configuration to cache: %w", err)
-				}
 			}
 		}
 
 		// all done. set current sha to target sha
 		repo.CurrentHeadSha = headSha
-		if err := g.workload.UpdateRepository(ctx, repo); err != nil {
+		if err := g.manifestService.UpdateRepository(ctx, repo); err != nil {
 			zap.S().Errorw("unable to update current sha of the repository", "error", err, "repo_id", repo.Id)
 		}
 

@@ -1,4 +1,4 @@
-package models
+package pg
 
 import (
 	"database/sql"
@@ -20,34 +20,34 @@ DB Table Details
 -------------------------------------
 
 
-Table: devices_workloads
-[ 0] device_id                                      TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+Table: sets_workloads
+[ 0] device_set_id                                  TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 1] manifest_work_id                               TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "device_id": "uEnSDFAiDSAIoixnMYXwbJeCV",    "manifest_work_id": "qTLWpUQEhDINPTAyTHvpbZNpF"}
+{    "device_set_id": "pajUlhuuFVHYyxbIfcceHOhrP",    "manifest_work_id": "jFidOeVmghZpceFXBuLVapjtx"}
 
 
 
 */
 
-// DevicesWorkloads struct is a row record of the devices_workloads table in the tinyedge database
-type DevicesWorkloads struct {
-	//[ 0] device_id                                      TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	DeviceID string `gorm:"primary_key;column:device_id;type:TEXT;"`
+// SetsWorkloads struct is a row record of the sets_workloads table in the tinyedge database
+type SetsWorkloads struct {
+	//[ 0] device_set_id                                  TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+	DeviceSetID string `gorm:"primary_key;column:device_set_id;type:TEXT;"`
 	//[ 1] manifest_work_id                               TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ManifestWorkID string `gorm:"primary_key;column:manifest_work_id;type:TEXT;"`
 }
 
-var devices_workloadsTableInfo = &TableInfo{
-	Name: "devices_workloads",
+var sets_workloadsTableInfo = &TableInfo{
+	Name: "sets_workloads",
 	Columns: []*ColumnInfo{
 
 		&ColumnInfo{
 			Index:              0,
-			Name:               "device_id",
+			Name:               "device_set_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
@@ -58,10 +58,10 @@ var devices_workloadsTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "TEXT",
 			ColumnLength:       -1,
-			GoFieldName:        "DeviceID",
+			GoFieldName:        "DeviceSetID",
 			GoFieldType:        "string",
-			JSONFieldName:      "device_id",
-			ProtobufFieldName:  "device_id",
+			JSONFieldName:      "device_set_id",
+			ProtobufFieldName:  "device_set_id",
 			ProtobufType:       "string",
 			ProtobufPos:        1,
 		},
@@ -90,25 +90,25 @@ var devices_workloadsTableInfo = &TableInfo{
 }
 
 // TableName sets the insert table name for this struct type
-func (d *DevicesWorkloads) TableName() string {
-	return "devices_workloads"
+func (s *SetsWorkloads) TableName() string {
+	return "sets_workloads"
 }
 
 // BeforeSave invoked before saving, return an error if field is not populated.
-func (d *DevicesWorkloads) BeforeSave() error {
+func (s *SetsWorkloads) BeforeSave() error {
 	return nil
 }
 
 // Prepare invoked before saving, can be used to populate fields etc.
-func (d *DevicesWorkloads) Prepare() {
+func (s *SetsWorkloads) Prepare() {
 }
 
 // Validate invoked before performing action, return an error if field is not populated.
-func (d *DevicesWorkloads) Validate(action Action) error {
+func (s *SetsWorkloads) Validate(action Action) error {
 	return nil
 }
 
 // TableInfo return table meta data
-func (d *DevicesWorkloads) TableInfo() *TableInfo {
-	return devices_workloadsTableInfo
+func (s *SetsWorkloads) TableInfo() *TableInfo {
+	return sets_workloadsTableInfo
 }

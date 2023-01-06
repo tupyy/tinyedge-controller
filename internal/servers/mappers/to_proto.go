@@ -25,7 +25,22 @@ func MapConfigurationToProto(conf entity.ConfigurationResponse) *edgepb.Configur
 }
 
 func MapWorkloadToProto(w entity.Workload) *common.Workload {
-	return &common.Workload{}
+	configmaps := make([]string, 0, len(w.Configmaps))
+	for _, c := range w.Configmaps {
+		configmaps = append(configmaps, c.String())
+	}
+
+	pb := common.Workload{
+		Name:       w.Name,
+		Id:         w.ID,
+		Hash:       w.Hash,
+		ConfigMaps: configmaps,
+		Rootless:   w.Rootless,
+		Spec:       w.Specification.String(),
+		Labels:     w.Labels,
+	}
+
+	return &pb
 }
 
 func MapSecretToProto(s entity.Secret) *common.Secret {

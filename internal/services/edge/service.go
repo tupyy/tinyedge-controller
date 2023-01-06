@@ -40,7 +40,7 @@ func (s *Service) Enrol(ctx context.Context, deviceID string) (status entity.Enr
 		// device not found. create the device
 		device := entity.Device{
 			ID:          deviceID,
-			Namespace:   defaultNamespace,
+			NamespaceID: defaultNamespace,
 			EnrolStatus: entity.EnroledStatus,
 			EnroledAt:   time.Now().UTC(),
 		}

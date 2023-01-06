@@ -29,3 +29,8 @@ func (c *MemCacheRepo) Get(ctx context.Context, id string) (entity.Configuration
 	}
 	return conf, nil
 }
+
+func (c *MemCacheRepo) Delete(ctx context.Context, id string) error {
+	delete(c.cache, id)
+	return nil
+}

@@ -1,4 +1,4 @@
-package models
+package pg
 
 import (
 	"database/sql"
@@ -34,7 +34,7 @@ Table: device
 
 JSON Sample
 -------------------------------------
-{    "id": "skXHfpWkwcFYJDMvemESFZNhK",    "enroled_at": "2305-04-30T08:27:44.61348959+02:00",    "registered_at": "2198-10-10T01:24:06.252049751+02:00",    "enroled": "NokleHhEpjTeVWLqFenQkhoKH",    "registered": true,    "certificate_sn": "MMgJWhhMrmWHEsxDShoyKSegt",    "namespace_id": "JMjuIxjefGNmNkBwmVJorCIqe",    "device_set_id": "fbtoQARguvhHchGWyPdaEcQdS",    "configuration_id": "AoWwLKuLbgyWyDDPKQeOioPoU"}
+{    "id": "eTfLigPsAZkgCgVoJfOmWarxr",    "enroled_at": "2124-11-07T01:31:34.371998557+01:00",    "registered_at": "2120-02-28T22:54:04.193443211+01:00",    "enroled": "TZZpPNPIxlFynkwYPHdbKvPET",    "registered": true,    "certificate_sn": "pDSVwfUgUrYjmOexWousKEBec",    "namespace_id": "yYtUWxUJMNkcXrQiswTsHCqPQ",    "device_set_id": "YtqBWXrSnHaXEXLUfdjHDTDBb",    "configuration_id": "XWeGCIqxsAdlNfGeQsfggDANj"}
 
 
 

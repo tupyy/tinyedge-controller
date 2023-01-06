@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	"github.com/tupyy/tinyedge-controller/internal/repo/postgres/models"
+	models "github.com/tupyy/tinyedge-controller/internal/repo/models/pg"
 )
 
 func MapEntityToModel(device entity.Device) models.Device {
 	m := models.Device{
 		ID:          device.ID,
-		NamespaceID: sql.NullString{Valid: true, String: device.Namespace},
+		NamespaceID: sql.NullString{Valid: true, String: device.NamespaceID},
 		Registered:  device.Registred,
 		Enroled:     device.EnrolStatus.String(),
 		EnroledAt:   device.EnroledAt,
@@ -34,13 +34,16 @@ func MapEntityToModel(device entity.Device) models.Device {
 func MapModelToEntity(device models.Device) entity.Device {
 	e := entity.Device{
 		ID:          device.ID,
-		Namespace:   device.NamespaceID.String,
+		NamespaceID: device.NamespaceID.String,
 		Registred:   device.Registered,
 		EnroledAt:   device.EnroledAt,
 		EnrolStatus: entity.EnroledStatus.FromString(device.Enroled),
 	}
 	if device.CertificateSn.Valid {
 		e.CertificateSerialNumber = device.CertificateSn.String
+	}
+	if device.DeviceSetID.Valid {
+		e.SetID = &device.DeviceSetID.String
 	}
 	return e
 }

@@ -55,12 +55,12 @@ generate.proto:
 
 BASE_CONNSTR="postgresql://$(ROOT_USER):$(ROOT_PWD)@$(DB_HOST):$(DB_PORT)"
 GEN_CMD=$(TOOLS_DIR)/gen --sqltype=postgres \
-	--module=github.com/tupyy/tinyedge-controller/internal/repo/postgres --exclude=schema_migrations \
-	--gorm --no-json --no-xml --overwrite --out $(CURDIR)/internal/repo/postgres
+	--module=github.com/tupyy/tinyedge-controller/internal/repo/models/pg --exclude=schema_migrations \
+	--gorm --no-json --no-xml --overwrite --out $(CURDIR)/internal/repo/models
 
 #help generate.models: generate models for the database
 generate.models:
-	sh -c '$(GEN_CMD) --connstr "$(BASE_CONNSTR)/tinyedge?sslmode=disable"  --model=models --database tinyedge' 						# Generate models for the DB tables
+	sh -c '$(GEN_CMD) --connstr "$(BASE_CONNSTR)/tinyedge?sslmode=disable"  --model=pg --database tinyedge' 						# Generate models for the DB tables
 
 GO_IMAGE=golang:1.17.8-alpine3.14
 GOIMPORTS_IMAGE=golang.org/x/tools/cmd/goimports@latest
@@ -99,7 +99,7 @@ docker.push: ## Push docker image with the manager.
 	$(DOCKER) tag ${IMG}:${IMG_TAG} ${QUAY_REPO}/${IMG}:${IMG_TAG}
 	$(DOCKER) push ${IMG}:${IMG_TAG}
 
-##@Infra
+##@ Infra
 .PHONY: postgres.setup.clean postgres.setup.init postgres.setup.tables postgres.setup.migrations
 
 DB_HOST=localhost
@@ -130,7 +130,7 @@ postgres.setup.fixtures:
 	$(PSQL_COMMAND) --dbname=tinyedge --user=$(ROOT_USER) \
 		-f sql/fixtures.sql
 
-##@Vault
+##@ Vault
 
 VAULT_ADDR="http://localhost:8200"
 VAULT_FORMAT=json
@@ -143,6 +143,20 @@ vault.login:
 
 vault.secret.id:
 	@$(VAULT_CMD) write -f auth/approle/role/dev-role/secret-id | jq '.data.secret_id' | sed 's/"//g'
+
+vault.generate.registration.certificates:
+	@$(VAULT_CMD) write pki_int/issue/tinyedge-role common_name="registration.home.net" ttl="3600h" ip_sans="127.0.0.1" > registration
+	@cat $(PWD)/registration | jq --raw-output '.data.private_key' > registration_private_key.pem
+	@cat $(PWD)/registration | jq --raw-output '.data.certificate' > registration_cert.pem
+	@cat $(PWD)/registration | jq --raw-output '.data.issuing_ca' > registration_ca.pem
+	@rm $(PWD)/registration
+
+vault.generate.server.certificates:
+	@$(VAULT_CMD) write pki_int/issue/tinyedge-role common_name="server.home.net" ttl="3600h" ip_sans="127.0.0.1" > server
+	@cat $(PWD)/server | jq --raw-output '.data.private_key' > $(PWD)/resources/certificates/key.pem
+	@cat $(PWD)/server | jq --raw-output '.data.certificate' > $(PWD)/resources/certificates/cert.pem
+	@cat $(PWD)/server | jq --raw-output '.data.issuing_ca' > $(PWD)/resources/certificates/ca.pem
+	@rm $(PWD)/server
 
 ##@ Tools
 TOOLS_DIR=$(CURDIR)/tools/bin

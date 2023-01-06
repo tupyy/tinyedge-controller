@@ -1,4 +1,4 @@
-package models
+package pg
 
 import (
 	"database/sql"
@@ -27,7 +27,7 @@ Table: namespaces_workloads
 
 JSON Sample
 -------------------------------------
-{    "namespace_id": "ExfioZMOhPKBvUxvPvipxmQeR",    "manifest_work_id": "pMqUcQVBBqcfmPjokGkBwgdUH"}
+{    "namespace_id": "aOOMUdPhkKOJImEgpJFkFXywf",    "manifest_work_id": "BkTDhJGILkXERNjXGPeodOIZN"}
 
 
 
