@@ -40,22 +40,22 @@ type CertificateReaderWriter interface {
 }
 
 type ManifestReader interface {
-	GetManifests(ctx context.Context) ([]entity.ManifestWork, error)
-	GetManifest(ctx context.Context, id string) (entity.ManifestWork, error)
-	GetRepoManifests(ctx context.Context, r entity.Repository) ([]entity.ManifestWork, error)
+	GetManifests(ctx context.Context) ([]entity.ManifestReference, error)
+	GetManifest(ctx context.Context, id string) (entity.ManifestReference, error)
+	GetRepoManifests(ctx context.Context, r entity.Repository) ([]entity.ManifestReference, error)
 	GetRepositories(ctx context.Context) ([]entity.Repository, error)
-	GetDeviceManifests(ctx context.Context, deviceID string) ([]entity.ManifestWork, error)
-	GetSetManifests(ctx context.Context, setID string) ([]entity.ManifestWork, error)
-	GetNamespaceManifests(ctx context.Context, setID string) ([]entity.ManifestWork, error)
+	GetDeviceManifests(ctx context.Context, deviceID string) ([]entity.ManifestReference, error)
+	GetSetManifests(ctx context.Context, setID string) ([]entity.ManifestReference, error)
+	GetNamespaceManifests(ctx context.Context, setID string) ([]entity.ManifestReference, error)
 }
 
 type ManifestWriter interface {
 	InsertRepo(ctx context.Context, r entity.Repository) error
 	UpdateRepo(ctx context.Context, r entity.Repository) error
 
-	InsertManifest(ctx context.Context, manifest entity.ManifestWork) error
-	UpdateManifest(ctx context.Context, manifest entity.ManifestWork) error
-	DeleteManifest(ctx context.Context, manifest entity.ManifestWork) error
+	InsertManifest(ctx context.Context, manifest entity.ManifestReference) error
+	UpdateManifest(ctx context.Context, manifest entity.ManifestReference) error
+	DeleteManifest(ctx context.Context, manifest entity.ManifestReference) error
 
 	CreateNamespaceRelation(ctx context.Context, namespace, manifestID string) error
 	CreateSetRelation(ctx context.Context, set, manifestID string) error
@@ -70,11 +70,12 @@ type ManifestReaderWriter interface {
 	ManifestWriter
 }
 
-type GitReaderWriter interface {
+type GitReader interface {
 	Open(ctx context.Context, r entity.Repository) (entity.Repository, error)
 	Pull(ctx context.Context, r entity.Repository) error
 	GetHeadSha(ctx context.Context, r entity.Repository) (string, error)
 	GetManifests(ctx context.Context, repo entity.Repository) ([]entity.ManifestWork, error)
+	GetManifest(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error)
 }
 
 type ConfigurationReader interface {

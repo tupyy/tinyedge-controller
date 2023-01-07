@@ -29,6 +29,29 @@ Q=@
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
+# Colors used in this Makefile
+escape=$(shell printf '\033')
+RESET_COLOR=$(escape)[0m
+COLOR_YELLOW=$(escape)[38;5;220m
+COLOR_RED=$(escape)[91m
+COLOR_BLUE=$(escape)[94m
+
+COLOR_LEVEL_TRACE=$(escape)[38;5;87m
+COLOR_LEVEL_DEBUG=$(escape)[38;5;87m
+COLOR_LEVEL_INFO=$(escape)[92m
+COLOR_LEVEL_WARN=$(escape)[38;5;208m
+COLOR_LEVEL_ERROR=$(escape)[91m
+COLOR_LEVEL_FATAL=$(escape)[91m
+
+define COLORIZE
+sed -u -e "s/\\\\\"/'/g; \
+s/debug/$(COLOR_LEVEL_DEBUG)debug$(RESET_COLOR)/;    \
+s/info/$(COLOR_LEVEL_INFO)info$(RESET_COLOR)/;       \
+s/warning/$(COLOR_LEVEL_WARN)warning$(RESET_COLOR)/; \
+s/error/$(COLOR_LEVEL_ERROR)error$(RESET_COLOR)/;    \
+s/fatal/level=$(COLOR_LEVEL_FATAL)fatal$(RESET_COLOR)/"
+endef
+
 ##@ General
 
 # The help target prints out all targets with their descriptions organized
@@ -84,7 +107,7 @@ build: ## Build binary.
 	go build -mod=vendor -o $(PWD)/bin/tinyedge-controller $(PWD)/main.go
 
 run: ## Run the controller from your host.
-	bin/tinyedge-controller run
+	bin/tinyedge-controller run | $(COLORIZE)
 
 run.infra: ## Run the docker compose for the infrastructure
 	PROMETHEUS_CONFIG_FILER=$(CURDIR)/resources/monitoring/prometheus.yaml $(DOCKER-COMPOSE) -f $(CURDIR)/build/docker-compose.yaml up -d

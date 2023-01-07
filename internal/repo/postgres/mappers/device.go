@@ -58,11 +58,11 @@ func SetModelToEntity(s []models.SetJoin) entity.Set {
 	ids := make([]string, 0, len(s))
 	manifests := make([]string, 0, len(s))
 	for _, ss := range s {
-		if ss.DeviceId != "" && idMap.exists(ss.DeviceId, "device") {
+		if ss.DeviceId != "" && !idMap.exists(ss.DeviceId, "device") {
 			ids = append(ids, ss.DeviceId)
 			idMap.add(ss.DeviceId, "device")
 		}
-		if ss.ManifestId != "" && idMap.exists(ss.ManifestId, "manifest") {
+		if ss.ManifestId != "" && !idMap.exists(ss.ManifestId, "manifest") {
 			manifests = append(manifests, ss.ManifestId)
 			idMap.add(ss.DeviceId, "manifest")
 		}
@@ -100,15 +100,15 @@ func NamespaceModelToEntity(n []models.NamespaceJoin) entity.Namespace {
 	devices := make([]string, 0, len(n))
 	manifests := make([]string, 0, len(n))
 	for _, nn := range n {
-		if nn.SetId != "" && idMap.exists(nn.SetId, "set") {
+		if nn.SetId != "" && !idMap.exists(nn.SetId, "set") {
 			sets = append(sets, nn.SetId)
 			idMap.add(nn.SetId, "set")
 		}
-		if nn.DeviceId != "" && idMap.exists(nn.DeviceId, "device") {
+		if nn.DeviceId != "" && !idMap.exists(nn.DeviceId, "device") {
 			devices = append(devices, nn.DeviceId)
 			idMap.add(nn.DeviceId, "device")
 		}
-		if nn.ManifestId != "" && idMap.exists(nn.ManifestId, "manifest") {
+		if nn.ManifestId != "" && !idMap.exists(nn.ManifestId, "manifest") {
 			manifests = append(manifests, nn.ManifestId)
 			idMap.add(nn.ManifestId, "manifest")
 		}

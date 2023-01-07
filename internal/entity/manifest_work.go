@@ -26,12 +26,14 @@ type Repository struct {
 	PullPeriod     time.Duration
 }
 
-// PgManifest maps the manifest entry from postgres
-type PgManifest struct {
-	Id    string
+type ManifestReference struct {
+	Id string
+	// Valid is true if the content of the manifest is valid
 	Valid bool
-	Hash  string
-	Repo  Repository
+	// Hash of the manifest content
+	Hash string
+	// Repo - manifest's git repository
+	Repo Repository
 	// Path - filepath of the manifest in the local storage
 	Path string
 	// DeviceIDs - list of devices on which this manifest is applied.
@@ -55,6 +57,8 @@ type ManifestWork struct {
 	Description string
 	// Valid is true if the manifest content is valid
 	Valid bool
+	// path of the manifest file in the local repo
+	Path string
 	// Selectors list of selectors
 	Selectors []Selector
 	// Rootless - set the mode of podman execution: rootless or rootfull
@@ -67,16 +71,8 @@ type ManifestWork struct {
 	Pods []v1.Pod
 	// ConfigMaps -list of configmaps
 	ConfigMaps []v1.ConfigMap
-	// Repo - parent repo
-	Repo Repository
-	// Path - filepath of the manifest in the local storage
-	Path string
-	// DeviceIDs - list of devices on which this manifest is applied.
-	DeviceIDs []string
-	// SetIDs - list of sets on which this manifest is applied.
-	SetIDs []string
-	// NamespaceIDs - list of namespaces on which this manifest is applied.
-	NamespaceIDs []string
+	// Reference
+	Reference *ManifestReference
 }
 
 func (m ManifestWork) Workloads() []Workload {

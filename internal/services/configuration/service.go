@@ -5,16 +5,17 @@ import (
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
 	"go.uber.org/zap"
 )
 
 type ConfigurationService struct {
-	manifestReader  common.ManifestReader
+	manifestReader  *manifest.Service
 	deviceReader    common.DeviceReader
 	cacheReadWriter common.ConfigurationCacheReaderWriter
 }
 
-func New(deviceReader common.DeviceReader, manifestReader common.ManifestReader, cacheReaderWriter common.ConfigurationCacheReaderWriter) *ConfigurationService {
+func New(deviceReader common.DeviceReader, manifestReader *manifest.Service, cacheReaderWriter common.ConfigurationCacheReaderWriter) *ConfigurationService {
 	return &ConfigurationService{
 		manifestReader:  manifestReader,
 		deviceReader:    deviceReader,
@@ -84,23 +85,36 @@ func (c *ConfigurationService) getConfiguration(ctx context.Context, device enti
 }
 
 func (c *ConfigurationService) getManifests(ctx context.Context, device entity.Device) ([]entity.ManifestWork, error) {
-	if len(device.ManifestIDS) > 0 {
-		manifests, err := c.manifestReader.GetDeviceManifests(ctx, device.ID)
-		if err != nil {
-			return []entity.ManifestWork{}, err
+	getManifests := func(ctx context.Context, ids []string) ([]entity.ManifestWork, error) {
+		manifests := make([]entity.ManifestWork, 0, len(device.ManifestIDS))
+		for _, id := range ids {
+			manifest, err := c.manifestReader.GetManifest(ctx, id)
+			if err != nil {
+				zap.S().Errorf("unable to get manifest", "error", err)
+				continue
+			}
+			manifests = append(manifests, manifest)
 		}
 		return manifests, nil
+	}
+
+	if len(device.ManifestIDS) > 0 {
+		return getManifests(ctx, device.ManifestIDS)
 	}
 
 	if device.SetID != nil {
-		manifests, err := c.manifestReader.GetSetManifests(ctx, *device.SetID)
+		sets, err := c.deviceReader.GetSet(ctx, *device.SetID)
 		if err != nil {
 			return []entity.ManifestWork{}, err
 		}
-		return manifests, nil
+		if len(sets.ManifestIDS) > 0 {
+			return getManifests(ctx, sets.ManifestIDS)
+		}
 	}
 
-	// TODO for each manifest get the secrets from vault
-
-	return c.manifestReader.GetNamespaceManifests(ctx, device.NamespaceID)
+	namespace, err := c.deviceReader.GetNamespace(ctx, device.NamespaceID)
+	if err != nil {
+		return []entity.ManifestWork{}, err
+	}
+	return getManifests(ctx, namespace.ManifestIDS)
 }

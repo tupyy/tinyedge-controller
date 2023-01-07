@@ -1,22 +1,12 @@
 package mappers
 
 import (
-	"bytes"
 	"database/sql"
 	"fmt"
-	"io"
-	"os"
-	"path"
-	"strings"
 	"time"
 
-	goyaml "github.com/go-yaml/yaml"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	manifestv1 "github.com/tupyy/tinyedge-controller/internal/repo/models/manifest/v1"
 	models "github.com/tupyy/tinyedge-controller/internal/repo/models/pg"
-	"go.uber.org/zap"
-	v1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/yaml"
 )
 
 type uniqueIds map[string]struct{}
@@ -32,16 +22,36 @@ func (u uniqueIds) add(id string, prefix string) {
 	u[_id] = struct{}{}
 }
 
-func ManifestModelToEntity(mm []models.ManifestJoin) (entity.ManifestWork, error) {
+func ManifestModelToEntity(mm []models.ManifestJoin) entity.ManifestReference {
 	m := mm[0]
-	e, err := basicManifestModelToEntity(m)
-	if err != nil {
-		return entity.ManifestWork{}, err
+	e := entity.ManifestReference{
+		Id:           m.ID,
+		Valid:        m.Valid,
+		Hash:         m.Hash,
+		Path:         m.PathManifestWork,
+		DeviceIDs:    make([]string, 0, len(mm)),
+		SetIDs:       make([]string, 0, len(mm)),
+		NamespaceIDs: make([]string, 0, len(mm)),
+		Repo: entity.Repository{
+			Id:  m.Repo_ID,
+			Url: m.Repo_URL,
+		},
 	}
-
-	e.DeviceIDs = make([]string, 0, len(mm))
-	e.SetIDs = make([]string, 0, len(mm))
-	e.NamespaceIDs = make([]string, 0, len(mm))
+	if m.Repo_Branch.Valid {
+		e.Repo.Branch = m.Repo_Branch.String
+	}
+	if m.Repo_LocalPath.Valid {
+		e.Repo.LocalPath = m.Repo_LocalPath.String
+	}
+	if m.Repo_CurrentHeadSha.Valid {
+		e.Repo.CurrentHeadSha = m.Repo_CurrentHeadSha.String
+	}
+	if m.Repo_TargetHeadSha.Valid {
+		e.Repo.TargetHeadSha = m.Repo_TargetHeadSha.String
+	}
+	if m.Repo_PullPeriodSeconds.Valid {
+		e.Repo.PullPeriod = time.Duration(m.Repo_PullPeriodSeconds.Int64) * time.Second
+	}
 
 	// makes sure that we add only once the id of the devices, sets or namespaces
 	idMap := make(uniqueIds)
@@ -60,21 +70,44 @@ func ManifestModelToEntity(mm []models.ManifestJoin) (entity.ManifestWork, error
 			idMap.add(m.SetId, "set")
 		}
 	}
-	return e, err
+	return e
 }
 
-func ManifestModelsToEntities(mm []models.ManifestJoin) ([]entity.ManifestWork, error) {
-	entities := make(map[string]entity.ManifestWork)
+func ManifestModelsToEntities(mm []models.ManifestJoin) []entity.ManifestReference {
+	entities := make(map[string]entity.ManifestReference)
 	// makes sure that we add only once the id of the devices, sets or namespaces
 	idMap := make(uniqueIds)
 	for _, m := range mm {
 		manifest, ok := entities[m.ID]
 		if !ok {
-			e, err := basicManifestModelToEntity(m)
-			if err != nil {
-				zap.S().Errorw("unable to map basic manifest to entity", "error", err, "manifest join", m)
+			manifest = entity.ManifestReference{
+				Id:    m.ID,
+				Valid: m.Valid,
+				Hash:  m.Hash,
+				Path:  m.PathManifestWork,
+				Repo: entity.Repository{
+					Id:  m.Repo_ID,
+					Url: m.Repo_URL,
+				},
+				DeviceIDs:    make([]string, 0, len(mm)),
+				SetIDs:       make([]string, 0, len(mm)),
+				NamespaceIDs: make([]string, 0, len(mm)),
 			}
-			manifest = e
+			if m.Repo_Branch.Valid {
+				manifest.Repo.Branch = m.Repo_Branch.String
+			}
+			if m.Repo_LocalPath.Valid {
+				manifest.Repo.LocalPath = m.Repo_LocalPath.String
+			}
+			if m.Repo_CurrentHeadSha.Valid {
+				manifest.Repo.CurrentHeadSha = m.Repo_CurrentHeadSha.String
+			}
+			if m.Repo_TargetHeadSha.Valid {
+				manifest.Repo.TargetHeadSha = m.Repo_TargetHeadSha.String
+			}
+			if m.Repo_PullPeriodSeconds.Valid {
+				manifest.Repo.PullPeriod = time.Duration(m.Repo_PullPeriodSeconds.Int64) * time.Second
+			}
 		}
 		if m.DeviceId != "" && !idMap.exists(m.DeviceId, "device") {
 			manifest.DeviceIDs = append(manifest.DeviceIDs, m.DeviceId)
@@ -91,145 +124,14 @@ func ManifestModelsToEntities(mm []models.ManifestJoin) ([]entity.ManifestWork, 
 		entities[m.ID] = manifest
 	}
 
-	ee := make([]entity.ManifestWork, 0, len(entities))
+	ee := make([]entity.ManifestReference, 0, len(entities))
 	for _, v := range entities {
 		ee = append(ee, v)
 	}
-	return ee, nil
+	return ee
 }
 
-func basicManifestModelToEntity(m models.ManifestJoin) (entity.ManifestWork, error) {
-	content, err := os.ReadFile(m.PathManifestWork)
-	if err != nil {
-		return entity.ManifestWork{}, fmt.Errorf("unable to read manifest file %q from repo: %w", m.PathManifestWork, err)
-	}
-	gitModel := manifestv1.Manifest{}
-	if err := yaml.Unmarshal(content, &gitModel); err != nil {
-		return entity.ManifestWork{}, fmt.Errorf("unable to unmarshal content of file %q: %w", m.PathManifestWork, err)
-	}
-
-	e := entity.ManifestWork{
-		ConfigMaps: make([]v1.ConfigMap, 0),
-		Pods:       make([]v1.Pod, 0),
-	}
-	e.Id = m.ID
-	e.Repo = entity.Repository{
-		Id:  m.RepoID,
-		Url: m.Repo_URL,
-	}
-	if m.Repo_Branch.Valid {
-		e.Repo.Branch = m.Repo_Branch.String
-	}
-	if m.Repo_LocalPath.Valid {
-		e.Repo.LocalPath = m.Repo_LocalPath.String
-	}
-	if m.Repo_CurrentHeadSha.Valid {
-		e.Repo.CurrentHeadSha = m.Repo_CurrentHeadSha.String
-	}
-	if m.Repo_TargetHeadSha.Valid {
-		e.Repo.TargetHeadSha = m.Repo_TargetHeadSha.String
-	}
-	if m.Repo_PullPeriodSeconds.Valid {
-		e.Repo.PullPeriod = time.Duration(m.Repo_PullPeriodSeconds.Int64) * time.Second
-	}
-	// create resources
-	for _, resource := range gitModel.Resources {
-		configmaps, pods, err := createResources(resource, m.Repo_LocalPath.String)
-		if err != nil {
-			return entity.ManifestWork{}, err
-		}
-		e.ConfigMaps = append(e.ConfigMaps, configmaps...)
-		e.Pods = append(e.Pods, pods...)
-	}
-
-	e.Path = m.PathManifestWork
-	e.DeviceIDs = make([]string, 0)
-	e.NamespaceIDs = make([]string, 0)
-	e.SetIDs = make([]string, 0)
-	e.Hash = m.Hash
-	e.Path = m.PathManifestWork
-	return e, nil
-}
-
-func createResources(resource manifestv1.Resource, basePath string) ([]v1.ConfigMap, []v1.Pod, error) {
-	content, err := os.ReadFile(path.Join(basePath, resource.Ref))
-	if err != nil {
-		return []v1.ConfigMap{}, []v1.Pod{}, fmt.Errorf("unable to read file %q: %w", resource.Ref, err)
-	}
-
-	parts, err := splitYAML(content)
-	if err != nil {
-		return []v1.ConfigMap{}, []v1.Pod{}, fmt.Errorf("unable to decode resource file %q: %w", resource.Ref, err)
-	}
-
-	configMaps := make([]v1.ConfigMap, 0)
-	pods := make([]v1.Pod, 0)
-	allowedKinds := "ConfigMap|Pods"
-	for _, part := range parts {
-		kind, err := getKind(part)
-		if err != nil {
-			zap.S().Errorf("unable to get \"kind\" from yaml with error %q", err)
-			continue
-		}
-		if kind == "" || !strings.Contains(allowedKinds, kind) {
-			zap.S().Errorf("kind %q not allowed in manifest work", kind)
-			continue
-		}
-		switch kind {
-		case "ConfigMap":
-			var c v1.ConfigMap
-			err := yaml.Unmarshal(part, &c)
-			if err != nil {
-				return []v1.ConfigMap{}, []v1.Pod{}, fmt.Errorf("unable to unmarshal part %q: %v", string(part), err)
-			}
-			configMaps = append(configMaps, c)
-		case "Pod":
-			var p v1.Pod
-			err := yaml.Unmarshal(part, &p)
-			if err != nil {
-				return []v1.ConfigMap{}, []v1.Pod{}, fmt.Errorf("unable to unmarshal part %q: %v", string(part), err)
-			}
-			pods = append(pods, p)
-		}
-	}
-
-	return configMaps, pods, nil
-}
-
-func getKind(content []byte) (string, error) {
-	type anonymousStruct struct {
-		Kind string `yaml:"kind"`
-	}
-	var a anonymousStruct
-	if err := goyaml.Unmarshal(content, &a); err != nil {
-		return "", fmt.Errorf("unknown struct: %s", err)
-	}
-	return a.Kind, nil
-}
-
-func splitYAML(resources []byte) ([][]byte, error) {
-	dec := goyaml.NewDecoder(bytes.NewReader(resources))
-
-	var res [][]byte
-	for {
-		var value interface{}
-		err := dec.Decode(&value)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-		valueBytes, err := goyaml.Marshal(value)
-		if err != nil {
-			return nil, err
-		}
-		res = append(res, valueBytes)
-	}
-	return res, nil
-}
-
-func ManifestEntityToModel(e entity.ManifestWork) models.ManifestWork {
+func ManifestEntityToModel(e entity.ManifestReference) models.ManifestWork {
 	m := models.ManifestWork{
 		ID:               e.Id,
 		PathManifestWork: e.Path,

@@ -105,34 +105,45 @@ func (g *GitRepo) GetManifests(ctx context.Context, repo entity.Repository) ([]e
 		return nil, err
 	}
 
+	manifests := make([]entity.ManifestWork, 0, len(manifestFiles))
+	for _, m := range manifestFiles {
+		manifest, err := g.getManifest(ctx, m, repo.LocalPath)
+		if err != nil {
+			zap.S().Errorf("unable to get manifest file", "error", err, "filepath", m, "repo_id", repo.Id)
+			continue
+		}
+		manifests = append(manifests, manifest)
+	}
+
+	return manifests, nil
+}
+
+func (g *GitRepo) GetManifest(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
+	return g.getManifest(ctx, ref.Path, ref.Repo.LocalPath)
+}
+
+func (g *GitRepo) getManifest(ctx context.Context, filename, basePath string) (entity.ManifestWork, error) {
 	computeHash := func(b []byte) string {
 		hash := sha256.New()
 		hash.Write(b)
 		return fmt.Sprintf("%x", hash.Sum(nil))
 	}
 
-	entities := make([]entity.ManifestWork, 0, len(manifestFiles))
-	for _, m := range manifestFiles {
-		content, err := os.ReadFile(m)
-		if err != nil {
-			zap.S().Errorw("unable to read manifest file from repo", "file", m, "error", err)
-			continue
-		}
-		manifest, err := g.parse(content, m, repo.LocalPath)
-		if err != nil {
-			zap.S().Errorw("unable to parse manifest work", "file", m, "error", err)
-			continue
-		}
-
-		manifest.Repo = repo
-		manifest.Hash = computeHash(content)
-		manifest.Id = computeHash(bytes.NewBufferString(m).Bytes())
-		manifest.Path = m
-
-		entities = append(entities, manifest)
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		return entity.ManifestWork{}, fmt.Errorf("unable to read manifest file %q: %w", filename, err)
+	}
+	manifest, err := g.parse(content, filename, basePath)
+	if err != nil {
+		return entity.ManifestWork{}, fmt.Errorf("unable to parse manifest work %q: %w", filename, err)
 	}
 
-	return entities, nil
+	manifest.Hash = computeHash(content)
+	manifest.Id = computeHash(bytes.NewBufferString(filename).Bytes())
+	manifest.Path = filename
+
+	return manifest, nil
+
 }
 
 func (g *GitRepo) clone(ctx context.Context, r entity.Repository) (entity.Repository, error) {

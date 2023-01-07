@@ -4,6 +4,8 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	"github.com/tupyy/tinyedge-controller/pkg/grpc/common"
 	edgepb "github.com/tupyy/tinyedge-controller/pkg/grpc/edge"
+	"go.uber.org/zap"
+	"sigs.k8s.io/yaml"
 )
 
 func MapConfigurationToProto(conf entity.ConfigurationResponse) *edgepb.ConfigurationResponse {
@@ -27,7 +29,18 @@ func MapConfigurationToProto(conf entity.ConfigurationResponse) *edgepb.Configur
 func MapWorkloadToProto(w entity.Workload) *common.Workload {
 	configmaps := make([]string, 0, len(w.Configmaps))
 	for _, c := range w.Configmaps {
-		configmaps = append(configmaps, c.String())
+		data, err := yaml.Marshal(c)
+		if err != nil {
+			zap.S().Errorf("unable to marshal configmap: %w", err)
+			continue
+		}
+		configmaps = append(configmaps, string(data))
+	}
+
+	specs, err := yaml.Marshal(w.Specification)
+	if err != nil {
+		zap.S().Errorf("unable to marshal spec: %w", err)
+		return &common.Workload{}
 	}
 
 	pb := common.Workload{
@@ -36,7 +49,7 @@ func MapWorkloadToProto(w entity.Workload) *common.Workload {
 		Hash:       w.Hash,
 		ConfigMaps: configmaps,
 		Rootless:   w.Rootless,
-		Spec:       w.Specification.String(),
+		Spec:       string(specs),
 		Labels:     w.Labels,
 	}
 
