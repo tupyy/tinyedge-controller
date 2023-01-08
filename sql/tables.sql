@@ -28,12 +28,12 @@ CREATE TABLE repo (
     CHECK(pull_period_seconds >= 0) -- if 0 stop pulling
 );
 
-CREATE TABLE manifest_work (
+CREATE TABLE manifest_reference (
     id TEXT PRIMARY KEY,
     repo_id TEXT REFERENCES repo(id) NOT NULL,
     valid BOOLEAN NOT NULL,
     hash TEXT NOT NULL,
-    path_manifest_work TEXT NOT NULL
+    path_manifest_reference TEXT NOT NULL
 );
 
 CREATE TABLE namespace (
@@ -64,28 +64,28 @@ CREATE INDEX device_configuration_id_idx ON device (configuration_id);
 
 CREATE TABLE devices_workloads (
     device_id TEXT REFERENCES device(id) ON DELETE CASCADE,
-    manifest_work_id TEXT REFERENCES manifest_work(id) ON DELETE CASCADE,
+    manifest_reference_id TEXT REFERENCES manifest_reference(id) ON DELETE CASCADE,
     CONSTRAINT devices_workloads_pk PRIMARY KEY (
         device_id,
-        manifest_work_id
+        manifest_reference_id
     )
 );
 
 CREATE TABLE namespaces_workloads (
     namespace_id TEXT REFERENCES namespace(id) ON DELETE CASCADE,
-    manifest_work_id TEXT REFERENCES manifest_work(id) ON DELETE CASCADE,
-    CONSTRAINT namespace_manifest_work_pk PRIMARY KEY(
+    manifest_reference_id TEXT REFERENCES manifest_reference(id) ON DELETE CASCADE,
+    CONSTRAINT namespace_manifest_reference_pk PRIMARY KEY(
         namespace_id,
-        manifest_work_id
+        manifest_reference_id
     )
 );
 
 CREATE TABLE sets_workloads (
     device_set_id TEXT REFERENCES device_set(id) ON DELETE CASCADE,
-    manifest_work_id TEXT REFERENCES manifest_work(id) ON DELETE CASCADE,
-    CONSTRAINT device_set_manifest_work_pk PRIMARY KEY(
+    manifest_reference_id TEXT REFERENCES manifest_reference(id) ON DELETE CASCADE,
+    CONSTRAINT device_set_manifest_reference_pk PRIMARY KEY(
         device_set_id,
-        manifest_work_id
+        manifest_reference_id
     )
 );
 

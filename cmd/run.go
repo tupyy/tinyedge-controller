@@ -76,7 +76,7 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			zap.S().Fatal(err)
 		}
-		manifestRepo, err := pgRepo.NewManifestRepo(pgClient)
+		refRepo, err := pgRepo.NewReferenceRepository(pgClient)
 		if err != nil {
 			zap.S().Fatal(err)
 		}
@@ -86,7 +86,7 @@ var runCmd = &cobra.Command{
 		gitRepo := git.New("/home/cosmin/tmp/git")
 
 		certService := certificate.New(certRepo)
-		workService := manifest.New(deviceRepo, manifestRepo, gitRepo)
+		workService := manifest.New(deviceRepo, refRepo, gitRepo)
 		configurationService := confService.New(deviceRepo, workService, cacheRepo)
 		edgeService := edge.New(deviceRepo, configurationService, certService)
 		authService := auth.New(certService, deviceRepo)

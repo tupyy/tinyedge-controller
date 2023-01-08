@@ -13,26 +13,26 @@ import (
 	"gorm.io/gorm"
 )
 
-type ManifestRepo struct {
+type ReferenceRepository struct {
 	db             *gorm.DB
 	client         pgclient.Client
 	circuitBreaker pgclient.CircuitBreaker
 }
 
-func NewManifestRepo(client pgclient.Client) (*ManifestRepo, error) {
+func NewReferenceRepository(client pgclient.Client) (*ReferenceRepository, error) {
 	config := gorm.Config{
 		SkipDefaultTransaction: true, // No need transaction for those use cases.
 	}
 
 	gormDB, err := client.Open(config)
 	if err != nil {
-		return &ManifestRepo{}, err
+		return &ReferenceRepository{}, err
 	}
 
-	return &ManifestRepo{gormDB, client, client.GetCircuitBreaker()}, nil
+	return &ReferenceRepository{gormDB, client, client.GetCircuitBreaker()}, nil
 }
 
-func (m *ManifestRepo) GetManifests(ctx context.Context) ([]entity.ManifestReference, error) {
+func (m *ReferenceRepository) GetReferences(ctx context.Context) ([]entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
 		return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
 	}
@@ -55,7 +55,7 @@ func (m *ManifestRepo) GetManifests(ctx context.Context) ([]entity.ManifestRefer
 
 }
 
-func (m *ManifestRepo) GetManifest(ctx context.Context, id string) (entity.ManifestReference, error) {
+func (m *ReferenceRepository) GetReference(ctx context.Context, id string) (entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
 		return entity.ManifestReference{}, common.ErrPostgresNotAvailable
 	}
@@ -77,7 +77,7 @@ func (m *ManifestRepo) GetManifest(ctx context.Context, id string) (entity.Manif
 	return mappers.ManifestModelToEntity(manifests), nil
 }
 
-func (m *ManifestRepo) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
+func (m *ReferenceRepository) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
 	if !m.circuitBreaker.IsAvailable() {
 		return []entity.Repository{}, common.ErrPostgresNotAvailable
 	}
@@ -103,7 +103,7 @@ func (m *ManifestRepo) GetRepositories(ctx context.Context) ([]entity.Repository
 	return entities, nil
 }
 
-func (m *ManifestRepo) GetRepoManifests(ctx context.Context, r entity.Repository) ([]entity.ManifestReference, error) {
+func (m *ReferenceRepository) GetRepositoryReferences(ctx context.Context, r entity.Repository) ([]entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
 		return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
 	}
@@ -125,7 +125,7 @@ func (m *ManifestRepo) GetRepoManifests(ctx context.Context, r entity.Repository
 	return mappers.ManifestModelsToEntities(manifests), nil
 }
 
-func (m *ManifestRepo) InsertRepo(ctx context.Context, r entity.Repository) error {
+func (m *ReferenceRepository) InsertRepository(ctx context.Context, r entity.Repository) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -141,7 +141,7 @@ func (m *ManifestRepo) InsertRepo(ctx context.Context, r entity.Repository) erro
 	return nil
 }
 
-func (m *ManifestRepo) UpdateRepo(ctx context.Context, r entity.Repository) error {
+func (m *ReferenceRepository) UpdateRepository(ctx context.Context, r entity.Repository) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -158,12 +158,12 @@ func (m *ManifestRepo) UpdateRepo(ctx context.Context, r entity.Repository) erro
 	return nil
 }
 
-func (m *ManifestRepo) InsertManifest(ctx context.Context, manifest entity.ManifestReference) error {
+func (m *ReferenceRepository) InsertReference(ctx context.Context, ref entity.ManifestReference) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
 
-	exists, err := m.isExists(ctx, manifest)
+	exists, err := m.isExists(ctx, ref)
 	if err != nil {
 		return err
 	}
@@ -172,7 +172,7 @@ func (m *ManifestRepo) InsertManifest(ctx context.Context, manifest entity.Manif
 		return common.ErrResourceAlreadyExists
 	}
 
-	model := mappers.ManifestEntityToModel(manifest)
+	model := mappers.ManifestEntityToModel(ref)
 
 	if err := m.getDb(ctx).Create(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
@@ -183,12 +183,12 @@ func (m *ManifestRepo) InsertManifest(ctx context.Context, manifest entity.Manif
 	return nil
 }
 
-func (m *ManifestRepo) UpdateManifest(ctx context.Context, manifest entity.ManifestReference) error {
+func (m *ReferenceRepository) UpdateReference(ctx context.Context, ref entity.ManifestReference) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
 
-	model := mappers.ManifestEntityToModel(manifest)
+	model := mappers.ManifestEntityToModel(ref)
 
 	if err := m.getDb(ctx).Where("id = ?", model.ID).Save(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
@@ -203,12 +203,12 @@ func (m *ManifestRepo) UpdateManifest(ctx context.Context, manifest entity.Manif
 	return nil
 }
 
-func (m *ManifestRepo) DeleteManifest(ctx context.Context, manifest entity.ManifestReference) error {
+func (m *ReferenceRepository) DeleteReference(ctx context.Context, ref entity.ManifestReference) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
 
-	exists, err := m.isExists(ctx, manifest)
+	exists, err := m.isExists(ctx, ref)
 	if err != nil {
 		return err
 	}
@@ -217,7 +217,7 @@ func (m *ManifestRepo) DeleteManifest(ctx context.Context, manifest entity.Manif
 		return nil
 	}
 
-	if err := m.getDb(ctx).Where("id = ?", manifest.Id).Delete(&models.ManifestWork{}).Error; err != nil {
+	if err := m.getDb(ctx).Where("id = ?", ref.Id).Delete(&models.ManifestWork{}).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return common.ErrPostgresNotAvailable
 		}
@@ -227,7 +227,7 @@ func (m *ManifestRepo) DeleteManifest(ctx context.Context, manifest entity.Manif
 	return nil
 }
 
-func (m *ManifestRepo) GetNamespaceManifests(ctx context.Context, namespaceID string) ([]entity.ManifestReference, error) {
+func (m *ReferenceRepository) GetNamespaceReferences(ctx context.Context, namespaceID string) ([]entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
 		return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
 	}
@@ -248,7 +248,7 @@ func (m *ManifestRepo) GetNamespaceManifests(ctx context.Context, namespaceID st
 	return mappers.ManifestModelsToEntities(models), nil
 }
 
-func (m *ManifestRepo) GetSetManifests(ctx context.Context, setID string) ([]entity.ManifestReference, error) {
+func (m *ReferenceRepository) GetSetReferences(ctx context.Context, setID string) ([]entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
 		return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
 	}
@@ -270,7 +270,7 @@ func (m *ManifestRepo) GetSetManifests(ctx context.Context, setID string) ([]ent
 	return mappers.ManifestModelsToEntities(models), nil
 }
 
-func (m *ManifestRepo) GetDeviceManifests(ctx context.Context, deviceID string) ([]entity.ManifestReference, error) {
+func (m *ReferenceRepository) GetDeviceReferences(ctx context.Context, deviceID string) ([]entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
 		return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
 	}
@@ -292,7 +292,7 @@ func (m *ManifestRepo) GetDeviceManifests(ctx context.Context, deviceID string) 
 	return mappers.ManifestModelsToEntities(models), nil
 }
 
-func (m *ManifestRepo) CreateNamespaceRelation(ctx context.Context, namespaceID, manifestID string) error {
+func (m *ReferenceRepository) CreateNamespaceRelation(ctx context.Context, namespaceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -330,7 +330,7 @@ func (m *ManifestRepo) CreateNamespaceRelation(ctx context.Context, namespaceID,
 	return nil
 }
 
-func (m *ManifestRepo) DeleteNamespaceRelation(ctx context.Context, namespaceID, manifestID string) error {
+func (m *ReferenceRepository) DeleteNamespaceRelation(ctx context.Context, namespaceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -358,7 +358,7 @@ func (m *ManifestRepo) DeleteNamespaceRelation(ctx context.Context, namespaceID,
 	return nil
 }
 
-func (m *ManifestRepo) CreateSetRelation(ctx context.Context, setID, manifestID string) error {
+func (m *ReferenceRepository) CreateSetRelation(ctx context.Context, setID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -396,7 +396,7 @@ func (m *ManifestRepo) CreateSetRelation(ctx context.Context, setID, manifestID 
 	return nil
 }
 
-func (m *ManifestRepo) DeleteSetRelation(ctx context.Context, setID, manifestID string) error {
+func (m *ReferenceRepository) DeleteSetRelation(ctx context.Context, setID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -424,7 +424,7 @@ func (m *ManifestRepo) DeleteSetRelation(ctx context.Context, setID, manifestID 
 	return nil
 }
 
-func (m *ManifestRepo) CreateDeviceRelation(ctx context.Context, deviceID, manifestID string) error {
+func (m *ReferenceRepository) CreateDeviceRelation(ctx context.Context, deviceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -462,7 +462,7 @@ func (m *ManifestRepo) CreateDeviceRelation(ctx context.Context, deviceID, manif
 	return nil
 }
 
-func (m *ManifestRepo) DeleteDeviceRelation(ctx context.Context, deviceID, manifestID string) error {
+func (m *ReferenceRepository) DeleteDeviceRelation(ctx context.Context, deviceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -490,7 +490,7 @@ func (m *ManifestRepo) DeleteDeviceRelation(ctx context.Context, deviceID, manif
 	return nil
 }
 
-func (m *ManifestRepo) checkNetworkError(err error) (isOpen bool) {
+func (m *ReferenceRepository) checkNetworkError(err error) (isOpen bool) {
 	isOpen = m.circuitBreaker.BreakOnNetworkError(err)
 	if isOpen {
 		zap.S().Warn("circuit breaker is now open")
@@ -498,11 +498,11 @@ func (m *ManifestRepo) checkNetworkError(err error) (isOpen bool) {
 	return
 }
 
-func (m *ManifestRepo) getDb(ctx context.Context) *gorm.DB {
+func (m *ReferenceRepository) getDb(ctx context.Context) *gorm.DB {
 	return m.db.Session(&gorm.Session{SkipHooks: true}).WithContext(ctx)
 }
 
-func (m *ManifestRepo) isExists(ctx context.Context, manifest entity.ManifestReference) (bool, error) {
+func (m *ReferenceRepository) isExists(ctx context.Context, manifest entity.ManifestReference) (bool, error) {
 	var model models.ManifestWork
 	if err := m.getDb(ctx).Where("id = ?", manifest.Id).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -513,7 +513,7 @@ func (m *ManifestRepo) isExists(ctx context.Context, manifest entity.ManifestRef
 	return true, nil
 }
 
-func (m *ManifestRepo) isRelationExists(ctx context.Context, relationQuery func(db *gorm.DB) *gorm.DB) (bool, error) {
+func (m *ReferenceRepository) isRelationExists(ctx context.Context, relationQuery func(db *gorm.DB) *gorm.DB) (bool, error) {
 	if err := relationQuery(m.getDb(ctx)).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil

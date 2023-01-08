@@ -11,21 +11,21 @@ import (
 )
 
 type Service struct {
-	pgManifestRepo common.ManifestReaderWriter
-	pgDeviceRepo   common.DeviceReader
-	gitRepo        common.GitReader
+	pgReferenceRepo common.ReferenceReaderWriter
+	pgDeviceRepo    common.DeviceReader
+	gitRepo         common.GitReader
 }
 
-func New(pgDeviceRepo common.DeviceReader, pgManifestRepo common.ManifestReaderWriter, gitRepo common.GitReader) *Service {
+func New(pgDeviceRepo common.DeviceReader, pgManifestRepo common.ReferenceReaderWriter, gitRepo common.GitReader) *Service {
 	return &Service{
-		pgDeviceRepo:   pgDeviceRepo,
-		pgManifestRepo: pgManifestRepo,
-		gitRepo:        gitRepo,
+		pgDeviceRepo:    pgDeviceRepo,
+		pgReferenceRepo: pgManifestRepo,
+		gitRepo:         gitRepo,
 	}
 }
 
 func (w *Service) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
-	repos, err := w.pgManifestRepo.GetRepositories(ctx)
+	repos, err := w.pgReferenceRepo.GetRepositories(ctx)
 	if err != nil {
 		return []entity.Repository{}, err
 	}
@@ -34,7 +34,7 @@ func (w *Service) GetRepositories(ctx context.Context) ([]entity.Repository, err
 }
 
 func (w *Service) GetManifest(ctx context.Context, id string) (entity.ManifestWork, error) {
-	ref, err := w.pgManifestRepo.GetManifest(ctx, id)
+	ref, err := w.pgReferenceRepo.GetReference(ctx, id)
 	if err != nil {
 		return entity.ManifestWork{}, fmt.Errorf("unable to get manifest reference: %w", err)
 	}
@@ -47,7 +47,7 @@ func (w *Service) GetManifest(ctx context.Context, id string) (entity.ManifestWo
 }
 
 func (w *Service) GetManifestReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
-	return w.pgManifestRepo.GetRepoManifests(ctx, repo)
+	return w.pgReferenceRepo.GetRepositoryReferences(ctx, repo)
 }
 
 func (w *Service) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.ManifestWork, error) {
@@ -92,7 +92,7 @@ func (w *Service) PullRepository(ctx context.Context, repo entity.Repository) (e
 }
 
 func (w *Service) UpdateRepository(ctx context.Context, r entity.Repository) error {
-	if err := w.pgManifestRepo.UpdateRepo(ctx, r); err != nil {
+	if err := w.pgReferenceRepo.UpdateRepository(ctx, r); err != nil {
 		return err
 	}
 
@@ -100,7 +100,7 @@ func (w *Service) UpdateRepository(ctx context.Context, r entity.Repository) err
 }
 
 func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) error {
-	references, err := w.pgManifestRepo.GetRepoManifests(ctx, repo)
+	references, err := w.pgReferenceRepo.GetRepositoryReferences(ctx, repo)
 	if err != nil {
 		return fmt.Errorf("unable to read references of repo %q: %w", repo.Id, err)
 	}
@@ -122,7 +122,7 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 
 	for _, c := range created {
 		ref := w.createReference(c, repo)
-		if err := w.pgManifestRepo.InsertManifest(ctx, ref); err != nil && !errors.Is(err, common.ErrResourceAlreadyExists) {
+		if err := w.pgReferenceRepo.InsertReference(ctx, ref); err != nil && !errors.Is(err, common.ErrResourceAlreadyExists) {
 			return fmt.Errorf("unable to insert repo %q: %w", c.Id, err)
 		}
 		if err := w.UpdateRelations(ctx, ref); err != nil {
@@ -131,13 +131,13 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 	}
 
 	for _, d := range deleted {
-		if err := w.pgManifestRepo.DeleteManifest(ctx, d); err != nil {
+		if err := w.pgReferenceRepo.DeleteReference(ctx, d); err != nil {
 			return fmt.Errorf("unable to delete repo %q: %w", d.Id, err)
 		}
 	}
 
 	for _, u := range updated {
-		if err := w.pgManifestRepo.UpdateManifest(ctx, w.createReference(u, repo)); err != nil {
+		if err := w.pgReferenceRepo.UpdateReference(ctx, w.createReference(u, repo)); err != nil {
 			return fmt.Errorf("unable to update repo %q: %w", u.Id, err)
 		}
 		if err := w.UpdateRelations(ctx, w.createReference(u, repo)); err != nil {
@@ -150,7 +150,7 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 
 func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReference) error {
 	// get the old manifest
-	oldManifest, err := w.pgManifestRepo.GetManifest(ctx, m.Id)
+	oldManifest, err := w.pgReferenceRepo.GetReference(ctx, m.Id)
 	if err != nil {
 		return err
 	}
@@ -162,7 +162,6 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 				if err := fn(ctx, s, m); err != nil {
 					return fmt.Errorf("unable to create/delete relation between selector %q and manifest %q: %w", s, m, err)
 				}
-				zap.S().Debugf("relation created/delete between select %q and manifest %q", s, m)
 			}
 		}
 		return nil
@@ -177,11 +176,12 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 			}
 			return err
 		}
-		if err := w.pgManifestRepo.CreateNamespaceRelation(ctx, namespaceID, manifestID); err != nil {
+		if err := w.pgReferenceRepo.CreateNamespaceRelation(ctx, namespaceID, manifestID); err != nil {
 			if !errors.Is(err, common.ErrResourceAlreadyExists) {
 				return err
 			}
 		}
+		zap.S().Debugf("relation created between namespace %q and manifest %q", namespaceID, manifestID)
 		return nil
 	}); err != nil {
 		return err
@@ -195,11 +195,12 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 			}
 			return err
 		}
-		if err := w.pgManifestRepo.CreateSetRelation(ctx, setID, manifestID); err != nil {
+		if err := w.pgReferenceRepo.CreateSetRelation(ctx, setID, manifestID); err != nil {
 			if !errors.Is(err, common.ErrResourceAlreadyExists) {
 				return err
 			}
 		}
+		zap.S().Debugf("relation created between set %q and manifest %q", setID, manifestID)
 		return nil
 	}); err != nil {
 		return err
@@ -213,11 +214,12 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 			}
 			return err
 		}
-		if err := w.pgManifestRepo.CreateDeviceRelation(ctx, deviceID, manifestID); err != nil {
+		if err := w.pgReferenceRepo.CreateDeviceRelation(ctx, deviceID, manifestID); err != nil {
 			if !errors.Is(err, common.ErrResourceAlreadyExists) {
 				return err
 			}
 		}
+		zap.S().Debugf("relation created between device %q and manifest %q", deviceID, manifestID)
 		return nil
 	}); err != nil {
 		return err
@@ -231,7 +233,12 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 				return nil
 			}
 		}
-		return w.pgManifestRepo.DeleteNamespaceRelation(ctx, namespaceID, manifestID)
+		err := w.pgReferenceRepo.DeleteNamespaceRelation(ctx, namespaceID, manifestID)
+		if err != nil {
+			return err
+		}
+		zap.S().Debugf("relation deleted between device %q and manifest %q", namespaceID, manifestID)
+		return nil
 	}); err != nil {
 		return err
 	}
@@ -243,7 +250,12 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 				return nil
 			}
 		}
-		return w.pgManifestRepo.DeleteSetRelation(ctx, setID, manifestID)
+		err := w.pgReferenceRepo.DeleteSetRelation(ctx, setID, manifestID)
+		if err != nil {
+			return err
+		}
+		zap.S().Debugf("relation deleted between device %q and manifest %q", setID, manifestID)
+		return nil
 	}); err != nil {
 		return err
 	}
@@ -255,7 +267,12 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 				return nil
 			}
 		}
-		return w.pgManifestRepo.DeleteDeviceRelation(ctx, deviceID, manifestID)
+		err := w.pgReferenceRepo.DeleteDeviceRelation(ctx, deviceID, manifestID)
+		if err != nil {
+			return err
+		}
+		zap.S().Debugf("relation deleted between device %q and manifest %q", deviceID, manifestID)
+		return nil
 	}); err != nil {
 		return err
 	}
@@ -278,7 +295,7 @@ func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) er
 			if contains(namespace.ManifestIDS, m.Id) {
 				continue
 			}
-			if err := w.pgManifestRepo.CreateNamespaceRelation(ctx, namespace.Name, m.Id); err != nil {
+			if err := w.pgReferenceRepo.CreateNamespaceRelation(ctx, namespace.Name, m.Id); err != nil {
 				return fmt.Errorf("unable to create namespace %q manifest %q relation: %w", namespace.Name, m.Id, err)
 			}
 		case entity.SetSelector:
@@ -293,7 +310,7 @@ func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) er
 			if contains(set.ManifestIDS, m.Id) {
 				continue
 			}
-			if err := w.pgManifestRepo.CreateSetRelation(ctx, set.Name, m.Id); err != nil {
+			if err := w.pgReferenceRepo.CreateSetRelation(ctx, set.Name, m.Id); err != nil {
 				return fmt.Errorf("unable to create set %q manifest %q relation: %w", set.Name, m.Id, err)
 			}
 		case entity.DeviceSelector:
@@ -305,7 +322,7 @@ func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) er
 				}
 				return fmt.Errorf("unable to get device %q: %w", s.Value, err)
 			}
-			if err := w.pgManifestRepo.CreateDeviceRelation(ctx, device.ID, m.Id); err != nil {
+			if err := w.pgReferenceRepo.CreateDeviceRelation(ctx, device.ID, m.Id); err != nil {
 				return fmt.Errorf("unable to create device %q manifest %q relation: %w", device.ID, m.Id, err)
 			}
 
@@ -316,7 +333,7 @@ func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) er
 
 func (w *Service) deleteManifests(ctx context.Context, manifests []entity.ManifestReference) {
 	for _, m := range manifests {
-		if err := w.pgManifestRepo.DeleteManifest(ctx, m); err != nil {
+		if err := w.pgReferenceRepo.DeleteReference(ctx, m); err != nil {
 			zap.S().Error("unable to delete manifest", "error", err, "manifest_id", m.Id, "manifest_repo", m.Repo.LocalPath)
 			continue
 		}
@@ -325,7 +342,7 @@ func (w *Service) deleteManifests(ctx context.Context, manifests []entity.Manife
 
 func (w *Service) updateManifests(ctx context.Context, manifests []entity.ManifestReference) {
 	for _, m := range manifests {
-		if err := w.pgManifestRepo.UpdateManifest(ctx, m); err != nil {
+		if err := w.pgReferenceRepo.UpdateReference(ctx, m); err != nil {
 			zap.S().Errorw("unable to update manifest", "error", err, "manifest_id", m.Id, "manifest_repo", m.Repo.LocalPath)
 			continue
 		}

@@ -39,23 +39,23 @@ type CertificateReaderWriter interface {
 	CertificateWriter
 }
 
-type ManifestReader interface {
-	GetManifests(ctx context.Context) ([]entity.ManifestReference, error)
-	GetManifest(ctx context.Context, id string) (entity.ManifestReference, error)
-	GetRepoManifests(ctx context.Context, r entity.Repository) ([]entity.ManifestReference, error)
+type ReferenceReader interface {
+	GetReferences(ctx context.Context) ([]entity.ManifestReference, error)
+	GetReference(ctx context.Context, id string) (entity.ManifestReference, error)
+	GetRepositoryReferences(ctx context.Context, r entity.Repository) ([]entity.ManifestReference, error)
 	GetRepositories(ctx context.Context) ([]entity.Repository, error)
-	GetDeviceManifests(ctx context.Context, deviceID string) ([]entity.ManifestReference, error)
-	GetSetManifests(ctx context.Context, setID string) ([]entity.ManifestReference, error)
-	GetNamespaceManifests(ctx context.Context, setID string) ([]entity.ManifestReference, error)
+	GetDeviceReferences(ctx context.Context, deviceID string) ([]entity.ManifestReference, error)
+	GetSetReferences(ctx context.Context, setID string) ([]entity.ManifestReference, error)
+	GetNamespaceReferences(ctx context.Context, setID string) ([]entity.ManifestReference, error)
 }
 
-type ManifestWriter interface {
-	InsertRepo(ctx context.Context, r entity.Repository) error
-	UpdateRepo(ctx context.Context, r entity.Repository) error
+type ReferenceWriter interface {
+	InsertRepository(ctx context.Context, r entity.Repository) error
+	UpdateRepository(ctx context.Context, r entity.Repository) error
 
-	InsertManifest(ctx context.Context, manifest entity.ManifestReference) error
-	UpdateManifest(ctx context.Context, manifest entity.ManifestReference) error
-	DeleteManifest(ctx context.Context, manifest entity.ManifestReference) error
+	InsertReference(ctx context.Context, ref entity.ManifestReference) error
+	UpdateReference(ctx context.Context, ref entity.ManifestReference) error
+	DeleteReference(ctx context.Context, ref entity.ManifestReference) error
 
 	CreateNamespaceRelation(ctx context.Context, namespace, manifestID string) error
 	CreateSetRelation(ctx context.Context, set, manifestID string) error
@@ -65,9 +65,9 @@ type ManifestWriter interface {
 	DeleteDeviceRelation(ctx context.Context, deviceID, manifestID string) error
 }
 
-type ManifestReaderWriter interface {
-	ManifestReader
-	ManifestWriter
+type ReferenceReaderWriter interface {
+	ReferenceReader
+	ReferenceWriter
 }
 
 type GitReader interface {
