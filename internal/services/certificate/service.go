@@ -2,6 +2,7 @@ package certificate
 
 import (
 	"context"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	"go.uber.org/zap"
 )
 
 type Service struct {
@@ -57,14 +59,38 @@ func (m *Service) GetCertificate(ctx context.Context, serialNumber string) (enti
 	return certificate, nil
 }
 
-// GetServerCertificate returns the certificate used in mTLS.
-func (m *Service) GetServerCertificate(ctx context.Context, ttl time.Duration) (entity.CertificateGroup, error) {
+func (m *Service) TlsConfig(ctx context.Context, ttl time.Duration) (*tls.Config, error) {
 	cn := "operator.home.net" // TODO fix hardcoded
 	hostname, err := os.Hostname()
 	if err == nil {
 		cn = fmt.Sprintf("%s-%s", hostname, cn)
 	}
-	return m.generateCertificate(ctx, cn, ttl)
+
+	certificate, privateKey, ca, err := m.repo.GenerateCertificate(ctx, cn, ttl)
+	zap.S().Debug("service certficate generated")
+
+	pool, err := x509.SystemCertPool()
+	if err != nil {
+		return nil, fmt.Errorf("cannot copy system certificate pool: %w", err)
+	}
+
+	pool.AppendCertsFromPEM(ca)
+	config := tls.Config{
+		RootCAs:    pool,
+		ClientCAs:  pool,
+		MinVersion: tls.VersionTLS13,
+		MaxVersion: tls.VersionTLS13,
+		ClientAuth: tls.RequireAndVerifyClientCert,
+	}
+
+	cc, err := tls.X509KeyPair(certificate, privateKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create x509 key pair: %w", err)
+	}
+
+	config.Certificates = []tls.Certificate{cc}
+
+	return &config, nil
 }
 
 // GenerateRegistrationCertificate returns a certificate used by the agent to registered itself.
@@ -82,7 +108,7 @@ func (m *Service) SignCSR(ctx context.Context, csr []byte, cn string, ttl time.D
 }
 
 func (m *Service) generateCertificate(ctx context.Context, cn string, ttl time.Duration) (entity.CertificateGroup, error) {
-	certificate, privateKey, err := m.repo.GenerateCertificate(ctx, cn, ttl)
+	certificate, privateKey, ca, err := m.repo.GenerateCertificate(ctx, cn, ttl)
 
 	decodedCertficate, _ := pem.Decode(certificate)
 	cert, err := x509.ParseCertificate(decodedCertficate.Bytes)
@@ -90,21 +116,29 @@ func (m *Service) generateCertificate(ctx context.Context, cn string, ttl time.D
 		return entity.CertificateGroup{}, fmt.Errorf("unable to parse certficate: %w", err)
 	}
 
+	caDecoded, _ := pem.Decode(ca)
+	caCert, err := x509.ParseCertificate(caDecoded.Bytes)
+	if err != nil {
+		return entity.CertificateGroup{}, fmt.Errorf("unable to decode ca certificate: %w", err)
+	}
+
 	block, _ := pem.Decode(privateKey)
 	if block == nil {
 		return entity.CertificateGroup{}, fmt.Errorf("unable to decode private key")
 	}
 
-	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
 		return entity.CertificateGroup{}, fmt.Errorf("unable to parse private key: %w", err)
 	}
 
 	return entity.CertificateGroup{
-		Certificate:    cert,
-		PrivateKey:     key,
-		CertificatePEM: decodedCertficate.Bytes,
-		PrivateKeyPEM:  block.Bytes,
+		Certificate:     cert,
+		PrivateKey:      key,
+		CACertificate:   caCert,
+		CertificatePEM:  decodedCertficate.Bytes,
+		PrivateKeyPEM:   block.Bytes,
+		CACertficatePEM: caDecoded.Bytes,
 	}, nil
 }
 

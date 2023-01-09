@@ -15,9 +15,7 @@ func createConfigurationResponse(c entity.Configuration, manifests []entity.Mani
 
 	for _, m := range manifests {
 		for _, s := range m.Secrets {
-			confResponse.Secrets = append(confResponse.Secrets, entity.Secret{
-				Key: s.Key,
-			})
+			confResponse.Secrets = append(confResponse.Secrets, s)
 		}
 	}
 	return confResponse

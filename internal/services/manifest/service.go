@@ -14,13 +14,15 @@ type Service struct {
 	pgReferenceRepo common.ReferenceReaderWriter
 	pgDeviceRepo    common.DeviceReader
 	gitRepo         common.GitReader
+	secretReader    common.SecretReader
 }
 
-func New(pgDeviceRepo common.DeviceReader, pgManifestRepo common.ReferenceReaderWriter, gitRepo common.GitReader) *Service {
+func New(pgDeviceRepo common.DeviceReader, pgManifestRepo common.ReferenceReaderWriter, gitRepo common.GitReader, secretReader common.SecretReader) *Service {
 	return &Service{
 		pgDeviceRepo:    pgDeviceRepo,
 		pgReferenceRepo: pgManifestRepo,
 		gitRepo:         gitRepo,
+		secretReader:    secretReader,
 	}
 }
 
@@ -43,6 +45,18 @@ func (w *Service) GetManifest(ctx context.Context, id string) (entity.ManifestWo
 	if err != nil {
 		return entity.ManifestWork{}, fmt.Errorf("unable to get manifest: %w", err)
 	}
+
+	// for each secret in the manifest get the value from vault
+	for i := 0; i < len(manifest.Secrets); i++ {
+		secret := &manifest.Secrets[i]
+		s, err := w.secretReader.GetSecret(ctx, secret.Path, secret.Key)
+		if err != nil {
+			return entity.ManifestWork{}, fmt.Errorf("unable to read secret %q from vault: %w", secret.Path, err)
+		}
+		secret.Value = s.Value
+		secret.Hash = s.Hash
+	}
+
 	return manifest, nil
 }
 
@@ -123,7 +137,7 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 	for _, c := range created {
 		ref := w.createReference(c, repo)
 		if err := w.pgReferenceRepo.InsertReference(ctx, ref); err != nil && !errors.Is(err, common.ErrResourceAlreadyExists) {
-			return fmt.Errorf("unable to insert repo %q: %w", c.Id, err)
+			return fmt.Errorf("unable to insert reference %q: %w", c.Id, err)
 		}
 		if err := w.UpdateRelations(ctx, ref); err != nil {
 			return err
@@ -132,13 +146,13 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 
 	for _, d := range deleted {
 		if err := w.pgReferenceRepo.DeleteReference(ctx, d); err != nil {
-			return fmt.Errorf("unable to delete repo %q: %w", d.Id, err)
+			return fmt.Errorf("unable to delete reference %q: %w", d.Id, err)
 		}
 	}
 
 	for _, u := range updated {
 		if err := w.pgReferenceRepo.UpdateReference(ctx, w.createReference(u, repo)); err != nil {
-			return fmt.Errorf("unable to update repo %q: %w", u.Id, err)
+			return fmt.Errorf("unable to update reference %q: %w", u.Id, err)
 		}
 		if err := w.UpdateRelations(ctx, w.createReference(u, repo)); err != nil {
 			return err
@@ -156,11 +170,11 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 	}
 
 	// updateRelation updates the relation between a selector value and the manifest
-	updateRelation := func(ctx context.Context, n []string, m string, fn func(ctx context.Context, resourceID, manifestID string) error) error {
+	updateRelation := func(ctx context.Context, n []string, m string, fn func(ctx context.Context, resourceID, referenceID string) error) error {
 		if len(n) > 0 {
 			for _, s := range n {
 				if err := fn(ctx, s, m); err != nil {
-					return fmt.Errorf("unable to create/delete relation between selector %q and manifest %q: %w", s, m, err)
+					return err
 				}
 			}
 		}
@@ -169,57 +183,57 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 
 	// for each new relation needs to be created (exists in m but not in oldManifest)
 	newNamespaceSelectors := substract1(m.NamespaceIDs, oldManifest.NamespaceIDs, func(i string) string { return i })
-	if err := updateRelation(ctx, newNamespaceSelectors, m.Id, func(ctx context.Context, namespaceID, manifestID string) error {
+	if err := updateRelation(ctx, newNamespaceSelectors, m.Id, func(ctx context.Context, namespaceID, referenceID string) error {
 		if _, err := w.pgDeviceRepo.GetNamespace(ctx, namespaceID); err != nil {
 			if errors.Is(err, common.ErrResourceNotFound) {
 				return nil
 			}
-			return err
+			return fmt.Errorf("unable to create relation between namespace %q and reference %q: %w", namespaceID, referenceID, err)
 		}
-		if err := w.pgReferenceRepo.CreateNamespaceRelation(ctx, namespaceID, manifestID); err != nil {
+		if err := w.pgReferenceRepo.CreateNamespaceRelation(ctx, namespaceID, referenceID); err != nil {
 			if !errors.Is(err, common.ErrResourceAlreadyExists) {
-				return err
+				return fmt.Errorf("unable to create relation between namespace %q and reference %q: %w", namespaceID, referenceID, err)
 			}
 		}
-		zap.S().Debugf("relation created between namespace %q and manifest %q", namespaceID, manifestID)
+		zap.S().Debugf("relation created between namespace %q and reference %q", namespaceID, referenceID)
 		return nil
 	}); err != nil {
 		return err
 	}
 
 	newSetSelectors := substract1(m.SetIDs, oldManifest.SetIDs, func(i string) string { return i })
-	if err := updateRelation(ctx, newSetSelectors, m.Id, func(ctx context.Context, setID, manifestID string) error {
+	if err := updateRelation(ctx, newSetSelectors, m.Id, func(ctx context.Context, setID, referenceID string) error {
 		if _, err := w.pgDeviceRepo.GetSet(ctx, setID); err != nil {
 			if errors.Is(err, common.ErrResourceNotFound) {
 				return nil
 			}
-			return err
+			return fmt.Errorf("unable to create relation between set %q and reference %q: %w", setID, referenceID, err)
 		}
-		if err := w.pgReferenceRepo.CreateSetRelation(ctx, setID, manifestID); err != nil {
+		if err := w.pgReferenceRepo.CreateSetRelation(ctx, setID, referenceID); err != nil {
 			if !errors.Is(err, common.ErrResourceAlreadyExists) {
-				return err
+				return fmt.Errorf("unable to create relation between set %q and reference %q: %w", setID, referenceID, err)
 			}
 		}
-		zap.S().Debugf("relation created between set %q and manifest %q", setID, manifestID)
+		zap.S().Debugf("relation created between set %q and reference %q", setID, referenceID)
 		return nil
 	}); err != nil {
 		return err
 	}
 
 	newDeviceSelectors := substract1(m.DeviceIDs, oldManifest.DeviceIDs, func(i string) string { return i })
-	if err := updateRelation(ctx, newDeviceSelectors, m.Id, func(ctx context.Context, deviceID, manifestID string) error {
+	if err := updateRelation(ctx, newDeviceSelectors, m.Id, func(ctx context.Context, deviceID, referenceID string) error {
 		if _, err := w.pgDeviceRepo.GetDevice(ctx, deviceID); err != nil {
 			if errors.Is(err, common.ErrResourceNotFound) {
 				return nil
 			}
-			return err
+			return fmt.Errorf("unable to create relation between device %q and reference %q: %w", deviceID, referenceID, err)
 		}
-		if err := w.pgReferenceRepo.CreateDeviceRelation(ctx, deviceID, manifestID); err != nil {
+		if err := w.pgReferenceRepo.CreateDeviceRelation(ctx, deviceID, referenceID); err != nil {
 			if !errors.Is(err, common.ErrResourceAlreadyExists) {
-				return err
+				return fmt.Errorf("unable to create relation between device %q and reference %q: %w", deviceID, referenceID, err)
 			}
 		}
-		zap.S().Debugf("relation created between device %q and manifest %q", deviceID, manifestID)
+		zap.S().Debugf("relation created between device %q and reference %q", deviceID, referenceID)
 		return nil
 	}); err != nil {
 		return err
@@ -227,51 +241,51 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 
 	// remove the old ones
 	oldNamespaceSelectors := substract1(oldManifest.NamespaceIDs, m.NamespaceIDs, func(i string) string { return i })
-	if err := updateRelation(ctx, oldNamespaceSelectors, m.Id, func(ctx context.Context, namespaceID, manifestID string) error {
+	if err := updateRelation(ctx, oldNamespaceSelectors, m.Id, func(ctx context.Context, namespaceID, referenceID string) error {
 		if _, err := w.pgDeviceRepo.GetNamespace(ctx, namespaceID); err != nil {
 			if errors.Is(err, common.ErrResourceNotFound) {
 				return nil
 			}
 		}
-		err := w.pgReferenceRepo.DeleteNamespaceRelation(ctx, namespaceID, manifestID)
+		err := w.pgReferenceRepo.DeleteNamespaceRelation(ctx, namespaceID, referenceID)
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to delete  between namespace %q and reference %q: %w", namespaceID, referenceID, err)
 		}
-		zap.S().Debugf("relation deleted between device %q and manifest %q", namespaceID, manifestID)
+		zap.S().Debugf("relation deleted between device %q and reference %q", namespaceID, referenceID)
 		return nil
 	}); err != nil {
 		return err
 	}
 
 	oldSetSelectors := substract1(oldManifest.SetIDs, m.SetIDs, func(i string) string { return i })
-	if err := updateRelation(ctx, oldSetSelectors, m.Id, func(ctx context.Context, setID, manifestID string) error {
+	if err := updateRelation(ctx, oldSetSelectors, m.Id, func(ctx context.Context, setID, referenceID string) error {
 		if _, err := w.pgDeviceRepo.GetSet(ctx, setID); err != nil {
 			if errors.Is(err, common.ErrResourceNotFound) {
 				return nil
 			}
 		}
-		err := w.pgReferenceRepo.DeleteSetRelation(ctx, setID, manifestID)
+		err := w.pgReferenceRepo.DeleteSetRelation(ctx, setID, referenceID)
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to delete  between set %q and reference %q: %w", setID, referenceID, err)
 		}
-		zap.S().Debugf("relation deleted between device %q and manifest %q", setID, manifestID)
+		zap.S().Debugf("relation deleted between device %q and reference %q", setID, referenceID)
 		return nil
 	}); err != nil {
 		return err
 	}
 
 	oldDeviceSelectors := substract1(oldManifest.DeviceIDs, m.DeviceIDs, func(i string) string { return i })
-	if err := updateRelation(ctx, oldDeviceSelectors, m.Id, func(ctx context.Context, deviceID, manifestID string) error {
+	if err := updateRelation(ctx, oldDeviceSelectors, m.Id, func(ctx context.Context, deviceID, referenceID string) error {
 		if _, err := w.pgDeviceRepo.GetDevice(ctx, deviceID); err != nil {
 			if errors.Is(err, common.ErrResourceNotFound) {
 				return nil
 			}
 		}
-		err := w.pgReferenceRepo.DeleteDeviceRelation(ctx, deviceID, manifestID)
+		err := w.pgReferenceRepo.DeleteDeviceRelation(ctx, deviceID, referenceID)
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to delete  between device %q and reference %q: %w", deviceID, referenceID, err)
 		}
-		zap.S().Debugf("relation deleted between device %q and manifest %q", deviceID, manifestID)
+		zap.S().Debugf("relation deleted between device %q and reference %q", deviceID, referenceID)
 		return nil
 	}); err != nil {
 		return err

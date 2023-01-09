@@ -195,6 +195,7 @@ func (g *GitRepo) parse(content []byte, filename, basePath string) (entity.Manif
 		Description: manifest.Description,
 		Name:        manifest.Name,
 		Selectors:   make([]entity.Selector, 0),
+		Secrets:     make([]entity.Secret, 0, len(manifest.Secrets)),
 		Valid:       true,
 	}
 
@@ -224,6 +225,14 @@ func (g *GitRepo) parse(content []byte, filename, basePath string) (entity.Manif
 		if !keepGoing {
 			break
 		}
+	}
+
+	for _, s := range manifest.Secrets {
+		e.Secrets = append(e.Secrets, entity.Secret{
+			Path: s.Path,
+			Id:   s.Name,
+			Key:  s.Key,
+		})
 	}
 
 	for _, r := range manifest.Resources {

@@ -22,12 +22,12 @@ DB Table Details
 
 Table: sets_workloads
 [ 0] device_set_id                                  TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] manifest_work_id                               TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 1] manifest_reference_id                          TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "device_set_id": "pajUlhuuFVHYyxbIfcceHOhrP",    "manifest_work_id": "jFidOeVmghZpceFXBuLVapjtx"}
+{    "device_set_id": "FawtMETcOOroHRMeqJtQaqiSJ",    "manifest_reference_id": "XoUcYTiIiQQCGhuVdcjgvBrxm"}
 
 
 
@@ -37,8 +37,8 @@ JSON Sample
 type SetsWorkloads struct {
 	//[ 0] device_set_id                                  TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	DeviceSetID string `gorm:"primary_key;column:device_set_id;type:TEXT;"`
-	//[ 1] manifest_work_id                               TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	ManifestWorkID string `gorm:"primary_key;column:manifest_work_id;type:TEXT;"`
+	//[ 1] manifest_reference_id                          TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+	ManifestReferenceID string `gorm:"primary_key;column:manifest_reference_id;type:TEXT;"`
 }
 
 var sets_workloadsTableInfo = &TableInfo{
@@ -68,7 +68,7 @@ var sets_workloadsTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "manifest_work_id",
+			Name:               "manifest_reference_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
@@ -79,10 +79,10 @@ var sets_workloadsTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "TEXT",
 			ColumnLength:       -1,
-			GoFieldName:        "ManifestWorkID",
+			GoFieldName:        "ManifestReferenceID",
 			GoFieldType:        "string",
-			JSONFieldName:      "manifest_work_id",
-			ProtobufFieldName:  "manifest_work_id",
+			JSONFieldName:      "manifest_reference_id",
+			ProtobufFieldName:  "manifest_reference_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},

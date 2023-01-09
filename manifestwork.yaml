@@ -16,9 +16,9 @@ selectors:
     - toto
 
 secrets:
-  - name: name
-    path: tinyedge/workloads1/name
-    key: key
+  - id: nginx-password
+    path: nginx
+    key: data
 
 resources:
   - $ref: /dep/configmap.yaml

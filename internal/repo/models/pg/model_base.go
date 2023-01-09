@@ -31,14 +31,15 @@ func init() {
 	tables = make(map[string]*TableInfo)
 
 	tables["configuration"] = configurationTableInfo
-	tables["configuration_cache"] = configuration_cacheTableInfo
 	tables["device"] = deviceTableInfo
 	tables["device_set"] = device_setTableInfo
 	tables["devices_workloads"] = devices_workloadsTableInfo
-	tables["manifest_work"] = manifest_workTableInfo
+	tables["manifest_reference"] = manifest_referenceTableInfo
 	tables["namespace"] = namespaceTableInfo
 	tables["namespaces_workloads"] = namespaces_workloadsTableInfo
 	tables["repo"] = repoTableInfo
+	tables["secret"] = secretTableInfo
+	tables["secrets_manifests"] = secrets_manifestsTableInfo
 	tables["sets_workloads"] = sets_workloadsTableInfo
 }
 

@@ -79,7 +79,7 @@ func (s *Service) Auth(ctx context.Context, method string, deviceID string, peer
 		return newCtx, fmt.Errorf("unable to authenticate device %q. The presented certificate is revoked.", deviceID)
 	}
 
-	zap.S().Debugw("device authenticated", "method", method, "device_id", deviceID, "certificate_sn", s.getSerialNumber(realCertificate.Certificate))
+	zap.S().Infow("device authenticated", "method", method, "device_id", deviceID, "certificate_sn", s.getSerialNumber(realCertificate.Certificate))
 
 	return newCtx, nil
 }

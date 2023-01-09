@@ -129,7 +129,9 @@ type Selector struct {
 }
 
 type Secret struct {
-	Name string
-	Path string
-	Key  string
+	Id    string
+	Path  string
+	Key   string
+	Hash  string
+	Value string
 }

@@ -78,25 +78,6 @@ func NewVaultAppRoleClient(ctx context.Context, parameters VaultParameters) (*Va
 	return vault, nil
 }
 
-func (v *Vault) GetSecret(ctx context.Context, enginePath, name, key string) (string, error) {
-	secret, err := v.Client.KVv2(enginePath).Get(ctx, name)
-	if err != nil {
-		return "", fmt.Errorf("unable to read secret: %w", err)
-	}
-
-	data, ok := secret.Data[key]
-	if !ok {
-		return "", fmt.Errorf("the secret retrieved from vault is missing %q field", key)
-	}
-
-	dataString, ok := data.(string)
-	if !ok {
-		return "", fmt.Errorf("unexpected secret key type for %q field", key)
-	}
-
-	return dataString, nil
-}
-
 // A combination of a RoleID and a SecretID is required to log into Vault
 // with AppRole authentication method. The SecretID is a value that needs
 // to be protected, so instead of the app having knowledge of the SecretID

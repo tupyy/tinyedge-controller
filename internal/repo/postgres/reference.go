@@ -62,7 +62,7 @@ func (m *ReferenceRepository) GetReference(ctx context.Context, id string) (enti
 
 	manifests := []models.ManifestJoin{}
 
-	tx := newManifestQuery(ctx, m.db).WithManifestID(id).Build()
+	tx := newManifestQuery(ctx, m.db).WithReferenceID(id).Build()
 	if err := tx.Find(&manifests).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return entity.ManifestReference{}, common.ErrPostgresNotAvailable
@@ -298,13 +298,13 @@ func (m *ReferenceRepository) CreateNamespaceRelation(ctx context.Context, names
 	}
 
 	model := models.NamespacesWorkloads{
-		NamespaceID:    namespaceID,
-		ManifestWorkID: manifestID,
+		NamespaceID:         namespaceID,
+		ManifestReferenceID: manifestID,
 	}
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
 		var m models.NamespacesWorkloads
-		return db.Where("namespace_id = ? AND manifest_work_id = ?", namespaceID, manifestID).First(&m)
+		return db.Where("namespace_id = ? AND manifest_reference_id = ?", namespaceID, manifestID).First(&m)
 	})
 	if err != nil {
 		return err
@@ -316,7 +316,7 @@ func (m *ReferenceRepository) CreateNamespaceRelation(ctx context.Context, names
 
 	// check if the relation already exists
 	var dummy models.NamespacesWorkloads
-	if err := m.getDb(ctx).Where("namespace_id = ? AND manifest_work_id = ?", namespaceID, manifestID).First(&dummy).Error; err == nil {
+	if err := m.getDb(ctx).Where("namespace_id = ? AND manifest_reference_id = ?", namespaceID, manifestID).First(&dummy).Error; err == nil {
 		return nil
 	}
 
@@ -337,7 +337,7 @@ func (m *ReferenceRepository) DeleteNamespaceRelation(ctx context.Context, names
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
 		var m models.NamespacesWorkloads
-		return db.Where("namespace_id = ? AND manifest_work_id = ?", namespaceID, manifestID).First(&m)
+		return db.Where("namespace_id = ? AND manifest_reference_id = ?", namespaceID, manifestID).First(&m)
 	})
 	if err != nil {
 		return err
@@ -348,7 +348,7 @@ func (m *ReferenceRepository) DeleteNamespaceRelation(ctx context.Context, names
 	}
 
 	model := models.NamespacesWorkloads{}
-	if err := m.getDb(ctx).Where("namespace_id = ? AND manifest_work_id = ?", namespaceID, manifestID).Delete(&model).Error; err != nil {
+	if err := m.getDb(ctx).Where("namespace_id = ? AND manifest_reference_id = ?", namespaceID, manifestID).Delete(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return common.ErrPostgresNotAvailable
 		}
@@ -364,13 +364,13 @@ func (m *ReferenceRepository) CreateSetRelation(ctx context.Context, setID, mani
 	}
 
 	model := models.SetsWorkloads{
-		DeviceSetID:    setID,
-		ManifestWorkID: manifestID,
+		DeviceSetID:         setID,
+		ManifestReferenceID: manifestID,
 	}
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
 		var m models.SetsWorkloads
-		return db.Where("set_id = ? AND manifest_work_id = ?", setID, manifestID).First(&m)
+		return db.Where("set_id = ? AND manifest_reference_id = ?", setID, manifestID).First(&m)
 	})
 	if err != nil {
 		return err
@@ -382,7 +382,7 @@ func (m *ReferenceRepository) CreateSetRelation(ctx context.Context, setID, mani
 
 	// check if the relation already exists
 	var dummy models.SetsWorkloads
-	if err := m.getDb(ctx).Where("device_set_id = ? AND manifest_work_id = ?", setID, manifestID).First(&dummy).Error; err == nil {
+	if err := m.getDb(ctx).Where("device_set_id = ? AND manifest_reference_id = ?", setID, manifestID).First(&dummy).Error; err == nil {
 		return nil
 	}
 
@@ -403,7 +403,7 @@ func (m *ReferenceRepository) DeleteSetRelation(ctx context.Context, setID, mani
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
 		var m models.SetsWorkloads
-		return db.Where("set_id = ? AND manifest_work_id = ?", setID, manifestID).First(&m)
+		return db.Where("set_id = ? AND manifest_reference_id = ?", setID, manifestID).First(&m)
 	})
 	if err != nil {
 		return err
@@ -414,7 +414,7 @@ func (m *ReferenceRepository) DeleteSetRelation(ctx context.Context, setID, mani
 	}
 
 	model := models.SetsWorkloads{}
-	if err := m.getDb(ctx).Where("device_set_id = ? AND manifest_work_id = ?", setID, manifestID).Delete(&model).Error; err != nil {
+	if err := m.getDb(ctx).Where("device_set_id = ? AND manifest_reference_id = ?", setID, manifestID).Delete(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return common.ErrPostgresNotAvailable
 		}
@@ -431,7 +431,7 @@ func (m *ReferenceRepository) CreateDeviceRelation(ctx context.Context, deviceID
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
 		var m models.DevicesWorkloads
-		return db.Where("device_id = ? AND manifest_work_id = ?", deviceID, manifestID).First(&m)
+		return db.Where("device_id = ? AND manifest_reference_id = ?", deviceID, manifestID).First(&m)
 	})
 	if err != nil {
 		return err
@@ -442,13 +442,13 @@ func (m *ReferenceRepository) CreateDeviceRelation(ctx context.Context, deviceID
 	}
 
 	model := models.DevicesWorkloads{
-		DeviceID:       deviceID,
-		ManifestWorkID: manifestID,
+		DeviceID:            deviceID,
+		ManifestReferenceID: manifestID,
 	}
 
 	// check if the relation already exists
 	var dummy models.DevicesWorkloads
-	if err := m.getDb(ctx).Where("device_id = ? AND manifest_work_id = ?", deviceID, manifestID).First(&dummy).Error; err == nil {
+	if err := m.getDb(ctx).Where("device_id = ? AND manifest_reference_id = ?", deviceID, manifestID).First(&dummy).Error; err == nil {
 		return nil
 	}
 
@@ -469,7 +469,7 @@ func (m *ReferenceRepository) DeleteDeviceRelation(ctx context.Context, deviceID
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
 		var m models.DevicesWorkloads
-		return db.Where("device_id = ? AND manifest_work_id = ?", deviceID, manifestID).First(&m)
+		return db.Where("device_id = ? AND manifest_reference_id = ?", deviceID, manifestID).First(&m)
 	})
 	if err != nil {
 		return err
@@ -480,7 +480,7 @@ func (m *ReferenceRepository) DeleteDeviceRelation(ctx context.Context, deviceID
 	}
 
 	model := models.DevicesWorkloads{}
-	if err := m.getDb(ctx).Where("device_id = ? AND manifest_work_id = ?", deviceID, manifestID).Delete(&model).Error; err != nil {
+	if err := m.getDb(ctx).Where("device_id = ? AND manifest_reference_id = ?", deviceID, manifestID).Delete(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return common.ErrPostgresNotAvailable
 		}
@@ -503,7 +503,7 @@ func (m *ReferenceRepository) getDb(ctx context.Context) *gorm.DB {
 }
 
 func (m *ReferenceRepository) isExists(ctx context.Context, manifest entity.ManifestReference) (bool, error) {
-	var model models.ManifestWork
+	var model models.ManifestReference
 	if err := m.getDb(ctx).Where("id = ?", manifest.Id).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil
@@ -542,15 +542,15 @@ type manifestQueryBuilder struct {
 }
 
 func newManifestQuery(ctx context.Context, db *gorm.DB) *manifestQueryBuilder {
-	tx := db.Session(&gorm.Session{SkipHooks: true}).WithContext(ctx).Table("manifest_work").
-		Select(`manifest_work.*, devices_workloads.device_id as device_id, sets_workloads.device_set_id as set_id, namespaces_workloads.namespace_id as namespace_id,
+	tx := db.Session(&gorm.Session{SkipHooks: true}).WithContext(ctx).Table("manifest_reference").
+		Select(`manifest_reference.*, devices_workloads.device_id as device_id, sets_workloads.device_set_id as set_id, namespaces_workloads.namespace_id as namespace_id,
 		repo.id as repo_id, repo.url as repo_url, repo.branch as repo_branch, repo.local_path as repo_local_path,
 		repo.current_head_sha as repo_current_head_sha, repo.target_head_sha as repo_target_head_sha,
 		repo.pull_period_seconds as repo_pull_period_seconds`).
-		Joins("LEFT JOIN namespaces_workloads ON namespaces_workloads.manifest_work_id = manifest_work.id").
-		Joins("LEFT JOIN sets_workloads ON sets_workloads.manifest_work_id = manifest_work.id").
-		Joins("LEFT JOIN devices_workloads ON devices_workloads.manifest_work_id = manifest_work.id").
-		Joins("JOIN repo ON repo.id = manifest_work.repo_id")
+		Joins("LEFT JOIN namespaces_workloads ON namespaces_workloads.manifest_reference_id = manifest_reference.id").
+		Joins("LEFT JOIN sets_workloads ON sets_workloads.manifest_reference_id = manifest_reference.id").
+		Joins("LEFT JOIN devices_workloads ON devices_workloads.manifest_reference_id = manifest_reference.id").
+		Joins("JOIN repo ON repo.id = manifest_reference.repo_id")
 	return &manifestQueryBuilder{tx}
 }
 
@@ -559,8 +559,8 @@ func (mm *manifestQueryBuilder) WithRepoId(id string) *manifestQueryBuilder {
 	return mm
 }
 
-func (mm *manifestQueryBuilder) WithManifestID(id string) *manifestQueryBuilder {
-	mm.tx.Where("manifest_work.id = ?", id)
+func (mm *manifestQueryBuilder) WithReferenceID(id string) *manifestQueryBuilder {
+	mm.tx.Where("manifest_reference.id = ?", id)
 	return mm
 }
 

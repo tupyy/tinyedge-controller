@@ -57,5 +57,8 @@ func MapWorkloadToProto(w entity.Workload) *common.Workload {
 }
 
 func MapSecretToProto(s entity.Secret) *common.Secret {
-	return &common.Secret{}
+	return &common.Secret{
+		Key:   s.Key,
+		Value: s.Value,
+	}
 }

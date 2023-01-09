@@ -7,10 +7,9 @@ package cmd
 import (
 	"context"
 	"crypto/tls"
-	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"time"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -25,6 +24,7 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/repo/git"
 	pgRepo "github.com/tupyy/tinyedge-controller/internal/repo/postgres"
 	certRepo "github.com/tupyy/tinyedge-controller/internal/repo/vault/certificate"
+	secretRepo "github.com/tupyy/tinyedge-controller/internal/repo/vault/secret"
 	"github.com/tupyy/tinyedge-controller/internal/servers"
 	"github.com/tupyy/tinyedge-controller/internal/services/auth"
 	"github.com/tupyy/tinyedge-controller/internal/services/certificate"
@@ -62,6 +62,9 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			zap.S().Fatal(err)
 		}
+		certRepo := certRepo.New(vaultClient, "pki_int", "home.net", "tinyedge-role")
+		secretRepo := secretRepo.New(vaultClient, "tinyedge")
+		zap.S().Info("vault repositories created")
 
 		pgClient, err := pg.New(pg.ClientParams{
 			Host:     "localhost",
@@ -70,8 +73,10 @@ var runCmd = &cobra.Command{
 			User:     "postgres",
 			Password: "postgres",
 		})
+		if err != nil {
+			zap.S().Fatal(err)
+		}
 
-		certRepo := certRepo.New(vaultClient, "pki_int", "home.net", "tinyedge-role")
 		deviceRepo, err := pgRepo.NewDeviceRepo(pgClient)
 		if err != nil {
 			zap.S().Fatal(err)
@@ -85,8 +90,10 @@ var runCmd = &cobra.Command{
 		// git repo
 		gitRepo := git.New("/home/cosmin/tmp/git")
 
+		// create services
+		zap.S().Info("create services")
 		certService := certificate.New(certRepo)
-		workService := manifest.New(deviceRepo, refRepo, gitRepo)
+		workService := manifest.New(deviceRepo, refRepo, gitRepo, secretRepo)
 		configurationService := confService.New(deviceRepo, workService, cacheRepo)
 		edgeService := edge.New(deviceRepo, configurationService, certService)
 		authService := auth.New(certService, deviceRepo)
@@ -95,34 +102,18 @@ var runCmd = &cobra.Command{
 		scheduler.AddWorker(workers.NewGitOpsWorker(workService, configurationService))
 		go scheduler.Start(ctx)
 
-		tlsConfig, err := createTlsConfig(
-			"/home/cosmin/projects/tinyedge-controller/resources/certificates/ca.pem",
-			"/home/cosmin/projects/tinyedge-controller/resources/certificates/cert.pem",
-			"/home/cosmin/projects/tinyedge-controller/resources/certificates/key.pem",
-		)
+		tlsConfig, err := certService.TlsConfig(ctx, conf.DefaultCertificateTTL)
+		if err != nil {
+			zap.S().Fatal(err)
+		}
+		zap.S().Info("tls config created")
 
 		lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 8080))
 		if err != nil {
 			zap.S().Fatalf("failed to listen: %v", err)
 		}
 
-		// start edge server
-		creds := credentials.NewTLS(tlsConfig)
-		opts := []grpc.ServerOption{grpc.Creds(creds)}
-
-		zapOpts := []grpc_zap.Option{
-			grpc_zap.WithDurationField(func(duration time.Duration) zapcore.Field {
-				return zap.Float64("grpc.time_s", duration.Seconds())
-			}),
-		}
-		opts = append(opts, grpc_middleware.WithUnaryServerChain(
-			interceptors.AuthInterceptor(authService),
-			grpc_ctxtags.UnaryServerInterceptor(),
-			grpc_zap.UnaryServerInterceptor(logger, zapOpts...),
-		))
-
-		grpc_zap.ReplaceGrpcLoggerV2(logger)
-		grpcServer := grpc.NewServer(opts...)
+		grpcServer := createServer(tlsConfig, authService, logger)
 		edgeServer := servers.NewEdgeServer(edgeService)
 		edgePb.RegisterEdgeServiceServer(grpcServer, edgeServer)
 		grpcServer.Serve(lis)
@@ -160,43 +151,40 @@ func setupLogger() *zap.Logger {
 	return plain
 }
 
-func createTlsConfig(caroot, certFile, keyFile string) (*tls.Config, error) {
-	// read certificates
-	caRoot, err := os.ReadFile(caroot)
-	if err != nil {
-		return nil, err
+func createServer(tlsConfig *tls.Config, auth *auth.Service, logger *zap.Logger) *grpc.Server {
+	// start edge server
+	creds := credentials.NewTLS(tlsConfig)
+	opts := []grpc.ServerOption{grpc.Creds(creds)}
+
+	zapOpts := []grpc_zap.Option{
+		grpc_zap.WithDurationField(func(duration time.Duration) zapcore.Field {
+			return zap.Float64("grpc.time_s", duration.Seconds())
+		}),
 	}
-
-	pool, err := x509.SystemCertPool()
-	if err != nil {
-		return nil, fmt.Errorf("cannot copy system certificate pool: %w", err)
+	altOpts := []grpc_ctxtags.Option{
+		grpc_ctxtags.WithFieldExtractor(func(fullMethod string, req interface{}) map[string]interface{} {
+			type idStruct struct {
+				DeviceID string `json:"device_id"`
+			}
+			var id idStruct
+			m := make(map[string]interface{})
+			d, err := json.Marshal(req)
+			if err != nil {
+				return m
+			}
+			if err := json.Unmarshal(d, &id); err != nil {
+				return m
+			}
+			m["device_id"] = id.DeviceID
+			return m
+		}),
 	}
+	opts = append(opts, grpc_middleware.WithUnaryServerChain(
+		interceptors.AuthInterceptor(auth),
+		grpc_ctxtags.UnaryServerInterceptor(altOpts...),
+		grpc_zap.UnaryServerInterceptor(logger, zapOpts...),
+	))
 
-	pool.AppendCertsFromPEM(caRoot)
-	config := tls.Config{
-		RootCAs:    pool,
-		ClientCAs:  pool,
-		MinVersion: tls.VersionTLS13,
-		MaxVersion: tls.VersionTLS13,
-		ClientAuth: tls.RequireAndVerifyClientCert,
-	}
-
-	cert, err := os.ReadFile(certFile)
-	if err != nil {
-		return nil, err
-	}
-
-	privateKey, err := os.ReadFile(keyFile)
-	if err != nil {
-		return nil, err
-	}
-
-	cc, err := tls.X509KeyPair(cert, privateKey)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create x509 key pair: %w", err)
-	}
-
-	config.Certificates = []tls.Certificate{cc}
-
-	return &config, nil
+	grpc_zap.ReplaceGrpcLoggerV2(logger)
+	return grpc.NewServer(opts...)
 }

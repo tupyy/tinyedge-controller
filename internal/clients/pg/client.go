@@ -11,6 +11,7 @@ import (
 	_ "github.com/jackc/pgx/v4" // Load pgx sql driver.
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	postgresql "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -96,6 +97,8 @@ func New(params ClientParams) (Client, error) {
 	if err != nil {
 		return Client{}, errors.Wrapf(err, "could not ping postgres database at: %v:%v ", params.Host, params.Port)
 	}
+
+	zap.S().Debugw("postgres client created", "configuration", params)
 
 	return ret, nil
 }

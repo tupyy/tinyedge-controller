@@ -32,7 +32,7 @@ Table: repo
 
 JSON Sample
 -------------------------------------
-{    "id": "QigWQgfqXTPrslqjaIHLZaCyf",    "url": "otHygOxfDLmKhgWCLFIhIyiBG",    "branch": "pttMJUwZmhPoeJjQCnJNNpZYC",    "local_path": "OTJBpMMeaYjQixpVKgwJpWINB",    "current_head_sha": "QTwPltowFQnHAVHKMLIQJINxx",    "target_head_sha": "fljgSpahFojKPuEaGattyeFQD",    "pull_period_seconds": 18}
+{    "id": "QErQJElsQZkNGiQJoyGhCYhCo",    "url": "NiqHZKjIwuMkZcgMwnDXHCleR",    "branch": "DRFdnSsvLEAFcfTDjlCiItOlX",    "local_path": "ntWkvxaniRnyGnHwNCilXymGY",    "current_head_sha": "FJgqpVWedKGALeVwFuPHPDnxW",    "target_head_sha": "GsCKORHeRTtZpiSFtmeeckmKL",    "pull_period_seconds": 65}
 
 
 

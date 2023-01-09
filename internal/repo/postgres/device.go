@@ -60,7 +60,7 @@ func (d *DeviceRepo) GetSet(ctx context.Context, id string) (entity.Set, error) 
 	tx := d.getDb(ctx).Table("device_set").
 		Select(`device_set.*, device.id as device_id,
 		configuration.heartbeat_period_seconds as configuration_heartbeat_period_seconds, configuration.log_level as configuration_log_level,
-		sets_workloads.manifest_work_id as manifest_id`).
+		sets_workloads.manifest_reference_id as manifest_id`).
 		Joins("LEFT JOIN device ON device.device_set_id = device_set.id").
 		Joins("LEFT JOIN sets_workloads ON sets_workloads.device_set_id = device_set.id").
 		Joins("LEFT JOIN configuration ON device_set.configuration_id = configuration.id").
@@ -92,7 +92,7 @@ func (d *DeviceRepo) GetNamespace(ctx context.Context, id string) (entity.Namesp
 	tx := d.getDb(ctx).Table("namespace").
 		Select(`device_set.*,
 			configuration.heartbeat_period_seconds as configuration_heartbeat_period_seconds, configuration.log_level as configuration_log_level,
-			device.id as device_id, device_set.id as device_set_id, namespaces_workloads.manifest_work_id as manifest_id`).
+			device.id as device_id, device_set.id as device_set_id, namespaces_workloads.manifest_reference_id as manifest_id`).
 		Joins("LEFT JOIN device ON device.namespace_id = namespace.id").
 		Joins("LEFT JOIN device_set ON device_set.namespace_id = namespace.id").
 		Joins("LEFT JOIN namespaces_workloads ON namespaces_workloads.namespace_id = namespace.id").

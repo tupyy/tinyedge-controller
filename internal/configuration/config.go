@@ -10,7 +10,7 @@ import (
 const (
 	prefix = "TINYEDGE"
 
-	defaultCertiicateTTL = 3600 * 24 * 365 * time.Second
+	defaultCertificateTTL = 3600 * 24 * 365 * time.Second
 )
 
 type Configuration struct {
@@ -29,7 +29,7 @@ type Configuration struct {
 func GetConfiguration() Configuration {
 	return Configuration{
 		BaseDomain:            "home.net",
-		DefaultCertificateTTL: defaultCertiicateTTL,
+		DefaultCertificateTTL: defaultCertificateTTL,
 		VaultAddress:          "http://localhost:8200",
 		VaultApproleRoleID:    "app-role-id",
 		VaultSecretMountPath:  "tinyedge",
@@ -64,7 +64,7 @@ func GetConfiguration() Configuration {
 // }
 
 func setDefaults() {
-	viper.SetDefault("defaultCertificateTTL", defaultCertiicateTTL)
+	viper.SetDefault("defaultCertificateTTL", defaultCertificateTTL)
 }
 
 // func GetLogLevel() zapcore.Level {

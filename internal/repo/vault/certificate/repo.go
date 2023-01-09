@@ -43,28 +43,30 @@ func (c *CertficateRepo) GetCACertificate(ctx context.Context) ([]byte, error) {
 	return certificate, nil
 }
 
-func (c *CertficateRepo) GenerateCertificate(ctx context.Context, cn string, ttl time.Duration) ([]byte, []byte, error) {
-	pathToRead := fmt.Sprintf("%s/cert/%s", c.certificateMountPath, c.pkiRoleID)
+func (c *CertficateRepo) GenerateCertificate(ctx context.Context, cn string, ttl time.Duration) ([]byte, []byte, []byte, error) {
+	pathToRead := fmt.Sprintf("%s/issue/%s", c.certificateMountPath, c.pkiRoleID)
 
 	data := map[string]interface{}{
 		"common_name":        cn,
 		"issuer_ref":         c.pkiRoleID,
 		"ttl":                ttl.Seconds(),
 		"format":             "pem",
+		"ip_sans":            "127.0.0.1",
 		"private_key_format": "pkcs8",
 	}
 
 	secret, err := c.vault.Client.Logical().WriteWithContext(ctx, pathToRead, data)
 	if err != nil {
-		return []byte{}, []byte{}, err
+		return []byte{}, []byte{}, []byte{}, err
 	}
 
 	certificate, _ := extract(secret, "certificate")
 	privateKey, _ := extract(secret, "private_key")
+	ca, _ := extract(secret, "issuing_ca")
 
 	zap.S().Debugw("certificate generated", "cn", cn, "ttl", ttl)
 
-	return certificate, privateKey, nil
+	return certificate, privateKey, ca, nil
 }
 
 func (c *CertficateRepo) GetCertificate(ctx context.Context, sn string) ([]byte, bool, time.Time, error) {

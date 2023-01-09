@@ -24,7 +24,7 @@ type NamespaceJoin struct {
 }
 
 type ManifestJoin struct {
-	ManifestWork
+	ManifestReference
 	DeviceId               string         `gorm:"column_name:device_id;type:TEXT"`
 	SetId                  string         `gorm:"column_name:set_id;type:TEXT"`
 	NamespaceId            string         `gorm:"column_name:namespace_id;type:TEXT"`

@@ -36,6 +36,22 @@ CREATE TABLE manifest_reference (
     path_manifest_reference TEXT NOT NULL
 );
 
+CREATE TABLE secret (
+    id TEXT PRIMARY KEY,
+    path TEXT NOT NULL,
+    current_hash TEXT NOT NULL,
+    target_hash TEXT NOT NULL
+);
+
+CREATE TABLE secrets_manifests (
+    secret_id TEXT REFERENCES secret(id),
+    manifest_reference_id TEXT REFERENCES manifest_reference(id),
+    CONSTRAINT secret_manifest_reference_pk PRIMARY KEY(
+        secret_id,
+        manifest_reference_id
+    )
+);
+
 CREATE TABLE namespace (
     id TEXT PRIMARY KEY,
     is_default BOOLEAN DEFAULT false,
@@ -87,11 +103,6 @@ CREATE TABLE sets_workloads (
         device_set_id,
         manifest_reference_id
     )
-);
-
-CREATE TABLE configuration_cache (
-    id TEXT PRIMARY KEY,
-    workload BYTEA
 );
 
 COMMIT;
