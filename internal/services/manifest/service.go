@@ -190,7 +190,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 			}
 			return fmt.Errorf("unable to create relation between namespace %q and reference %q: %w", namespaceID, referenceID, err)
 		}
-		if err := w.pgReferenceRepo.CreateNamespaceRelation(ctx, namespaceID, referenceID); err != nil {
+		if err := w.pgReferenceRepo.CreateRelation(ctx, entity.NewDeviceRelation(namespaceID, referenceID)); err != nil {
 			if !errors.Is(err, common.ErrResourceAlreadyExists) {
 				return fmt.Errorf("unable to create relation between namespace %q and reference %q: %w", namespaceID, referenceID, err)
 			}
@@ -209,7 +209,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 			}
 			return fmt.Errorf("unable to create relation between set %q and reference %q: %w", setID, referenceID, err)
 		}
-		if err := w.pgReferenceRepo.CreateSetRelation(ctx, setID, referenceID); err != nil {
+		if err := w.pgReferenceRepo.CreateRelation(ctx, entity.NewSetRelation(setID, referenceID)); err != nil {
 			if !errors.Is(err, common.ErrResourceAlreadyExists) {
 				return fmt.Errorf("unable to create relation between set %q and reference %q: %w", setID, referenceID, err)
 			}
@@ -228,7 +228,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 			}
 			return fmt.Errorf("unable to create relation between device %q and reference %q: %w", deviceID, referenceID, err)
 		}
-		if err := w.pgReferenceRepo.CreateDeviceRelation(ctx, deviceID, referenceID); err != nil {
+		if err := w.pgReferenceRepo.CreateRelation(ctx, entity.NewDeviceRelation(deviceID, referenceID)); err != nil {
 			if !errors.Is(err, common.ErrResourceAlreadyExists) {
 				return fmt.Errorf("unable to create relation between device %q and reference %q: %w", deviceID, referenceID, err)
 			}
@@ -247,7 +247,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 				return nil
 			}
 		}
-		err := w.pgReferenceRepo.DeleteNamespaceRelation(ctx, namespaceID, referenceID)
+		err := w.pgReferenceRepo.DeleteRelation(ctx, entity.NewNamespaceRelation(namespaceID, referenceID))
 		if err != nil {
 			return fmt.Errorf("unable to delete  between namespace %q and reference %q: %w", namespaceID, referenceID, err)
 		}
@@ -264,7 +264,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 				return nil
 			}
 		}
-		err := w.pgReferenceRepo.DeleteSetRelation(ctx, setID, referenceID)
+		err := w.pgReferenceRepo.DeleteRelation(ctx, entity.NewSetRelation(setID, referenceID))
 		if err != nil {
 			return fmt.Errorf("unable to delete  between set %q and reference %q: %w", setID, referenceID, err)
 		}
@@ -281,7 +281,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 				return nil
 			}
 		}
-		err := w.pgReferenceRepo.DeleteDeviceRelation(ctx, deviceID, referenceID)
+		err := w.pgReferenceRepo.DeleteRelation(ctx, entity.NewDeviceRelation(deviceID, referenceID))
 		if err != nil {
 			return fmt.Errorf("unable to delete  between device %q and reference %q: %w", deviceID, referenceID, err)
 		}
@@ -296,6 +296,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 
 func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) error {
 	for _, s := range m.Selectors {
+		var r entity.ReferenceRelation
 		switch s.Type {
 		case entity.NamespaceSelector:
 			namespace, err := w.pgDeviceRepo.GetNamespace(ctx, s.Value)
@@ -309,9 +310,7 @@ func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) er
 			if contains(namespace.ManifestIDS, m.Id) {
 				continue
 			}
-			if err := w.pgReferenceRepo.CreateNamespaceRelation(ctx, namespace.Name, m.Id); err != nil {
-				return fmt.Errorf("unable to create namespace %q manifest %q relation: %w", namespace.Name, m.Id, err)
-			}
+			r = entity.NewNamespaceRelation(namespace.Name, m.Id)
 		case entity.SetSelector:
 			set, err := w.pgDeviceRepo.GetSet(ctx, s.Value)
 			if err != nil {
@@ -324,9 +323,7 @@ func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) er
 			if contains(set.ManifestIDS, m.Id) {
 				continue
 			}
-			if err := w.pgReferenceRepo.CreateSetRelation(ctx, set.Name, m.Id); err != nil {
-				return fmt.Errorf("unable to create set %q manifest %q relation: %w", set.Name, m.Id, err)
-			}
+			r = entity.NewSetRelation(set.Name, m.Id)
 		case entity.DeviceSelector:
 			device, err := w.pgDeviceRepo.GetDevice(ctx, s.Value)
 			if err != nil {
@@ -336,10 +333,10 @@ func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) er
 				}
 				return fmt.Errorf("unable to get device %q: %w", s.Value, err)
 			}
-			if err := w.pgReferenceRepo.CreateDeviceRelation(ctx, device.ID, m.Id); err != nil {
-				return fmt.Errorf("unable to create device %q manifest %q relation: %w", device.ID, m.Id, err)
-			}
-
+			r = entity.NewDeviceRelation(device.ID, m.Id)
+		}
+		if err := w.pgReferenceRepo.CreateRelation(ctx, r); err != nil {
+			return fmt.Errorf("unable to create relation between resource %q and manifest %q: %w", r.ResourceID, r.ResourceID, err)
 		}
 	}
 	return nil

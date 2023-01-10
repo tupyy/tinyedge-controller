@@ -58,12 +58,8 @@ type ReferenceWriter interface {
 	UpdateReference(ctx context.Context, ref entity.ManifestReference) error
 	DeleteReference(ctx context.Context, ref entity.ManifestReference) error
 
-	CreateNamespaceRelation(ctx context.Context, namespace, manifestID string) error
-	CreateSetRelation(ctx context.Context, set, manifestID string) error
-	CreateDeviceRelation(ctx context.Context, deviceID, manifestID string) error
-	DeleteNamespaceRelation(ctx context.Context, namespace, manifestID string) error
-	DeleteSetRelation(ctx context.Context, set, manifestID string) error
-	DeleteDeviceRelation(ctx context.Context, deviceID, manifestID string) error
+	CreateRelation(ctx context.Context, relation entity.ReferenceRelation) error
+	DeleteRelation(ctx context.Context, relation entity.ReferenceRelation) error
 }
 
 type ReferenceReaderWriter interface {
