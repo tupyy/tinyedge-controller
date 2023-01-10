@@ -292,7 +292,34 @@ func (m *ReferenceRepository) GetDeviceReferences(ctx context.Context, deviceID 
 	return mappers.ManifestModelsToEntities(models), nil
 }
 
-func (m *ReferenceRepository) CreateNamespaceRelation(ctx context.Context, namespaceID, manifestID string) error {
+func (m *ReferenceRepository) CreateRelation(ctx context.Context, relation entity.ReferenceRelation) error {
+	switch relation.Type {
+	case entity.NamespaceRelationType:
+		return m.createNamespaceRelation(ctx, relation.ResourceID, relation.ManifestID)
+	case entity.SetRelationType:
+		return m.createSetRelation(ctx, relation.ResourceID, relation.ManifestID)
+	case entity.DeviceRelationType:
+		return m.createDeviceRelation(ctx, relation.ResourceID, relation.ManifestID)
+	default:
+		return errors.New("unknown relation type")
+	}
+}
+
+func (m *ReferenceRepository) DeleteRelation(ctx context.Context, relation entity.ReferenceRelation) error {
+	switch relation.Type {
+	case entity.NamespaceRelationType:
+		return m.deleteNamespaceRelation(ctx, relation.ResourceID, relation.ManifestID)
+	case entity.SetRelationType:
+		return m.deleteSetRelation(ctx, relation.ResourceID, relation.ManifestID)
+	case entity.DeviceRelationType:
+		return m.deleteDeviceRelation(ctx, relation.ResourceID, relation.ManifestID)
+	default:
+		return errors.New("unknown relation type")
+	}
+
+}
+
+func (m *ReferenceRepository) createNamespaceRelation(ctx context.Context, namespaceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -330,7 +357,7 @@ func (m *ReferenceRepository) CreateNamespaceRelation(ctx context.Context, names
 	return nil
 }
 
-func (m *ReferenceRepository) DeleteNamespaceRelation(ctx context.Context, namespaceID, manifestID string) error {
+func (m *ReferenceRepository) deleteNamespaceRelation(ctx context.Context, namespaceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -358,7 +385,7 @@ func (m *ReferenceRepository) DeleteNamespaceRelation(ctx context.Context, names
 	return nil
 }
 
-func (m *ReferenceRepository) CreateSetRelation(ctx context.Context, setID, manifestID string) error {
+func (m *ReferenceRepository) createSetRelation(ctx context.Context, setID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -396,7 +423,7 @@ func (m *ReferenceRepository) CreateSetRelation(ctx context.Context, setID, mani
 	return nil
 }
 
-func (m *ReferenceRepository) DeleteSetRelation(ctx context.Context, setID, manifestID string) error {
+func (m *ReferenceRepository) deleteSetRelation(ctx context.Context, setID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -424,7 +451,7 @@ func (m *ReferenceRepository) DeleteSetRelation(ctx context.Context, setID, mani
 	return nil
 }
 
-func (m *ReferenceRepository) CreateDeviceRelation(ctx context.Context, deviceID, manifestID string) error {
+func (m *ReferenceRepository) createDeviceRelation(ctx context.Context, deviceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
@@ -462,7 +489,7 @@ func (m *ReferenceRepository) CreateDeviceRelation(ctx context.Context, deviceID
 	return nil
 }
 
-func (m *ReferenceRepository) DeleteDeviceRelation(ctx context.Context, deviceID, manifestID string) error {
+func (m *ReferenceRepository) deleteDeviceRelation(ctx context.Context, deviceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return common.ErrPostgresNotAvailable
 	}
