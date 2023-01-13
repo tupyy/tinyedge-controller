@@ -161,7 +161,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 			}
 			return fmt.Errorf("unable to create relation between namespace %q and reference %q: %w", namespaceID, referenceID, err)
 		}
-		if err := w.pgReferenceRepo.CreateRelation(ctx, entity.NewDeviceRelation(namespaceID, referenceID)); err != nil {
+		if err := w.pgReferenceRepo.CreateRelation(ctx, entity.NewNamespaceRelation(namespaceID, referenceID)); err != nil {
 			if !errors.Is(err, common.ErrResourceAlreadyExists) {
 				return fmt.Errorf("unable to create relation between namespace %q and reference %q: %w", namespaceID, referenceID, err)
 			}

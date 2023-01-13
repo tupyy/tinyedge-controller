@@ -56,11 +56,11 @@ func (g *GitOpsWorker) Do(ctx context.Context) error {
 		}
 
 		if r.TargetHeadSha == repo.CurrentHeadSha {
-			zap.S().Debugw("repo is up to date. skipping...", "repo.url", repo.Url, "head_sha", repo.TargetHeadSha)
+			zap.S().Infow("repo is up to date. skipping...", "repo.url", repo.Url, "head_sha", repo.TargetHeadSha)
 			continue
 		}
 
-		zap.S().Infow("repo has been updated", "repo_url", repo.Url, "head sha", repo.TargetHeadSha, "repo_current_sha", repo.CurrentHeadSha)
+		zap.S().Infow("changes detected in repo", "repo_url", repo.Url, "head sha", repo.TargetHeadSha, "repo_current_sha", repo.CurrentHeadSha)
 
 		if err := g.repositoryService.Update(ctx, repo); err != nil {
 			zap.S().Errorw("unable to update target sha of the repository", "error", err, "repo_id", repo.Id, "repo_url", repo.Url)
@@ -78,7 +78,7 @@ func (g *GitOpsWorker) Do(ctx context.Context) error {
 			zap.S().Errorw("unable to update current sha of the repository", "error", err, "repo_id", repo.Id)
 		}
 
-		zap.S().Infow("repository and manifests updated", "repo_id", repo.Id, "repo_url", repo.Url, "repo_current_sha", repo.CurrentHeadSha)
+		zap.S().Infow("repository and references updated", "repo_id", repo.Id, "repo_url", repo.Url, "repo_current_sha", repo.CurrentHeadSha)
 	}
 	return nil
 }
