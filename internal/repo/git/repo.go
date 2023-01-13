@@ -18,6 +18,7 @@ import (
 	goyaml "github.com/go-yaml/yaml"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	manifestv1 "github.com/tupyy/tinyedge-controller/internal/repo/models/manifest/v1"
+	"github.com/tupyy/tinyedge-controller/internal/services/common"
 	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
 	k8syaml "sigs.k8s.io/yaml"
@@ -35,12 +36,11 @@ func New(localStorage string) *GitRepo {
 // Open opens the git repo. If the repo does not exists in the local storage it will be cloned from remote.
 // Returns a new entity with updated information if the repo was cloned.
 func (g *GitRepo) Open(ctx context.Context, r entity.Repository) (entity.Repository, error) {
-	if r.LocalPath == "" {
-		return g.clone(ctx, r)
-	}
-
 	_, err := g.openRepository(ctx, r)
 	if err != nil {
+		if errors.Is(err, git.ErrRepositoryNotExists) {
+			return entity.Repository{}, common.ErrResourceNotFound
+		}
 		return entity.Repository{}, err
 	}
 
@@ -146,28 +146,39 @@ func (g *GitRepo) getManifest(ctx context.Context, filename, basePath string) (e
 
 }
 
-func (g *GitRepo) clone(ctx context.Context, r entity.Repository) (entity.Repository, error) {
-	zap.S().Infof("clone repo %q to local storage %q", r.Url, g.localStorage)
-	clone, err := git.PlainClone(path.Join(g.localStorage, r.Id), false, &git.CloneOptions{
-		URL:               r.Url,
+func (g *GitRepo) Clone(ctx context.Context, url, name string) (entity.Repository, error) {
+	zap.S().Infof("clone repo %q to local storage %q", url, g.localStorage)
+	clone, err := git.PlainClone(path.Join(g.localStorage, name), false, &git.CloneOptions{
+		URL:               url,
 		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 	})
+	if err != nil {
+		if !errors.Is(err, git.ErrRepositoryAlreadyExists) {
+			return entity.Repository{}, err
+		}
+		r, err := git.PlainOpen(path.Join(g.localStorage, name))
+		if err != nil {
+			return entity.Repository{}, err
+		}
+		clone = r
+	}
+
 	mainBranch, err := g.getMainBranch(clone)
 	if err != nil {
 		return entity.Repository{}, err
 	}
 	newRepo := entity.Repository{
-		Id:        r.Id,
-		Url:       r.Url,
+		Id:        name,
+		Url:       url,
 		Branch:    mainBranch,
-		LocalPath: path.Join(g.localStorage, r.Id),
+		LocalPath: path.Join(g.localStorage, name),
 	}
 	headSha, err := g.GetHeadSha(ctx, newRepo)
 	if err != nil {
 		return newRepo, err
 	}
 	newRepo.TargetHeadSha = headSha
-	zap.S().Debugw("successfully cloned repo", "remote", r.Url, "local", newRepo.LocalPath)
+	zap.S().Debugw("successfully cloned repo", "remote", url, "local", newRepo.LocalPath)
 	return newRepo, nil
 }
 

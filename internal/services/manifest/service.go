@@ -84,35 +84,6 @@ func (w *Service) GetManifests(ctx context.Context, repo entity.Repository) ([]e
 	return manifests, nil
 }
 
-func (w *Service) PullRepository(ctx context.Context, repo entity.Repository) (entity.Repository, error) {
-	r, err := w.gitRepo.Open(ctx, repo)
-	if err != nil {
-		return entity.Repository{}, err
-	}
-
-	err = w.gitRepo.Pull(ctx, repo)
-	if err != nil {
-		return entity.Repository{}, err
-	}
-
-	headSha, err := w.gitRepo.GetHeadSha(ctx, r)
-	if err != nil {
-		return entity.Repository{}, err
-	}
-
-	r.TargetHeadSha = headSha
-
-	return r, nil
-}
-
-func (w *Service) UpdateRepository(ctx context.Context, r entity.Repository) error {
-	if err := w.pgReferenceRepo.UpdateRepository(ctx, r); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) error {
 	references, err := w.pgReferenceRepo.GetRepositoryReferences(ctx, repo)
 	if err != nil {

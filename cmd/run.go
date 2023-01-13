@@ -31,6 +31,7 @@ import (
 	confService "github.com/tupyy/tinyedge-controller/internal/services/configuration"
 	"github.com/tupyy/tinyedge-controller/internal/services/edge"
 	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
+	"github.com/tupyy/tinyedge-controller/internal/services/repository"
 	"github.com/tupyy/tinyedge-controller/internal/workers"
 	edgePb "github.com/tupyy/tinyedge-controller/pkg/grpc/edge"
 	"go.uber.org/zap"
@@ -97,9 +98,10 @@ var runCmd = &cobra.Command{
 		configurationService := confService.New(deviceRepo, workService, cacheRepo)
 		edgeService := edge.New(deviceRepo, configurationService, certService)
 		authService := auth.New(certService, deviceRepo)
+		repoService := repository.NewRepositoryService(refRepo, gitRepo)
 
 		scheduler := workers.New(5 * time.Second)
-		scheduler.AddWorker(workers.NewGitOpsWorker(workService, configurationService))
+		scheduler.AddWorker(workers.NewGitOpsWorker(workService, repoService, configurationService))
 		go scheduler.Start(ctx)
 
 		tlsConfig, err := certService.TlsConfig(ctx, conf.DefaultCertificateTTL)
