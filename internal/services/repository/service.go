@@ -9,11 +9,20 @@ import (
 
 type RepositoryService struct {
 	gitRepo common.GitReaderWriter
-	pgRepo  common.ReferenceWriter
+	pgRepo  common.RepositoryReaderWriter
 }
 
-func NewRepositoryService(p common.ReferenceWriter, g common.GitReaderWriter) *RepositoryService {
+func NewRepositoryService(p common.RepositoryReaderWriter, g common.GitReaderWriter) *RepositoryService {
 	return &RepositoryService{gitRepo: g, pgRepo: p}
+}
+
+func (r *RepositoryService) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
+	repos, err := r.pgRepo.GetRepositories(ctx)
+	if err != nil {
+		return []entity.Repository{}, err
+	}
+	return repos, nil
+
 }
 
 func (r *RepositoryService) Open(ctx context.Context, repo entity.Repository) error {

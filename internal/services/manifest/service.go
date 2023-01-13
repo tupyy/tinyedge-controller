@@ -26,15 +26,7 @@ func New(pgDeviceRepo common.DeviceReader, pgManifestRepo common.ReferenceReader
 	}
 }
 
-func (w *Service) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
-	repos, err := w.pgReferenceRepo.GetRepositories(ctx)
-	if err != nil {
-		return []entity.Repository{}, err
-	}
-	return repos, nil
-
-}
-
+// GetManifest returns the manifest from the git repository
 func (w *Service) GetManifest(ctx context.Context, id string) (entity.ManifestWork, error) {
 	ref, err := w.pgReferenceRepo.GetReference(ctx, id)
 	if err != nil {
@@ -60,12 +52,13 @@ func (w *Service) GetManifest(ctx context.Context, id string) (entity.ManifestWo
 	return manifest, nil
 }
 
-func (w *Service) GetManifestReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
+func (w *Service) GetReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
 	return w.pgReferenceRepo.GetRepositoryReferences(ctx, repo)
 }
 
+// GetManifests return all the manifest from the whole git repository.
 func (w *Service) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.ManifestWork, error) {
-	refs, err := w.GetManifestReferences(ctx, repo)
+	refs, err := w.GetReferences(ctx, repo)
 	if err != nil {
 		return []entity.ManifestWork{}, err
 	}
@@ -84,7 +77,7 @@ func (w *Service) GetManifests(ctx context.Context, repo entity.Repository) ([]e
 	return manifests, nil
 }
 
-func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) error {
+func (w *Service) UpdateReferences(ctx context.Context, repo entity.Repository) error {
 	references, err := w.pgReferenceRepo.GetRepositoryReferences(ctx, repo)
 	if err != nil {
 		return fmt.Errorf("unable to read references of repo %q: %w", repo.Id, err)

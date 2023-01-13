@@ -6,27 +6,27 @@ import (
 
 	"github.com/tupyy/tinyedge-controller/internal/services/common"
 	"github.com/tupyy/tinyedge-controller/internal/services/configuration"
-	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
+	reference "github.com/tupyy/tinyedge-controller/internal/services/manifest"
 	"github.com/tupyy/tinyedge-controller/internal/services/repository"
 	"go.uber.org/zap"
 )
 
 type GitOpsWorker struct {
-	manifestService   *manifest.Service
+	referenceService  *reference.Service
 	repositoryService *repository.RepositoryService
 	confService       *configuration.ConfigurationService
 }
 
-func NewGitOpsWorker(w *manifest.Service, r *repository.RepositoryService, c *configuration.ConfigurationService) *GitOpsWorker {
+func NewGitOpsWorker(ref *reference.Service, r *repository.RepositoryService, c *configuration.ConfigurationService) *GitOpsWorker {
 	return &GitOpsWorker{
-		manifestService:   w,
+		referenceService:  ref,
 		repositoryService: r,
 		confService:       c,
 	}
 }
 
 func (g *GitOpsWorker) Do(ctx context.Context) error {
-	repos, err := g.manifestService.GetRepositories(ctx)
+	repos, err := g.repositoryService.GetRepositories(ctx)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (g *GitOpsWorker) Do(ctx context.Context) error {
 			continue
 		}
 
-		if err := g.manifestService.UpdateManifests(ctx, repo); err != nil {
+		if err := g.referenceService.UpdateReferences(ctx, repo); err != nil {
 			zap.S().Errorw("unable to update repository's manifests", "error", err, "repo_id", repo.Id, "repo_url", repo.Url)
 			continue
 		}
