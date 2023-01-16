@@ -20,34 +20,34 @@ DB Table Details
 -------------------------------------
 
 
-Table: namespaces_workloads
-[ 0] namespace_id                                   TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+Table: sets_references
+[ 0] device_set_id                                  TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 1] manifest_reference_id                          TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "namespace_id": "domwbxClYUhqJdoNGVfZLckhF",    "manifest_reference_id": "OKqSFCravOdjuKmCfsTxbKTgf"}
+{    "device_set_id": "BugfdllKJGpAkURiyPkHMITtT",    "manifest_reference_id": "hxHxKkFgiBpqxlhoOKNmTeeoS"}
 
 
 
 */
 
-// NamespacesWorkloads struct is a row record of the namespaces_workloads table in the tinyedge database
-type NamespacesWorkloads struct {
-	//[ 0] namespace_id                                   TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	NamespaceID string `gorm:"primary_key;column:namespace_id;type:TEXT;"`
+// SetsReferences struct is a row record of the sets_references table in the tinyedge database
+type SetsReferences struct {
+	//[ 0] device_set_id                                  TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+	DeviceSetID string `gorm:"primary_key;column:device_set_id;type:TEXT;"`
 	//[ 1] manifest_reference_id                          TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ManifestReferenceID string `gorm:"primary_key;column:manifest_reference_id;type:TEXT;"`
 }
 
-var namespaces_workloadsTableInfo = &TableInfo{
-	Name: "namespaces_workloads",
+var sets_referencesTableInfo = &TableInfo{
+	Name: "sets_references",
 	Columns: []*ColumnInfo{
 
 		&ColumnInfo{
 			Index:              0,
-			Name:               "namespace_id",
+			Name:               "device_set_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
@@ -58,10 +58,10 @@ var namespaces_workloadsTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "TEXT",
 			ColumnLength:       -1,
-			GoFieldName:        "NamespaceID",
+			GoFieldName:        "DeviceSetID",
 			GoFieldType:        "string",
-			JSONFieldName:      "namespace_id",
-			ProtobufFieldName:  "namespace_id",
+			JSONFieldName:      "device_set_id",
+			ProtobufFieldName:  "device_set_id",
 			ProtobufType:       "string",
 			ProtobufPos:        1,
 		},
@@ -90,25 +90,25 @@ var namespaces_workloadsTableInfo = &TableInfo{
 }
 
 // TableName sets the insert table name for this struct type
-func (n *NamespacesWorkloads) TableName() string {
-	return "namespaces_workloads"
+func (s *SetsReferences) TableName() string {
+	return "sets_references"
 }
 
 // BeforeSave invoked before saving, return an error if field is not populated.
-func (n *NamespacesWorkloads) BeforeSave() error {
+func (s *SetsReferences) BeforeSave() error {
 	return nil
 }
 
 // Prepare invoked before saving, can be used to populate fields etc.
-func (n *NamespacesWorkloads) Prepare() {
+func (s *SetsReferences) Prepare() {
 }
 
 // Validate invoked before performing action, return an error if field is not populated.
-func (n *NamespacesWorkloads) Validate(action Action) error {
+func (s *SetsReferences) Validate(action Action) error {
 	return nil
 }
 
 // TableInfo return table meta data
-func (n *NamespacesWorkloads) TableInfo() *TableInfo {
-	return namespaces_workloadsTableInfo
+func (s *SetsReferences) TableInfo() *TableInfo {
+	return sets_referencesTableInfo
 }

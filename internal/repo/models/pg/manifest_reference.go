@@ -30,7 +30,7 @@ Table: manifest_reference
 
 JSON Sample
 -------------------------------------
-{    "id": "rvwRfbvVuuTlyXJZgHHZGEYIl",    "repo_id": "oHwlLLBNlAqPUKuKMWEMaTMrM",    "valid": false,    "hash": "hbgvUUNcUBLRxRTRTkGWruCSm",    "path_manifest_reference": "mfhBAePLfVYSmhSvyXOBUsYAS"}
+{    "id": "TthIBbledYudBoMjeDjGSttRT",    "repo_id": "GbiCBJriBFEmwbCLOsNtsJoCQ",    "valid": false,    "hash": "MAXoXJUKPSgZIpgmicKwrYnnR",    "path_manifest_reference": "bvWNWvhvmEaBDbqJlEEFIXrKW"}
 
 
 

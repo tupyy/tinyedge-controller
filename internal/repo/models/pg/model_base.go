@@ -33,14 +33,14 @@ func init() {
 	tables["configuration"] = configurationTableInfo
 	tables["device"] = deviceTableInfo
 	tables["device_set"] = device_setTableInfo
-	tables["devices_workloads"] = devices_workloadsTableInfo
+	tables["devices_references"] = devices_referencesTableInfo
 	tables["manifest_reference"] = manifest_referenceTableInfo
 	tables["namespace"] = namespaceTableInfo
-	tables["namespaces_workloads"] = namespaces_workloadsTableInfo
+	tables["namespaces_references"] = namespaces_referencesTableInfo
 	tables["repo"] = repoTableInfo
 	tables["secret"] = secretTableInfo
 	tables["secrets_manifests"] = secrets_manifestsTableInfo
-	tables["sets_workloads"] = sets_workloadsTableInfo
+	tables["sets_references"] = sets_referencesTableInfo
 }
 
 // String describe the action
