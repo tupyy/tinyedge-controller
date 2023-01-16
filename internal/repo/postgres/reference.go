@@ -77,32 +77,6 @@ func (m *ReferenceRepository) GetReference(ctx context.Context, id string) (enti
 	return mappers.ManifestModelToEntity(manifests), nil
 }
 
-func (m *ReferenceRepository) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
-	if !m.circuitBreaker.IsAvailable() {
-		return []entity.Repository{}, common.ErrPostgresNotAvailable
-	}
-
-	repos := []models.Repo{}
-
-	if err := m.getDb(ctx).Find(&repos).Error; err != nil {
-		if m.checkNetworkError(err) {
-			return []entity.Repository{}, common.ErrPostgresNotAvailable
-		}
-		return []entity.Repository{}, err
-	}
-
-	if len(repos) == 0 {
-		return []entity.Repository{}, nil
-	}
-
-	entities := make([]entity.Repository, 0, len(repos))
-	for _, r := range repos {
-		entities = append(entities, mappers.RepoModelToEntity(r))
-	}
-
-	return entities, nil
-}
-
 func (m *ReferenceRepository) GetRepositoryReferences(ctx context.Context, r entity.Repository) ([]entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
 		return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
@@ -123,39 +97,6 @@ func (m *ReferenceRepository) GetRepositoryReferences(ctx context.Context, r ent
 	}
 
 	return mappers.ManifestModelsToEntities(manifests), nil
-}
-
-func (m *ReferenceRepository) InsertRepository(ctx context.Context, r entity.Repository) error {
-	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
-	}
-
-	model := mappers.RepoEntityToModel(r)
-
-	if err := m.getDb(ctx).Create(&model).Error; err != nil {
-		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
-		}
-		return err
-	}
-	return nil
-}
-
-func (m *ReferenceRepository) UpdateRepository(ctx context.Context, r entity.Repository) error {
-	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
-	}
-
-	model := mappers.RepoEntityToModel(r)
-
-	if err := m.getDb(ctx).Where("id = ?", model.ID).Save(&model).Error; err != nil {
-		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
-		}
-		return err
-	}
-
-	return nil
 }
 
 func (m *ReferenceRepository) InsertReference(ctx context.Context, ref entity.ManifestReference) error {
@@ -570,13 +511,13 @@ type manifestQueryBuilder struct {
 
 func newManifestQuery(ctx context.Context, db *gorm.DB) *manifestQueryBuilder {
 	tx := db.Session(&gorm.Session{SkipHooks: true}).WithContext(ctx).Table("manifest_reference").
-		Select(`manifest_reference.*, devices_workloads.device_id as device_id, sets_workloads.device_set_id as set_id, namespaces_workloads.namespace_id as namespace_id,
+		Select(`manifest_reference.*, devices_references.device_id as device_id, sets_references.device_set_id as set_id, namespaces_references.namespace_id as namespace_id,
 		repo.id as repo_id, repo.url as repo_url, repo.branch as repo_branch, repo.local_path as repo_local_path,
 		repo.current_head_sha as repo_current_head_sha, repo.target_head_sha as repo_target_head_sha,
 		repo.pull_period_seconds as repo_pull_period_seconds`).
-		Joins("LEFT JOIN namespaces_workloads ON namespaces_workloads.manifest_reference_id = manifest_reference.id").
-		Joins("LEFT JOIN sets_workloads ON sets_workloads.manifest_reference_id = manifest_reference.id").
-		Joins("LEFT JOIN devices_workloads ON devices_workloads.manifest_reference_id = manifest_reference.id").
+		Joins("LEFT JOIN namespaces_references ON namespaces_references.manifest_reference_id = manifest_reference.id").
+		Joins("LEFT JOIN sets_references ON sets_references.manifest_reference_id = manifest_reference.id").
+		Joins("LEFT JOIN devices_references ON devices_references.manifest_reference_id = manifest_reference.id").
 		Joins("JOIN repo ON repo.id = manifest_reference.repo_id")
 	return &manifestQueryBuilder{tx}
 }
@@ -592,17 +533,17 @@ func (mm *manifestQueryBuilder) WithReferenceID(id string) *manifestQueryBuilder
 }
 
 func (mm *manifestQueryBuilder) WithNamespaceID(id string) *manifestQueryBuilder {
-	mm.tx.Where("namespaces_workloads.namespace_id = ?", id)
+	mm.tx.Where("namespaces_references.namespace_id = ?", id)
 	return mm
 }
 
 func (mm *manifestQueryBuilder) WithDeviceID(id string) *manifestQueryBuilder {
-	mm.tx.Where("devices_workloads.device_id = ?", id)
+	mm.tx.Where("devices_references.device_id = ?", id)
 	return mm
 }
 
 func (mm *manifestQueryBuilder) WithSetID(id string) *manifestQueryBuilder {
-	mm.tx.Where("sets_workloads.device_set_id = ?", id)
+	mm.tx.Where("sets_references.device_set_id = ?", id)
 	return mm
 }
 

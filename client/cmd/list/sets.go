@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/spf13/cobra"
+	rootCmd "github.com/tupyy/tinyedge-controller/client/cmd"
 	adminGrpc "github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
 )
 
@@ -15,7 +16,7 @@ var setCmd = &cobra.Command{
 		fn := func(ctx context.Context, client adminGrpc.AdminServiceClient) (*adminGrpc.SetsListResponse, error) {
 			return client.GetSets(ctx, &adminGrpc.ListRequest{})
 		}
-		return runCmd(fn)
+		return rootCmd.RunCmd(fn)
 	},
 }
 

@@ -83,6 +83,10 @@ func (a *AdminServer) GetNamespaces(ctx context.Context, req *pb.ListRequest) (*
 		models = append(models, mappers.NamespaceToProto(n))
 	}
 
+	if len(models) == 0 {
+		return &pb.NamespaceListResponse{}, nil
+	}
+
 	return &pb.NamespaceListResponse{
 		Namespaces: models,
 		Size:       int32(len(models)),
@@ -112,6 +116,10 @@ func (a *AdminServer) GetManifests(ctx context.Context, req *pb.ListRequest) (*p
 		pgManifests = append(pgManifests, mappers.ManifestToProto(m))
 	}
 
+	if len(pgManifests) == 0 {
+		return &pb.ManifestListResponse{}, nil
+	}
+
 	return &pb.ManifestListResponse{
 		Manifests: pgManifests,
 		Size:      int32(len(pgManifests)),
@@ -137,6 +145,10 @@ func (a *AdminServer) GetRepositories(ctx context.Context, req *pb.ListRequest) 
 		models = append(models, mappers.RepositoryToModel(r))
 	}
 
+	if len(models) == 0 {
+		return &pb.RepositoryListResponse{}, nil
+	}
+
 	return &pb.RepositoryListResponse{
 		Repositories: models,
 		Size:         int32(len(models)),
@@ -147,5 +159,17 @@ func (a *AdminServer) GetRepositories(ctx context.Context, req *pb.ListRequest) 
 
 // AddRepository add a repository
 func (a *AdminServer) AddRepository(ctx context.Context, req *pb.AddRepositoryRequest) (*pb.AddRepositoryResponse, error) {
-	return nil, fmt.Errorf("unimplemented yet")
+	repo := entity.Repository{
+		Url: req.Url,
+		Id:  req.Name,
+	}
+
+	if err := a.repositoryService.Add(ctx, repo); err != nil {
+		return nil, err
+	}
+
+	return &pb.AddRepositoryResponse{
+		Url:  req.Url,
+		Name: req.Name,
+	}, nil
 }

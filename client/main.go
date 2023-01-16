@@ -6,6 +6,7 @@ package main
 
 import (
 	"github.com/tupyy/tinyedge-controller/client/cmd"
+	_ "github.com/tupyy/tinyedge-controller/client/cmd/add"
 	_ "github.com/tupyy/tinyedge-controller/client/cmd/list"
 )
 

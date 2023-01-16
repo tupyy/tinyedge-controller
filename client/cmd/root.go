@@ -5,9 +5,15 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/tupyy/tinyedge-controller/client/internal/common"
+	"github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
 )
 
 var (
@@ -36,4 +42,36 @@ func AddCommand(cmd *cobra.Command) {
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&Url, "url", "u", "localhost:8080", "server url")
+}
+
+func RunCmd[T any](fn func(ctx context.Context, client admin.AdminServiceClient) (T, error)) error {
+	conn, err := common.Dial(Url)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	client := admin.NewAdminServiceClient(conn)
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	defer cancel()
+
+	response, err := fn(ctx, client)
+	if err != nil {
+		return err
+	}
+
+	output, err := jsonOutput(response)
+	if err != nil {
+		return err
+	}
+	fmt.Println(output)
+	return nil
+}
+
+func jsonOutput[T any](response T) (string, error) {
+	data, err := json.Marshal(response)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
 }

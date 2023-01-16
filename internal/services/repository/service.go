@@ -62,3 +62,7 @@ func (w *RepositoryService) Update(ctx context.Context, r entity.Repository) err
 	}
 	return nil
 }
+
+func (w *RepositoryService) Add(ctx context.Context, r entity.Repository) error {
+	return w.pgRepo.InsertRepository(ctx, r)
+}

@@ -88,6 +88,10 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			zap.S().Fatal(err)
 		}
+		repoRepo, err := pgRepo.NewRepository(pgClient)
+		if err != nil {
+			zap.S().Fatal(err)
+		}
 		cacheRepo := cache.NewCacheRepo()
 
 		// git repo
@@ -100,7 +104,7 @@ var runCmd = &cobra.Command{
 		configurationService := confService.New(deviceRepo, workService, cacheRepo)
 		edgeService := edge.New(deviceRepo, configurationService, certService)
 		authService := auth.New(certService, deviceRepo)
-		repoService := repository.NewRepositoryService(refRepo, gitRepo)
+		repoService := repository.NewRepositoryService(repoRepo, gitRepo)
 		deviceService := device.New(deviceRepo)
 
 		scheduler := workers.New(5 * time.Second)

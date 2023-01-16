@@ -7,7 +7,6 @@ import (
 )
 
 type RepositoryReader interface {
-	GetRepositoryReferences(ctx context.Context, r entity.Repository) ([]entity.ManifestReference, error)
 	GetRepositories(ctx context.Context) ([]entity.Repository, error)
 }
 
