@@ -28,7 +28,7 @@ Table: namespace
 
 JSON Sample
 -------------------------------------
-{    "id": "gqbVPucVEXtCSxdLwvXXVuhJJ",    "is_default": false,    "configuration_id": "aVidCWojrXgPHBtkiqFICHFuY"}
+{    "id": "hdoEXvydWXublrVGUZqJFqEmW",    "is_default": true,    "configuration_id": "IDKihoBZlQRVVPAZqILMVBtyP"}
 
 
 

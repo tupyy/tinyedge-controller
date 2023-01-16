@@ -217,7 +217,7 @@ func (m *ReferenceRepository) DeleteReference(ctx context.Context, ref entity.Ma
 		return nil
 	}
 
-	if err := m.getDb(ctx).Where("id = ?", ref.Id).Delete(&models.ManifestWork{}).Error; err != nil {
+	if err := m.getDb(ctx).Where("id = ?", ref.Id).Delete(&models.ManifestReference{}).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return common.ErrPostgresNotAvailable
 		}
@@ -324,13 +324,13 @@ func (m *ReferenceRepository) createNamespaceRelation(ctx context.Context, names
 		return common.ErrPostgresNotAvailable
 	}
 
-	model := models.NamespacesWorkloads{
+	model := models.NamespacesReferences{
 		NamespaceID:         namespaceID,
 		ManifestReferenceID: manifestID,
 	}
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
-		var m models.NamespacesWorkloads
+		var m models.NamespacesReferences
 		return db.Where("namespace_id = ? AND manifest_reference_id = ?", namespaceID, manifestID).First(&m)
 	})
 	if err != nil {
@@ -342,7 +342,7 @@ func (m *ReferenceRepository) createNamespaceRelation(ctx context.Context, names
 	}
 
 	// check if the relation already exists
-	var dummy models.NamespacesWorkloads
+	var dummy models.NamespacesReferences
 	if err := m.getDb(ctx).Where("namespace_id = ? AND manifest_reference_id = ?", namespaceID, manifestID).First(&dummy).Error; err == nil {
 		return nil
 	}
@@ -363,7 +363,7 @@ func (m *ReferenceRepository) deleteNamespaceRelation(ctx context.Context, names
 	}
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
-		var m models.NamespacesWorkloads
+		var m models.NamespacesReferences
 		return db.Where("namespace_id = ? AND manifest_reference_id = ?", namespaceID, manifestID).First(&m)
 	})
 	if err != nil {
@@ -374,7 +374,7 @@ func (m *ReferenceRepository) deleteNamespaceRelation(ctx context.Context, names
 		return nil
 	}
 
-	model := models.NamespacesWorkloads{}
+	model := models.NamespacesReferences{}
 	if err := m.getDb(ctx).Where("namespace_id = ? AND manifest_reference_id = ?", namespaceID, manifestID).Delete(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return common.ErrPostgresNotAvailable
@@ -390,13 +390,13 @@ func (m *ReferenceRepository) createSetRelation(ctx context.Context, setID, mani
 		return common.ErrPostgresNotAvailable
 	}
 
-	model := models.SetsWorkloads{
+	model := models.SetsReferences{
 		DeviceSetID:         setID,
 		ManifestReferenceID: manifestID,
 	}
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
-		var m models.SetsWorkloads
+		var m models.SetsReferences
 		return db.Where("device_set_id = ? AND manifest_reference_id = ?", setID, manifestID).First(&m)
 	})
 	if err != nil {
@@ -408,7 +408,7 @@ func (m *ReferenceRepository) createSetRelation(ctx context.Context, setID, mani
 	}
 
 	// check if the relation already exists
-	var dummy models.SetsWorkloads
+	var dummy models.SetsReferences
 	if err := m.getDb(ctx).Where("device_set_id = ? AND manifest_reference_id = ?", setID, manifestID).First(&dummy).Error; err == nil {
 		return nil
 	}
@@ -429,7 +429,7 @@ func (m *ReferenceRepository) deleteSetRelation(ctx context.Context, setID, mani
 	}
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
-		var m models.SetsWorkloads
+		var m models.SetsReferences
 		return db.Where("device_set_id = ? AND manifest_reference_id = ?", setID, manifestID).First(&m)
 	})
 	if err != nil {
@@ -440,7 +440,7 @@ func (m *ReferenceRepository) deleteSetRelation(ctx context.Context, setID, mani
 		return nil
 	}
 
-	model := models.SetsWorkloads{}
+	model := models.SetsReferences{}
 	if err := m.getDb(ctx).Where("device_set_id = ? AND manifest_reference_id = ?", setID, manifestID).Delete(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return common.ErrPostgresNotAvailable
@@ -457,7 +457,7 @@ func (m *ReferenceRepository) createDeviceRelation(ctx context.Context, deviceID
 	}
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
-		var m models.DevicesWorkloads
+		var m models.DevicesReferences
 		return db.Where("device_id = ? AND manifest_reference_id = ?", deviceID, manifestID).First(&m)
 	})
 	if err != nil {
@@ -468,13 +468,13 @@ func (m *ReferenceRepository) createDeviceRelation(ctx context.Context, deviceID
 		return common.ErrResourceAlreadyExists
 	}
 
-	model := models.DevicesWorkloads{
+	model := models.DevicesReferences{
 		DeviceID:            deviceID,
 		ManifestReferenceID: manifestID,
 	}
 
 	// check if the relation already exists
-	var dummy models.DevicesWorkloads
+	var dummy models.DevicesReferences
 	if err := m.getDb(ctx).Where("device_id = ? AND manifest_reference_id = ?", deviceID, manifestID).First(&dummy).Error; err == nil {
 		return nil
 	}
@@ -495,7 +495,7 @@ func (m *ReferenceRepository) deleteDeviceRelation(ctx context.Context, deviceID
 	}
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
-		var m models.DevicesWorkloads
+		var m models.DevicesReferences
 		return db.Where("device_id = ? AND manifest_reference_id = ?", deviceID, manifestID).First(&m)
 	})
 	if err != nil {
@@ -506,7 +506,7 @@ func (m *ReferenceRepository) deleteDeviceRelation(ctx context.Context, deviceID
 		return nil
 	}
 
-	model := models.DevicesWorkloads{}
+	model := models.DevicesReferences{}
 	if err := m.getDb(ctx).Where("device_id = ? AND manifest_reference_id = ?", deviceID, manifestID).Delete(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
 			return common.ErrPostgresNotAvailable

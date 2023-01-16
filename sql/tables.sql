@@ -78,28 +78,28 @@ CREATE TABLE device (
 
 CREATE INDEX device_configuration_id_idx ON device (configuration_id);
 
-CREATE TABLE devices_workloads (
+CREATE TABLE devices_references (
     device_id TEXT REFERENCES device(id) ON DELETE CASCADE,
     manifest_reference_id TEXT REFERENCES manifest_reference(id) ON DELETE CASCADE,
-    CONSTRAINT devices_workloads_pk PRIMARY KEY (
+    CONSTRAINT devices_references_pk PRIMARY KEY (
         device_id,
         manifest_reference_id
     )
 );
 
-CREATE TABLE namespaces_workloads (
+CREATE TABLE namespaces_references (
     namespace_id TEXT REFERENCES namespace(id) ON DELETE CASCADE,
     manifest_reference_id TEXT REFERENCES manifest_reference(id) ON DELETE CASCADE,
-    CONSTRAINT namespace_manifest_reference_pk PRIMARY KEY(
+    CONSTRAINT namespace_reference_pk PRIMARY KEY(
         namespace_id,
         manifest_reference_id
     )
 );
 
-CREATE TABLE sets_workloads (
+CREATE TABLE sets_references (
     device_set_id TEXT REFERENCES device_set(id) ON DELETE CASCADE,
     manifest_reference_id TEXT REFERENCES manifest_reference(id) ON DELETE CASCADE,
-    CONSTRAINT device_set_manifest_reference_pk PRIMARY KEY(
+    CONSTRAINT device_set_reference_pk PRIMARY KEY(
         device_set_id,
         manifest_reference_id
     )
