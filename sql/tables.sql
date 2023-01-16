@@ -30,7 +30,7 @@ CREATE TABLE repo (
 
 CREATE TABLE manifest_reference (
     id TEXT PRIMARY KEY,
-    repo_id TEXT REFERENCES repo(id) NOT NULL,
+    repo_id TEXT NOT NULL REFERENCES repo(id) ON DELETE CASCADE,
     valid BOOLEAN NOT NULL,
     hash TEXT NOT NULL,
     path_manifest_reference TEXT NOT NULL
