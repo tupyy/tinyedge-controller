@@ -80,7 +80,36 @@ func (d *DeviceRepo) GetSet(ctx context.Context, id string) (entity.Set, error) 
 		return entity.Set{}, common.ErrResourceNotFound
 	}
 
-	return mappers.SetModelToEntity(s), nil
+	return mappers.SetToEntity(s), nil
+}
+
+func (d *DeviceRepo) GetSets(ctx context.Context) ([]entity.Set, error) {
+	if !d.circuitBreaker.IsAvailable() {
+		return []entity.Set{}, common.ErrPostgresNotAvailable
+	}
+
+	s := []models.SetJoin{}
+
+	tx := d.getDb(ctx).Table("device_set").
+		Select(`device_set.*, device.id as device_id,
+		configuration.heartbeat_period_seconds as configuration_heartbeat_period_seconds, configuration.log_level as configuration_log_level,
+		sets_workloads.manifest_reference_id as manifest_id`).
+		Joins("LEFT JOIN device ON device.device_set_id = device_set.id").
+		Joins("LEFT JOIN sets_workloads ON sets_workloads.device_set_id = device_set.id").
+		Joins("LEFT JOIN configuration ON device_set.configuration_id = configuration.id")
+
+	if err := tx.Find(&s).Error; err != nil {
+		if d.checkNetworkError(err) {
+			return []entity.Set{}, common.ErrPostgresNotAvailable
+		}
+		return []entity.Set{}, err
+	}
+
+	if len(s) == 0 {
+		return []entity.Set{}, nil
+	}
+
+	return mappers.SetsToEntity(s), nil
 }
 
 func (d *DeviceRepo) GetNamespace(ctx context.Context, id string) (entity.Namespace, error) {
@@ -90,7 +119,7 @@ func (d *DeviceRepo) GetNamespace(ctx context.Context, id string) (entity.Namesp
 
 	n := []models.NamespaceJoin{}
 	tx := d.getDb(ctx).Table("namespace").
-		Select(`device_set.*,
+		Select(`device_set.*,namespace.is_default,
 			configuration.heartbeat_period_seconds as configuration_heartbeat_period_seconds, configuration.log_level as configuration_log_level,
 			device.id as device_id, device_set.id as device_set_id, namespaces_workloads.manifest_reference_id as manifest_id`).
 		Joins("LEFT JOIN device ON device.namespace_id = namespace.id").
@@ -114,6 +143,38 @@ func (d *DeviceRepo) GetNamespace(ctx context.Context, id string) (entity.Namesp
 	}
 
 	return mappers.NamespaceModelToEntity(n), nil
+}
+
+func (d *DeviceRepo) GetNamespaces(ctx context.Context) ([]entity.Namespace, error) {
+	if !d.circuitBreaker.IsAvailable() {
+		return []entity.Namespace{}, common.ErrPostgresNotAvailable
+	}
+
+	n := []models.NamespaceJoin{}
+	tx := d.getDb(ctx).Table("namespace").
+		Select(`device_set.*,namespace.is_default,
+			configuration.heartbeat_period_seconds as configuration_heartbeat_period_seconds, configuration.log_level as configuration_log_level,
+			device.id as device_id, device_set.id as device_set_id, namespaces_workloads.manifest_reference_id as manifest_id`).
+		Joins("LEFT JOIN device ON device.namespace_id = namespace.id").
+		Joins("LEFT JOIN device_set ON device_set.namespace_id = namespace.id").
+		Joins("LEFT JOIN namespaces_workloads ON namespaces_workloads.namespace_id = namespace.id").
+		Joins("LEFT JOIN configuration ON namespace.configuration_id = configuration.id")
+
+	if err := tx.Find(&n).Error; err != nil {
+		if d.checkNetworkError(err) {
+			return []entity.Namespace{}, common.ErrPostgresNotAvailable
+		}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return []entity.Namespace{}, common.ErrResourceNotFound
+		}
+		return []entity.Namespace{}, err
+	}
+
+	if len(n) == 0 {
+		return []entity.Namespace{}, nil
+	}
+
+	return mappers.NamespacesModelToEntity(n), nil
 }
 
 func (d *DeviceRepo) Create(ctx context.Context, device entity.Device) error {

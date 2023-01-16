@@ -48,7 +48,28 @@ func MapModelToEntity(device models.Device) entity.Device {
 	return e
 }
 
-func SetModelToEntity(s []models.SetJoin) entity.Set {
+func SetsToEntity(sets []models.SetJoin) []entity.Set {
+	nmap := make(map[string][]models.SetJoin)
+	for _, n := range sets {
+		_, ok := nmap[n.ID]
+		var nn []models.SetJoin
+		if !ok {
+			nn = make([]models.SetJoin, 0)
+		} else {
+			nn = nmap[n.ID]
+		}
+		nn = append(nn, n)
+		nmap[n.ID] = nn
+	}
+
+	entities := make([]entity.Set, 0, len(sets))
+	for _, v := range nmap {
+		entities = append(entities, SetToEntity(v))
+	}
+	return entities
+}
+
+func SetToEntity(s []models.SetJoin) entity.Set {
 	set := entity.Set{
 		Name:        s[0].ID,
 		NamespaceID: s[0].NamespaceID,
@@ -82,6 +103,27 @@ func SetModelToEntity(s []models.SetJoin) entity.Set {
 	return set
 }
 
+func NamespacesModelToEntity(namespaces []models.NamespaceJoin) []entity.Namespace {
+	nmap := make(map[string][]models.NamespaceJoin)
+	for _, n := range namespaces {
+		_, ok := nmap[n.ID]
+		var nn []models.NamespaceJoin
+		if !ok {
+			nn = make([]models.NamespaceJoin, 0)
+		} else {
+			nn = nmap[n.ID]
+		}
+		nn = append(nn, n)
+		nmap[n.ID] = nn
+	}
+
+	entities := make([]entity.Namespace, 0, len(namespaces))
+	for _, v := range nmap {
+		entities = append(entities, NamespaceModelToEntity(v))
+	}
+	return entities
+}
+
 func NamespaceModelToEntity(n []models.NamespaceJoin) entity.Namespace {
 	namespace := entity.Namespace{
 		Name:      n[0].ID,
@@ -92,8 +134,8 @@ func NamespaceModelToEntity(n []models.NamespaceJoin) entity.Namespace {
 		HeartbeatPeriod: time.Duration(n[0].ConfigurationHeartbeatPeriodSeconds.Int64 * int64(time.Second)),
 		LogLevel:        n[0].ConfigurationLogLevel.String,
 	}
-	if n[0].IsDefault.Valid {
-		namespace.IsDefault = n[0].IsDefault.Bool
+	if n[0].Namespace.IsDefault.Valid {
+		namespace.IsDefault = n[0].Namespace.IsDefault.Bool
 	}
 	idMap := make(uniqueIds)
 	sets := make([]string, 0, len(n))

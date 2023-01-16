@@ -29,10 +29,12 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/services/auth"
 	"github.com/tupyy/tinyedge-controller/internal/services/certificate"
 	confService "github.com/tupyy/tinyedge-controller/internal/services/configuration"
+	"github.com/tupyy/tinyedge-controller/internal/services/device"
 	"github.com/tupyy/tinyedge-controller/internal/services/edge"
 	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
 	"github.com/tupyy/tinyedge-controller/internal/services/repository"
 	"github.com/tupyy/tinyedge-controller/internal/workers"
+	"github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
 	edgePb "github.com/tupyy/tinyedge-controller/pkg/grpc/edge"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -99,6 +101,7 @@ var runCmd = &cobra.Command{
 		edgeService := edge.New(deviceRepo, configurationService, certService)
 		authService := auth.New(certService, deviceRepo)
 		repoService := repository.NewRepositoryService(refRepo, gitRepo)
+		deviceService := device.New(deviceRepo)
 
 		scheduler := workers.New(5 * time.Second)
 		scheduler.AddWorker(workers.NewGitOpsWorker(workService, repoService, configurationService))
@@ -115,10 +118,15 @@ var runCmd = &cobra.Command{
 			zap.S().Fatalf("failed to listen: %v", err)
 		}
 
-		grpcServer := createServer(tlsConfig, authService, logger)
+		grpcEdgeServer := createEdgeServer(tlsConfig, authService, logger)
 		edgeServer := servers.NewEdgeServer(edgeService)
-		edgePb.RegisterEdgeServiceServer(grpcServer, edgeServer)
-		grpcServer.Serve(lis)
+		edgePb.RegisterEdgeServiceServer(grpcEdgeServer, edgeServer)
+		go grpcEdgeServer.Serve(lis)
+
+		grpcAdminServer := createAdminServer(logger)
+		adminServer := servers.NewAdminServer(repoService, workService, deviceService)
+		admin.RegisterAdminServiceServer(grpcAdminServer, adminServer)
+		grpcAdminServer.Serve(lis)
 	},
 }
 
@@ -153,7 +161,7 @@ func setupLogger() *zap.Logger {
 	return plain
 }
 
-func createServer(tlsConfig *tls.Config, auth *auth.Service, logger *zap.Logger) *grpc.Server {
+func createEdgeServer(tlsConfig *tls.Config, auth *auth.Service, logger *zap.Logger) *grpc.Server {
 	// start edge server
 	creds := credentials.NewTLS(tlsConfig)
 	opts := []grpc.ServerOption{grpc.Creds(creds)}
@@ -184,6 +192,21 @@ func createServer(tlsConfig *tls.Config, auth *auth.Service, logger *zap.Logger)
 	opts = append(opts, grpc_middleware.WithUnaryServerChain(
 		interceptors.AuthInterceptor(auth),
 		grpc_ctxtags.UnaryServerInterceptor(altOpts...),
+		grpc_zap.UnaryServerInterceptor(logger, zapOpts...),
+	))
+
+	grpc_zap.ReplaceGrpcLoggerV2(logger)
+	return grpc.NewServer(opts...)
+}
+
+func createAdminServer(logger *zap.Logger) *grpc.Server {
+	zapOpts := []grpc_zap.Option{
+		grpc_zap.WithDurationField(func(duration time.Duration) zapcore.Field {
+			return zap.Float64("grpc.time_s", duration.Seconds())
+		}),
+	}
+	opts := []grpc.ServerOption{}
+	opts = append(opts, grpc_middleware.WithUnaryServerChain(
 		grpc_zap.UnaryServerInterceptor(logger, zapOpts...),
 	))
 

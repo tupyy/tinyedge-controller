@@ -56,7 +56,7 @@ func (g *GitOpsWorker) Do(ctx context.Context) error {
 		}
 
 		if r.TargetHeadSha == repo.CurrentHeadSha {
-			zap.S().Infow("repo is up to date. skipping...", "repo.url", repo.Url, "head_sha", repo.TargetHeadSha)
+			zap.S().Debugw("repo is up to date. skipping...", "repo.url", repo.Url, "head_sha", repo.TargetHeadSha)
 			continue
 		}
 

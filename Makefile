@@ -101,10 +101,13 @@ lint: ## Check if the go code is properly written, rules are in .golangci.yml
 
 
 ##@ Build
-.PHONY: build run run.infra run.infra.stop docker.build docker.stop
+.PHONY: build build.client run run.infra run.infra.stop docker.build docker.stop
 
 build: ## Build binary.
 	go build -mod=vendor -o $(PWD)/bin/tinyedge-controller $(PWD)/main.go
+
+build.client: ## Build the client
+	go build -mod=vendor -o $(PWD)/bin/tinyedge-cli $(PWD)/client/main.go
 
 run: ## Run the controller from your host.
 	bin/tinyedge-controller run | $(COLORIZE)

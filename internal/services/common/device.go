@@ -10,7 +10,9 @@ import (
 type DeviceReader interface {
 	GetDevice(ctx context.Context, id string) (entity.Device, error)
 	GetNamespace(ctx context.Context, id string) (entity.Namespace, error)
+	GetNamespaces(ctx context.Context) ([]entity.Namespace, error)
 	GetSet(ctx context.Context, id string) (entity.Set, error)
+	GetSets(ctx context.Context) ([]entity.Set, error)
 }
 
 // DeviceWriter allows creating a device.

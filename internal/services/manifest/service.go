@@ -66,11 +66,12 @@ func (w *Service) GetManifests(ctx context.Context, repo entity.Repository) ([]e
 	// for each ref get the real manifest and add devices, sets and namespaces
 	manifests := make([]entity.ManifestWork, 0, len(refs))
 	for _, ref := range refs {
+		r := ref
 		manifest, err := w.gitRepo.GetManifest(ctx, ref)
 		if err != nil {
 			return []entity.ManifestWork{}, fmt.Errorf("unable to get manifest %q from repo %q: %w", ref.Path, repo.Id, err)
 		}
-		manifest.Reference = &ref
+		manifest.Reference = r
 		manifests = append(manifests, manifest)
 	}
 

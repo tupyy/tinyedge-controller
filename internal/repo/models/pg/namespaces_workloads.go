@@ -27,7 +27,7 @@ Table: namespaces_workloads
 
 JSON Sample
 -------------------------------------
-{    "namespace_id": "PRcghIIVfeGCVcgbVhjNsehCx",    "manifest_reference_id": "BhlHDoOKwjOiWUReuxKCewcbl"}
+{    "namespace_id": "domwbxClYUhqJdoNGVfZLckhF",    "manifest_reference_id": "OKqSFCravOdjuKmCfsTxbKTgf"}
 
 
 

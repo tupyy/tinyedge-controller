@@ -68,7 +68,13 @@ message Configuration {
 
 message Device {}
 
-message DeviceSet {}
+message Set {
+    string name = 1;
+    string namespace = 2;
+    string configuration = 3;
+    repeated string devices = 4;
+    repeated string manifests = 5;
+}
 
 message Workload {
     string id = 1;

@@ -17,29 +17,44 @@ service AdminService {
     // RemoveDeviceFromSet removes a device from a set.
     rpc RemoveDeviceFromSet(DeviceToSetRequest) returns (Empty) {}
     
-    // GetDeviceSets returns a list of device sets.
-    rpc GetDeviceSets(SetsListRequest) returns (SetsListResponse) {}
+    // GetSets returns a list of device sets.
+    rpc GetSets(ListRequest) returns (SetsListResponse) {}
     
-    // GetDeviceSet returns a device set.
-    rpc GetDeviceSet(IdRequest) returns (DeviceSet) {}
+    // GetSet returns a device set.
+    rpc GetSet(IdRequest) returns (Set) {}
+
+    // AddSet adds a set
+    rpc AddSet(AddSetRequest) returns (Set) {}
+
+    // GetNamespaces returns a list with namespaces
+    rpc GetNamespaces(ListRequest) returns (NamespaceListResponse) {}
     
-    // GetWorkloads return a list of workloads
-    rpc GetWorkloads(WorkloadsListRequest) returns (WorkloadsListResponse) {}
+    // GetManifests return a list of manifests
+    rpc GetManifests(ListRequest) returns (ManifestListResponse) {}
     
-    // GetWorkload return a workload
-    rpc GetWorkload(IdRequest) returns (Workload) {}
-    
-    // AddWorkloadToDevice add a workload to a device.
-    rpc AddWorkloadToDevice(WorkloadToDeviceRequest) returns (Empty) {}
-    
-    // RemoveWorkloadFromDevice removes a workload from a device.
-    rpc RemoveWorkloadFromDevice(WorkloadToDeviceRequest) returns (Empty) {}
-    
-    // AddWorkloadToSet add a workload to a set.
-    rpc AddWorkloadToSet(WorkloadToSetRequest) returns (Empty) {}
-    
-    // RemoveWorkloadFromSet removes a workload from a set.
-    rpc RemoveWorkloadFromSet(WorkloadToSetRequest) returns (Empty) {}
+    // GetManifest return a manifests
+    rpc GetManifest(IdRequest) returns (Manifest) {}
+
+    // GetRepositories return a list of repositories
+    rpc GetRepositories(ListRequest) returns (RepositoryListResponse) {}
+
+    // AddRepository add a repository
+    rpc AddRepository(AddRepositoryRequest) returns (AddRepositoryResponse) {}
+}
+
+message IdRequest {
+    string id = 1;
+}
+
+message ListRequest {
+    optional int32 page = 1;
+    optional int32 size = 2;
+}
+
+message AddSetRequest {
+    string set_name = 1;
+    string namespace_id = 2;
+    optional string configuration_id = 3;
 }
 
 message DevicesListRequest {
@@ -62,26 +77,11 @@ message DeviceToSetRequest {
     string set_id = 2;
 }
 
-message SetsListRequest {
-    optional int32 page = 1;
-    optional int32 size = 2;
-}
-
 message SetsListResponse {
-    repeated DeviceSet device_sets = 1;
+    repeated Set sets = 1;
     int32 page = 2;
     int32 size = 3;
     int32 total = 4;
-}
-
-message WorkloadsListRequest {
-    optional int32 page = 1;
-    optional int32 size = 2;
-}
-
-message WorkloadToDeviceRequest {
-    string device_id = 1;
-    string workload_id = 2;
 }
 
 message WorkloadToSetRequest {
@@ -89,16 +89,76 @@ message WorkloadToSetRequest {
     string workload_id = 2;
 }
 
-message WorkloadsListResponse {
-    repeated Workload workloads = 1;
+message ManifestListResponse {
+    repeated Manifest manifests = 1;
     int32 page = 2;
     int32 size = 3;
     int32 total = 4;
 }
 
-
-
-message IdRequest {
-    string id = 1;
+message AddRepositoryRequest {
+    string url = 1;
+    string name = 2;
 }
 
+message AddRepositoryResponse {
+    string url = 1;
+    string name = 2;
+}
+
+message RepositoryListResponse {
+    repeated Repository repositories = 1;
+    int32 page = 2;
+    int32 size = 3;
+    int32 total = 4;
+}
+
+message NamespaceListResponse {
+    repeated Namespace namespaces = 1;
+    int32 page = 2;
+    int32 size = 3;
+    int32 total = 4;
+}
+
+message Repository {
+   string id = 1;
+   string url = 2;
+   string branch = 3;
+   string local_path = 4;
+   string current_head_sha = 5;
+   string target_head_sha = 6;
+   int32 pull_period = 7;
+}
+
+message Manifest {
+    string id = 1;
+    string version = 2;
+    string name = 3;
+    string hash = 4;
+    string description = 5;
+    bool valid = 6;
+    string path = 7;
+    repeated Selector selectors = 8;
+    bool rootless = 9;
+    repeated string secrets = 10;
+    map<string,string> labels = 11;
+    repeated string pods = 12;
+    repeated string configmaps = 13;
+    repeated string devices = 14;
+    repeated string sets = 15;
+    repeated string namespaces = 16;
+}
+
+message Selector {
+    string resource_type = 1;
+    string value = 2;
+}
+
+message Namespace {
+    string name = 1;
+    bool is_default = 2;
+    string configuration = 3;
+    repeated string devices = 4;
+    repeated string sets = 5;
+    repeated string manifests = 6;
+}

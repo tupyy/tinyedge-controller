@@ -27,7 +27,7 @@ Table: devices_workloads
 
 JSON Sample
 -------------------------------------
-{    "device_id": "olGUIQNnwTIDwgfdKrlncnjcW",    "manifest_reference_id": "MVKwGLcdFuadRjSWKFxaOeKct"}
+{    "device_id": "FlNfJNIGykTAdRfbYIDLXTktR",    "manifest_reference_id": "gdlyEHHjdtVMRyhsAJRKESHEd"}
 
 
 

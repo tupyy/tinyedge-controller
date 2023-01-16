@@ -397,7 +397,7 @@ func (m *ReferenceRepository) createSetRelation(ctx context.Context, setID, mani
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
 		var m models.SetsWorkloads
-		return db.Where("set_id = ? AND manifest_reference_id = ?", setID, manifestID).First(&m)
+		return db.Where("device_set_id = ? AND manifest_reference_id = ?", setID, manifestID).First(&m)
 	})
 	if err != nil {
 		return err
@@ -430,7 +430,7 @@ func (m *ReferenceRepository) deleteSetRelation(ctx context.Context, setID, mani
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
 		var m models.SetsWorkloads
-		return db.Where("set_id = ? AND manifest_reference_id = ?", setID, manifestID).First(&m)
+		return db.Where("device_set_id = ? AND manifest_reference_id = ?", setID, manifestID).First(&m)
 	})
 	if err != nil {
 		return err

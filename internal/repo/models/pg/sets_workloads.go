@@ -27,7 +27,7 @@ Table: sets_workloads
 
 JSON Sample
 -------------------------------------
-{    "device_set_id": "FawtMETcOOroHRMeqJtQaqiSJ",    "manifest_reference_id": "XoUcYTiIiQQCGhuVdcjgvBrxm"}
+{    "device_set_id": "xksMlPZMEUoxwHYXMotywsXYf",    "manifest_reference_id": "jaXXuPBsLTvtkXSCwJFQUpMgA"}
 
 
 

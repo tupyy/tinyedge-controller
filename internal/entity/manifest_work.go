@@ -72,7 +72,7 @@ type ManifestWork struct {
 	// ConfigMaps -list of configmaps
 	ConfigMaps []v1.ConfigMap
 	// Reference
-	Reference *ManifestReference
+	Reference ManifestReference
 }
 
 func (m ManifestWork) Workloads() []Workload {

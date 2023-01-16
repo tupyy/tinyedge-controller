@@ -31,22 +31,22 @@ type AdminServiceClient interface {
 	AddDeviceToSet(ctx context.Context, in *DeviceToSetRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	// RemoveDeviceFromSet removes a device from a set.
 	RemoveDeviceFromSet(ctx context.Context, in *DeviceToSetRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	// GetDeviceSets returns a list of device sets.
-	GetDeviceSets(ctx context.Context, in *SetsListRequest, opts ...grpc.CallOption) (*SetsListResponse, error)
-	// GetDeviceSet returns a device set.
-	GetDeviceSet(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.DeviceSet, error)
-	// GetWorkloads return a list of workloads
-	GetWorkloads(ctx context.Context, in *WorkloadsListRequest, opts ...grpc.CallOption) (*WorkloadsListResponse, error)
-	// GetWorkload return a workload
-	GetWorkload(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Workload, error)
-	// AddWorkloadToDevice add a workload to a device.
-	AddWorkloadToDevice(ctx context.Context, in *WorkloadToDeviceRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	// RemoveWorkloadFromDevice removes a workload from a device.
-	RemoveWorkloadFromDevice(ctx context.Context, in *WorkloadToDeviceRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	// AddWorkloadToSet add a workload to a set.
-	AddWorkloadToSet(ctx context.Context, in *WorkloadToSetRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	// RemoveWorkloadFromSet removes a workload from a set.
-	RemoveWorkloadFromSet(ctx context.Context, in *WorkloadToSetRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	// GetSets returns a list of device sets.
+	GetSets(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*SetsListResponse, error)
+	// GetSet returns a device set.
+	GetSet(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Set, error)
+	// AddSet adds a set
+	AddSet(ctx context.Context, in *AddSetRequest, opts ...grpc.CallOption) (*common.Set, error)
+	// GetNamespaces returns a list with namespaces
+	GetNamespaces(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*NamespaceListResponse, error)
+	// GetManifests return a list of manifests
+	GetManifests(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ManifestListResponse, error)
+	// GetManifest return a manifests
+	GetManifest(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Manifest, error)
+	// GetRepositories return a list of repositories
+	GetRepositories(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*RepositoryListResponse, error)
+	// AddRepository add a repository
+	AddRepository(ctx context.Context, in *AddRepositoryRequest, opts ...grpc.CallOption) (*AddRepositoryResponse, error)
 }
 
 type adminServiceClient struct {
@@ -93,72 +93,72 @@ func (c *adminServiceClient) RemoveDeviceFromSet(ctx context.Context, in *Device
 	return out, nil
 }
 
-func (c *adminServiceClient) GetDeviceSets(ctx context.Context, in *SetsListRequest, opts ...grpc.CallOption) (*SetsListResponse, error) {
+func (c *adminServiceClient) GetSets(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*SetsListResponse, error) {
 	out := new(SetsListResponse)
-	err := c.cc.Invoke(ctx, "/AdminService/GetDeviceSets", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/AdminService/GetSets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *adminServiceClient) GetDeviceSet(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.DeviceSet, error) {
-	out := new(common.DeviceSet)
-	err := c.cc.Invoke(ctx, "/AdminService/GetDeviceSet", in, out, opts...)
+func (c *adminServiceClient) GetSet(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Set, error) {
+	out := new(common.Set)
+	err := c.cc.Invoke(ctx, "/AdminService/GetSet", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *adminServiceClient) GetWorkloads(ctx context.Context, in *WorkloadsListRequest, opts ...grpc.CallOption) (*WorkloadsListResponse, error) {
-	out := new(WorkloadsListResponse)
-	err := c.cc.Invoke(ctx, "/AdminService/GetWorkloads", in, out, opts...)
+func (c *adminServiceClient) AddSet(ctx context.Context, in *AddSetRequest, opts ...grpc.CallOption) (*common.Set, error) {
+	out := new(common.Set)
+	err := c.cc.Invoke(ctx, "/AdminService/AddSet", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *adminServiceClient) GetWorkload(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Workload, error) {
-	out := new(common.Workload)
-	err := c.cc.Invoke(ctx, "/AdminService/GetWorkload", in, out, opts...)
+func (c *adminServiceClient) GetNamespaces(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*NamespaceListResponse, error) {
+	out := new(NamespaceListResponse)
+	err := c.cc.Invoke(ctx, "/AdminService/GetNamespaces", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *adminServiceClient) AddWorkloadToDevice(ctx context.Context, in *WorkloadToDeviceRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
-	err := c.cc.Invoke(ctx, "/AdminService/AddWorkloadToDevice", in, out, opts...)
+func (c *adminServiceClient) GetManifests(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ManifestListResponse, error) {
+	out := new(ManifestListResponse)
+	err := c.cc.Invoke(ctx, "/AdminService/GetManifests", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *adminServiceClient) RemoveWorkloadFromDevice(ctx context.Context, in *WorkloadToDeviceRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
-	err := c.cc.Invoke(ctx, "/AdminService/RemoveWorkloadFromDevice", in, out, opts...)
+func (c *adminServiceClient) GetManifest(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Manifest, error) {
+	out := new(Manifest)
+	err := c.cc.Invoke(ctx, "/AdminService/GetManifest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *adminServiceClient) AddWorkloadToSet(ctx context.Context, in *WorkloadToSetRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
-	err := c.cc.Invoke(ctx, "/AdminService/AddWorkloadToSet", in, out, opts...)
+func (c *adminServiceClient) GetRepositories(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*RepositoryListResponse, error) {
+	out := new(RepositoryListResponse)
+	err := c.cc.Invoke(ctx, "/AdminService/GetRepositories", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *adminServiceClient) RemoveWorkloadFromSet(ctx context.Context, in *WorkloadToSetRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
-	err := c.cc.Invoke(ctx, "/AdminService/RemoveWorkloadFromSet", in, out, opts...)
+func (c *adminServiceClient) AddRepository(ctx context.Context, in *AddRepositoryRequest, opts ...grpc.CallOption) (*AddRepositoryResponse, error) {
+	out := new(AddRepositoryResponse)
+	err := c.cc.Invoke(ctx, "/AdminService/AddRepository", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -177,22 +177,22 @@ type AdminServiceServer interface {
 	AddDeviceToSet(context.Context, *DeviceToSetRequest) (*common.Empty, error)
 	// RemoveDeviceFromSet removes a device from a set.
 	RemoveDeviceFromSet(context.Context, *DeviceToSetRequest) (*common.Empty, error)
-	// GetDeviceSets returns a list of device sets.
-	GetDeviceSets(context.Context, *SetsListRequest) (*SetsListResponse, error)
-	// GetDeviceSet returns a device set.
-	GetDeviceSet(context.Context, *IdRequest) (*common.DeviceSet, error)
-	// GetWorkloads return a list of workloads
-	GetWorkloads(context.Context, *WorkloadsListRequest) (*WorkloadsListResponse, error)
-	// GetWorkload return a workload
-	GetWorkload(context.Context, *IdRequest) (*common.Workload, error)
-	// AddWorkloadToDevice add a workload to a device.
-	AddWorkloadToDevice(context.Context, *WorkloadToDeviceRequest) (*common.Empty, error)
-	// RemoveWorkloadFromDevice removes a workload from a device.
-	RemoveWorkloadFromDevice(context.Context, *WorkloadToDeviceRequest) (*common.Empty, error)
-	// AddWorkloadToSet add a workload to a set.
-	AddWorkloadToSet(context.Context, *WorkloadToSetRequest) (*common.Empty, error)
-	// RemoveWorkloadFromSet removes a workload from a set.
-	RemoveWorkloadFromSet(context.Context, *WorkloadToSetRequest) (*common.Empty, error)
+	// GetSets returns a list of device sets.
+	GetSets(context.Context, *ListRequest) (*SetsListResponse, error)
+	// GetSet returns a device set.
+	GetSet(context.Context, *IdRequest) (*common.Set, error)
+	// AddSet adds a set
+	AddSet(context.Context, *AddSetRequest) (*common.Set, error)
+	// GetNamespaces returns a list with namespaces
+	GetNamespaces(context.Context, *ListRequest) (*NamespaceListResponse, error)
+	// GetManifests return a list of manifests
+	GetManifests(context.Context, *ListRequest) (*ManifestListResponse, error)
+	// GetManifest return a manifests
+	GetManifest(context.Context, *IdRequest) (*Manifest, error)
+	// GetRepositories return a list of repositories
+	GetRepositories(context.Context, *ListRequest) (*RepositoryListResponse, error)
+	// AddRepository add a repository
+	AddRepository(context.Context, *AddRepositoryRequest) (*AddRepositoryResponse, error)
 	mustEmbedUnimplementedAdminServiceServer()
 }
 
@@ -212,29 +212,29 @@ func (UnimplementedAdminServiceServer) AddDeviceToSet(context.Context, *DeviceTo
 func (UnimplementedAdminServiceServer) RemoveDeviceFromSet(context.Context, *DeviceToSetRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveDeviceFromSet not implemented")
 }
-func (UnimplementedAdminServiceServer) GetDeviceSets(context.Context, *SetsListRequest) (*SetsListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceSets not implemented")
+func (UnimplementedAdminServiceServer) GetSets(context.Context, *ListRequest) (*SetsListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSets not implemented")
 }
-func (UnimplementedAdminServiceServer) GetDeviceSet(context.Context, *IdRequest) (*common.DeviceSet, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceSet not implemented")
+func (UnimplementedAdminServiceServer) GetSet(context.Context, *IdRequest) (*common.Set, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSet not implemented")
 }
-func (UnimplementedAdminServiceServer) GetWorkloads(context.Context, *WorkloadsListRequest) (*WorkloadsListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWorkloads not implemented")
+func (UnimplementedAdminServiceServer) AddSet(context.Context, *AddSetRequest) (*common.Set, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddSet not implemented")
 }
-func (UnimplementedAdminServiceServer) GetWorkload(context.Context, *IdRequest) (*common.Workload, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWorkload not implemented")
+func (UnimplementedAdminServiceServer) GetNamespaces(context.Context, *ListRequest) (*NamespaceListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNamespaces not implemented")
 }
-func (UnimplementedAdminServiceServer) AddWorkloadToDevice(context.Context, *WorkloadToDeviceRequest) (*common.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddWorkloadToDevice not implemented")
+func (UnimplementedAdminServiceServer) GetManifests(context.Context, *ListRequest) (*ManifestListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetManifests not implemented")
 }
-func (UnimplementedAdminServiceServer) RemoveWorkloadFromDevice(context.Context, *WorkloadToDeviceRequest) (*common.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveWorkloadFromDevice not implemented")
+func (UnimplementedAdminServiceServer) GetManifest(context.Context, *IdRequest) (*Manifest, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetManifest not implemented")
 }
-func (UnimplementedAdminServiceServer) AddWorkloadToSet(context.Context, *WorkloadToSetRequest) (*common.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddWorkloadToSet not implemented")
+func (UnimplementedAdminServiceServer) GetRepositories(context.Context, *ListRequest) (*RepositoryListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRepositories not implemented")
 }
-func (UnimplementedAdminServiceServer) RemoveWorkloadFromSet(context.Context, *WorkloadToSetRequest) (*common.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveWorkloadFromSet not implemented")
+func (UnimplementedAdminServiceServer) AddRepository(context.Context, *AddRepositoryRequest) (*AddRepositoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddRepository not implemented")
 }
 func (UnimplementedAdminServiceServer) mustEmbedUnimplementedAdminServiceServer() {}
 
@@ -321,146 +321,146 @@ func _AdminService_RemoveDeviceFromSet_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AdminService_GetDeviceSets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetsListRequest)
+func _AdminService_GetSets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServiceServer).GetDeviceSets(ctx, in)
+		return srv.(AdminServiceServer).GetSets(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AdminService/GetDeviceSets",
+		FullMethod: "/AdminService/GetSets",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).GetDeviceSets(ctx, req.(*SetsListRequest))
+		return srv.(AdminServiceServer).GetSets(ctx, req.(*ListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AdminService_GetDeviceSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AdminService_GetSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServiceServer).GetDeviceSet(ctx, in)
+		return srv.(AdminServiceServer).GetSet(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AdminService/GetDeviceSet",
+		FullMethod: "/AdminService/GetSet",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).GetDeviceSet(ctx, req.(*IdRequest))
+		return srv.(AdminServiceServer).GetSet(ctx, req.(*IdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AdminService_GetWorkloads_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WorkloadsListRequest)
+func _AdminService_AddSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddSetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServiceServer).GetWorkloads(ctx, in)
+		return srv.(AdminServiceServer).AddSet(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AdminService/GetWorkloads",
+		FullMethod: "/AdminService/AddSet",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).GetWorkloads(ctx, req.(*WorkloadsListRequest))
+		return srv.(AdminServiceServer).AddSet(ctx, req.(*AddSetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AdminService_GetWorkload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AdminService_GetNamespaces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).GetNamespaces(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AdminService/GetNamespaces",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).GetNamespaces(ctx, req.(*ListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_GetManifests_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).GetManifests(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AdminService/GetManifests",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).GetManifests(ctx, req.(*ListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_GetManifest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServiceServer).GetWorkload(ctx, in)
+		return srv.(AdminServiceServer).GetManifest(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AdminService/GetWorkload",
+		FullMethod: "/AdminService/GetManifest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).GetWorkload(ctx, req.(*IdRequest))
+		return srv.(AdminServiceServer).GetManifest(ctx, req.(*IdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AdminService_AddWorkloadToDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WorkloadToDeviceRequest)
+func _AdminService_GetRepositories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServiceServer).AddWorkloadToDevice(ctx, in)
+		return srv.(AdminServiceServer).GetRepositories(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AdminService/AddWorkloadToDevice",
+		FullMethod: "/AdminService/GetRepositories",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).AddWorkloadToDevice(ctx, req.(*WorkloadToDeviceRequest))
+		return srv.(AdminServiceServer).GetRepositories(ctx, req.(*ListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AdminService_RemoveWorkloadFromDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WorkloadToDeviceRequest)
+func _AdminService_AddRepository_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddRepositoryRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServiceServer).RemoveWorkloadFromDevice(ctx, in)
+		return srv.(AdminServiceServer).AddRepository(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AdminService/RemoveWorkloadFromDevice",
+		FullMethod: "/AdminService/AddRepository",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).RemoveWorkloadFromDevice(ctx, req.(*WorkloadToDeviceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AdminService_AddWorkloadToSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WorkloadToSetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminServiceServer).AddWorkloadToSet(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/AdminService/AddWorkloadToSet",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).AddWorkloadToSet(ctx, req.(*WorkloadToSetRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AdminService_RemoveWorkloadFromSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WorkloadToSetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminServiceServer).RemoveWorkloadFromSet(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/AdminService/RemoveWorkloadFromSet",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).RemoveWorkloadFromSet(ctx, req.(*WorkloadToSetRequest))
+		return srv.(AdminServiceServer).AddRepository(ctx, req.(*AddRepositoryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -489,36 +489,36 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AdminService_RemoveDeviceFromSet_Handler,
 		},
 		{
-			MethodName: "GetDeviceSets",
-			Handler:    _AdminService_GetDeviceSets_Handler,
+			MethodName: "GetSets",
+			Handler:    _AdminService_GetSets_Handler,
 		},
 		{
-			MethodName: "GetDeviceSet",
-			Handler:    _AdminService_GetDeviceSet_Handler,
+			MethodName: "GetSet",
+			Handler:    _AdminService_GetSet_Handler,
 		},
 		{
-			MethodName: "GetWorkloads",
-			Handler:    _AdminService_GetWorkloads_Handler,
+			MethodName: "AddSet",
+			Handler:    _AdminService_AddSet_Handler,
 		},
 		{
-			MethodName: "GetWorkload",
-			Handler:    _AdminService_GetWorkload_Handler,
+			MethodName: "GetNamespaces",
+			Handler:    _AdminService_GetNamespaces_Handler,
 		},
 		{
-			MethodName: "AddWorkloadToDevice",
-			Handler:    _AdminService_AddWorkloadToDevice_Handler,
+			MethodName: "GetManifests",
+			Handler:    _AdminService_GetManifests_Handler,
 		},
 		{
-			MethodName: "RemoveWorkloadFromDevice",
-			Handler:    _AdminService_RemoveWorkloadFromDevice_Handler,
+			MethodName: "GetManifest",
+			Handler:    _AdminService_GetManifest_Handler,
 		},
 		{
-			MethodName: "AddWorkloadToSet",
-			Handler:    _AdminService_AddWorkloadToSet_Handler,
+			MethodName: "GetRepositories",
+			Handler:    _AdminService_GetRepositories_Handler,
 		},
 		{
-			MethodName: "RemoveWorkloadFromSet",
-			Handler:    _AdminService_RemoveWorkloadFromSet_Handler,
+			MethodName: "AddRepository",
+			Handler:    _AdminService_AddRepository_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
