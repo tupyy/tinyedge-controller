@@ -2,6 +2,7 @@ package mappers
 
 import (
 	"github.com/tupyy/tinyedge-controller/internal/entity"
+	"github.com/tupyy/tinyedge-controller/pkg/grpc/common"
 	edgepb "github.com/tupyy/tinyedge-controller/pkg/grpc/edge"
 )
 
@@ -46,17 +47,17 @@ func MapFromEnrolRequest(req *edgepb.EnrolRequest) entity.Device {
 
 func MapEnrolResponse(enrolStatus entity.EnrolStatus) *edgepb.EnrolResponse {
 	resp := &edgepb.EnrolResponse{
-		EnrolmentStatus: edgepb.EnrolmentStatus_PENDING,
+		EnrolmentStatus: common.EnrolmentStatus_PENDING,
 	}
 	switch enrolStatus {
 	case entity.EnroledStatus:
-		resp.EnrolmentStatus = edgepb.EnrolmentStatus_ENROLED
+		resp.EnrolmentStatus = common.EnrolmentStatus_ENROLED
 	case entity.PendingEnrolStatus:
-		resp.EnrolmentStatus = edgepb.EnrolmentStatus_PENDING
+		resp.EnrolmentStatus = common.EnrolmentStatus_PENDING
 	case entity.RefusedEnrolStatus:
-		resp.EnrolmentStatus = edgepb.EnrolmentStatus_REFUSED
+		resp.EnrolmentStatus = common.EnrolmentStatus_REFUSED
 	default:
-		resp.EnrolmentStatus = edgepb.EnrolmentStatus_NOT_ENROLED
+		resp.EnrolmentStatus = common.EnrolmentStatus_NOT_ENROLED
 	}
 	return resp
 }

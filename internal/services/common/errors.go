@@ -11,3 +11,11 @@ var (
 
 	ErrPostgresNotAvailable = errors.New("pg not available")
 )
+
+func IsResourceNotFound(err error) bool {
+	return err != nil && errors.Is(err, ErrResourceNotFound)
+}
+
+func IsResourceAlreadyExists(err error) bool {
+	return err != nil && errors.Is(err, ErrResourceAlreadyExists)
+}

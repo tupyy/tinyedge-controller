@@ -106,7 +106,7 @@ func (s *Service) IsRegistered(ctx context.Context, deviceID string) (bool, erro
 }
 
 func (s *Service) GetConfiguration(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error) {
-	return s.confReader.GetConfiguration(ctx, deviceID)
+	return s.confReader.GetDeviceConfiguration(ctx, deviceID)
 }
 
 // Heartbeat writes metrics from heartbeat.

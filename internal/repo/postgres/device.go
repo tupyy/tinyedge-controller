@@ -2,7 +2,9 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"fmt"
 
 	pgclient "github.com/tupyy/tinyedge-controller/internal/clients/pg"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
@@ -47,7 +49,47 @@ func (d *DeviceRepo) GetDevice(ctx context.Context, id string) (entity.Device, e
 		}
 		return entity.Device{}, err
 	}
-	return mappers.MapModelToEntity(m), nil
+	return mappers.DeviceToEntity(m), nil
+}
+
+func (d *DeviceRepo) GetDevices(ctx context.Context) ([]entity.Device, error) {
+	if !d.circuitBreaker.IsAvailable() {
+		return []entity.Device{}, common.ErrPostgresNotAvailable
+	}
+
+	m := []models.Device{}
+
+	if err := d.getDb(ctx).Find(&m).Error; err != nil {
+		if d.checkNetworkError(err) {
+			return []entity.Device{}, common.ErrPostgresNotAvailable
+		}
+		return []entity.Device{}, err
+	}
+
+	if len(m) == 0 {
+		return []entity.Device{}, nil
+	}
+
+	return mappers.DevicesToEntity(m), nil
+}
+
+func (d *DeviceRepo) GetConfiguration(ctx context.Context, id string) (entity.Configuration, error) {
+	if !d.circuitBreaker.IsAvailable() {
+		return entity.Configuration{}, common.ErrPostgresNotAvailable
+	}
+	m := models.Configuration{}
+
+	if err := d.getDb(ctx).Where("id = ?", id).First(&m).Error; err != nil {
+		if d.checkNetworkError(err) {
+			return entity.Configuration{}, common.ErrPostgresNotAvailable
+		}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return entity.Configuration{}, common.ErrResourceNotFound
+		}
+		return entity.Configuration{}, err
+	}
+	return mappers.ConfigurationToEntity(m), nil
+
 }
 
 func (d *DeviceRepo) GetSet(ctx context.Context, id string) (entity.Set, error) {
@@ -119,7 +161,7 @@ func (d *DeviceRepo) GetNamespace(ctx context.Context, id string) (entity.Namesp
 
 	n := []models.NamespaceJoin{}
 	tx := d.getDb(ctx).Table("namespace").
-		Select(`device_set.*,namespace.is_default,
+		Select(`device_set.*,namespace.*,
 			configuration.heartbeat_period_seconds as configuration_heartbeat_period_seconds, configuration.log_level as configuration_log_level,
 			device.id as device_id, device_set.id as device_set_id, namespaces_references.manifest_reference_id as manifest_id`).
 		Joins("LEFT JOIN device ON device.namespace_id = namespace.id").
@@ -131,9 +173,6 @@ func (d *DeviceRepo) GetNamespace(ctx context.Context, id string) (entity.Namesp
 	if err := tx.Find(&n).Error; err != nil {
 		if d.checkNetworkError(err) {
 			return entity.Namespace{}, common.ErrPostgresNotAvailable
-		}
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.Namespace{}, common.ErrResourceNotFound
 		}
 		return entity.Namespace{}, err
 	}
@@ -152,7 +191,7 @@ func (d *DeviceRepo) GetNamespaces(ctx context.Context) ([]entity.Namespace, err
 
 	n := []models.NamespaceJoin{}
 	tx := d.getDb(ctx).Table("namespace").
-		Select(`device_set.*,namespace.is_default,
+		Select(`device_set.*,namespace.*,
 			configuration.heartbeat_period_seconds as configuration_heartbeat_period_seconds, configuration.log_level as configuration_log_level,
 			device.id as device_id, device_set.id as device_set_id, namespaces_references.manifest_reference_id as manifest_id`).
 		Joins("LEFT JOIN device ON device.namespace_id = namespace.id").
@@ -177,6 +216,56 @@ func (d *DeviceRepo) GetNamespaces(ctx context.Context) ([]entity.Namespace, err
 	return mappers.NamespacesModelToEntity(n), nil
 }
 
+func (d *DeviceRepo) CreateSet(ctx context.Context, set entity.Set) error {
+	_, err := d.GetSet(ctx, set.Name)
+	if err == nil {
+		return fmt.Errorf("%w set %q already exists", common.ErrResourceAlreadyExists, set.Name)
+	} else if !errors.Is(err, common.ErrResourceNotFound) {
+		return err
+	}
+
+	model := mappers.SetToModel(set)
+	if err := d.getDb(ctx).Create(&model).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *DeviceRepo) CreateNamespace(ctx context.Context, namespace entity.Namespace) error {
+	if !d.circuitBreaker.IsAvailable() {
+		return common.ErrPostgresNotAvailable
+	}
+
+	// try to find if we have already a default namespace. If there is none, enforce the is_default on the current namespace.
+	tx := d.getDb(ctx).Begin()
+
+	var oldDefaultNamespace models.Namespace
+	if err := tx.Where("is_default = ?", true).First(&oldDefaultNamespace).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// default namespace was not found. Enforce this one
+			zap.S().Debugf("no default namespace was found. enforce default flag on namespace %q", namespace.Name)
+			namespace.IsDefault = true
+		} else {
+			tx.Commit()
+			return fmt.Errorf("unable to unset is_default column %w", err)
+		}
+	} else if namespace.IsDefault {
+		oldDefaultNamespace.IsDefault = sql.NullBool{Valid: true, Bool: false}
+		if err := tx.Save(&oldDefaultNamespace).Error; err != nil {
+			tx.Commit()
+			return fmt.Errorf("unable to unset is_default to false for namespace %q: %w", oldDefaultNamespace.ID, err)
+		}
+	}
+
+	model := mappers.NamespaceToModel(namespace)
+	if err := d.getDb(ctx).Create(&model).Error; err != nil {
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
 func (d *DeviceRepo) Create(ctx context.Context, device entity.Device) error {
 	deviceModel := mappers.MapEntityToModel(device)
 
@@ -190,7 +279,7 @@ func (d *DeviceRepo) Create(ctx context.Context, device entity.Device) error {
 func (d *DeviceRepo) Update(ctx context.Context, device entity.Device) error {
 	model := mappers.MapEntityToModel(device)
 
-	if err := d.getDb(ctx).Where("id = ?", model.ID).Save(&model).Error; err != nil {
+	if err := d.getDb(ctx).Save(&model).Error; err != nil {
 		return err
 	}
 

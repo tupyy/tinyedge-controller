@@ -122,15 +122,20 @@ var runCmd = &cobra.Command{
 			zap.S().Fatalf("failed to listen: %v", err)
 		}
 
+		connAdmin, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 8081))
+		if err != nil {
+			zap.S().Fatalf("failed to listen: %v", err)
+		}
+
 		grpcEdgeServer := createEdgeServer(tlsConfig, authService, logger)
 		edgeServer := servers.NewEdgeServer(edgeService)
 		edgePb.RegisterEdgeServiceServer(grpcEdgeServer, edgeServer)
 		go grpcEdgeServer.Serve(lis)
 
 		grpcAdminServer := createAdminServer(logger)
-		adminServer := servers.NewAdminServer(repoService, workService, deviceService)
+		adminServer := servers.NewAdminServer(repoService, workService, deviceService, configurationService)
 		admin.RegisterAdminServiceServer(grpcAdminServer, adminServer)
-		grpcAdminServer.Serve(lis)
+		grpcAdminServer.Serve(connAdmin)
 	},
 }
 

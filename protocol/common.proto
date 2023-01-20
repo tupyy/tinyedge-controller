@@ -7,6 +7,13 @@ option go_package = "github.com/tupyy/tinyedge-controller/pkg/grpc/common";
 // An empty message
 message Empty {}
 
+enum EnrolmentStatus {
+    PENDING = 0;
+    ENROLED = 1;
+    REFUSED = 2;
+    NOT_ENROLED = 3;
+}
+
 message HardwareInfo {
     string host_name = 1;
     OsInformation os_information = 2;
@@ -66,7 +73,18 @@ message Configuration {
     uint32 heartbeat_period = 2;
 }
 
-message Device {}
+message Device {
+    string id = 1;
+    string enrol_status = 2;
+    string enroled_at = 3;
+    bool registered = 4;
+    string registered_at = 5;
+    string certificate_sn = 6;
+    string namespace = 7;
+    string set = 8;
+    string configuration = 9;
+    repeated string manifests = 10;
+}
 
 message Set {
     string name = 1;

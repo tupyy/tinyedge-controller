@@ -5,13 +5,10 @@ import (
 )
 
 type ConfigurationResponse struct {
+	Hash          string
 	Configuration Configuration
 	Workloads     []Workload
 	Secrets       []Secret
-}
-
-func (c ConfigurationResponse) Hash() string {
-	return "hash"
 }
 
 type Configuration struct {

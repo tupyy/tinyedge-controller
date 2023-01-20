@@ -9,21 +9,25 @@ import (
 	"go.uber.org/zap"
 )
 
-type ConfigurationService struct {
+type Service struct {
 	manifestReader  *manifest.Service
 	deviceReader    common.DeviceReader
 	cacheReadWriter common.ConfigurationCacheReaderWriter
 }
 
-func New(deviceReader common.DeviceReader, manifestReader *manifest.Service, cacheReaderWriter common.ConfigurationCacheReaderWriter) *ConfigurationService {
-	return &ConfigurationService{
+func New(deviceReader common.DeviceReader, manifestReader *manifest.Service, cacheReaderWriter common.ConfigurationCacheReaderWriter) *Service {
+	return &Service{
 		manifestReader:  manifestReader,
 		deviceReader:    deviceReader,
 		cacheReadWriter: cacheReaderWriter,
 	}
 }
 
-func (c *ConfigurationService) GetConfiguration(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error) {
+func (c *Service) GetConfiguration(ctx context.Context, id string) (entity.Configuration, error) {
+	return c.deviceReader.GetConfiguration(ctx, id)
+}
+
+func (c *Service) GetDeviceConfiguration(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error) {
 	// conf, err := c.cacheReadWriter.Get(ctx, deviceID)
 	// if err != nil {
 	// 	if !errors.Is(err, common.ErrResourceNotFound) {
@@ -50,15 +54,14 @@ func (c *ConfigurationService) GetConfiguration(ctx context.Context, deviceID st
 		zap.S().Errorw("unable to save configuration to cache", "error", err)
 	}
 
-	zap.S().Debugw("configuration", "confi", confResponse)
+	zap.S().Debugw("configuration", "configuration", confResponse)
 	return confResponse, nil
 
 	// }
 	// return conf, nil
 }
 
-func (c *ConfigurationService) getConfiguration(ctx context.Context, device entity.Device) (entity.Configuration, error) {
-
+func (c *Service) getConfiguration(ctx context.Context, device entity.Device) (entity.Configuration, error) {
 	if device.Configuration != nil {
 		return *device.Configuration, nil
 	}
@@ -84,7 +87,7 @@ func (c *ConfigurationService) getConfiguration(ctx context.Context, device enti
 	return namespace.Configuration, nil
 }
 
-func (c *ConfigurationService) getManifests(ctx context.Context, device entity.Device) ([]entity.ManifestWork, error) {
+func (c *Service) getManifests(ctx context.Context, device entity.Device) ([]entity.ManifestWork, error) {
 	getManifests := func(ctx context.Context, ids []string) ([]entity.ManifestWork, error) {
 		manifests := make([]entity.ManifestWork, 0, len(device.ManifestIDS))
 		for _, id := range ids {

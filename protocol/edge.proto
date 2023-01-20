@@ -44,13 +44,6 @@ message EnrolRequest {
     HardwareInfo hardware = 2;
 }
 
-enum EnrolmentStatus {
-    PENDING = 0;
-    ENROLED = 1;
-    REFUSED = 2;
-    NOT_ENROLED = 3;
-}
-
 message EnrolResponse {
     EnrolmentStatus enrolment_status = 1;
 }

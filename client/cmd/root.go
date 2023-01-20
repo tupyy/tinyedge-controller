@@ -42,7 +42,7 @@ func AddCommand(cmd *cobra.Command) {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&Url, "url", "u", "localhost:8080", "server url")
+	rootCmd.PersistentFlags().StringVarP(&Url, "url", "u", "localhost:8081", "server url")
 }
 
 func RunCmd[T any](fn func(ctx context.Context, client admin.AdminServiceClient) (T, error)) error {

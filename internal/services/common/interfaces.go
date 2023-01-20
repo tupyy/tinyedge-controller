@@ -25,5 +25,6 @@ type GitReaderWriter interface {
 
 type ConfigurationReader interface {
 	// GetConfiguration returns the configuration for a device.
-	GetConfiguration(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error)
+	GetDeviceConfiguration(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error)
+	GetConfiguration(ctx context.Context, id string) (entity.Configuration, error)
 }

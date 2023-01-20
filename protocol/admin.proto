@@ -12,10 +12,7 @@ service AdminService {
     rpc GetDevice(IdRequest) returns (Device) {}
     
     // AddWorkloadToSet add a device to a set.
-    rpc AddDeviceToSet(DeviceToSetRequest) returns (Empty) {}
-    
-    // RemoveDeviceFromSet removes a device from a set.
-    rpc RemoveDeviceFromSet(DeviceToSetRequest) returns (Empty) {}
+    rpc UpdateDevice(UpdateDeviceRequest) returns (Device) {}
     
     // GetSets returns a list of device sets.
     rpc GetSets(ListRequest) returns (SetsListResponse) {}
@@ -25,6 +22,9 @@ service AdminService {
 
     // AddSet adds a set
     rpc AddSet(AddSetRequest) returns (Set) {}
+
+    // AddNamespace creates a new namespace
+    rpc AddNamespace(AddNamespaceRequest) returns (Namespace) {}
 
     // GetNamespaces returns a list with namespaces
     rpc GetNamespaces(ListRequest) returns (NamespaceListResponse) {}
@@ -57,6 +57,12 @@ message AddSetRequest {
     optional string configuration_id = 3;
 }
 
+message AddNamespaceRequest {
+    string name = 1;
+    bool is_default = 2;
+    string configuration_id = 3;
+}
+
 message DevicesListRequest {
     optional bool registered = 1;
     optional bool enroled = 2;
@@ -72,9 +78,11 @@ message DevicesListResponse {
     int32 total = 4;
 }
 
-message DeviceToSetRequest {
+message UpdateDeviceRequest {
     string device_id = 1;
     string set_id = 2;
+    string namespace_id = 3;
+    string configuration_id = 4;
 }
 
 message SetsListResponse {

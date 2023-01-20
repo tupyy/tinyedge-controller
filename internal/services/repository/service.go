@@ -7,16 +7,16 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/services/common"
 )
 
-type RepositoryService struct {
+type Service struct {
 	gitRepo common.GitReaderWriter
 	pgRepo  common.RepositoryReaderWriter
 }
 
-func NewRepositoryService(p common.RepositoryReaderWriter, g common.GitReaderWriter) *RepositoryService {
-	return &RepositoryService{gitRepo: g, pgRepo: p}
+func NewRepositoryService(p common.RepositoryReaderWriter, g common.GitReaderWriter) *Service {
+	return &Service{gitRepo: g, pgRepo: p}
 }
 
-func (r *RepositoryService) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
+func (r *Service) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
 	repos, err := r.pgRepo.GetRepositories(ctx)
 	if err != nil {
 		return []entity.Repository{}, err
@@ -25,7 +25,7 @@ func (r *RepositoryService) GetRepositories(ctx context.Context) ([]entity.Repos
 
 }
 
-func (r *RepositoryService) Open(ctx context.Context, repo entity.Repository) error {
+func (r *Service) Open(ctx context.Context, repo entity.Repository) error {
 	if repo.LocalPath == "" {
 		return common.ErrResourceNotFound
 	}
@@ -36,11 +36,11 @@ func (r *RepositoryService) Open(ctx context.Context, repo entity.Repository) er
 	return nil
 }
 
-func (r *RepositoryService) Clone(ctx context.Context, url, name string) (entity.Repository, error) {
+func (r *Service) Clone(ctx context.Context, url, name string) (entity.Repository, error) {
 	return r.gitRepo.Clone(ctx, url, name)
 }
 
-func (w *RepositoryService) PullRepository(ctx context.Context, repo entity.Repository) (entity.Repository, error) {
+func (w *Service) PullRepository(ctx context.Context, repo entity.Repository) (entity.Repository, error) {
 	err := w.gitRepo.Pull(ctx, repo)
 	if err != nil {
 		return entity.Repository{}, err
@@ -56,13 +56,13 @@ func (w *RepositoryService) PullRepository(ctx context.Context, repo entity.Repo
 	return repo, nil
 }
 
-func (w *RepositoryService) Update(ctx context.Context, r entity.Repository) error {
+func (w *Service) Update(ctx context.Context, r entity.Repository) error {
 	if err := w.pgRepo.UpdateRepository(ctx, r); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (w *RepositoryService) Add(ctx context.Context, r entity.Repository) error {
+func (w *Service) Add(ctx context.Context, r entity.Repository) error {
 	return w.pgRepo.InsertRepository(ctx, r)
 }

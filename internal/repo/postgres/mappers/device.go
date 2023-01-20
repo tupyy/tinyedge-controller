@@ -26,24 +26,59 @@ func MapEntityToModel(device entity.Device) models.Device {
 		if device.CertificateSerialNumber != "" {
 			m.CertificateSn = sql.NullString{Valid: true, String: device.CertificateSerialNumber}
 		}
+
+	}
+
+	if device.Configuration != nil {
+		m.ConfigurationID = sql.NullString{Valid: true, String: device.Configuration.ID}
+	}
+
+	if device.SetID != nil {
+		m.DeviceSetID = sql.NullString{Valid: true, String: *device.SetID}
 	}
 
 	return m
 }
 
-func MapModelToEntity(device models.Device) entity.Device {
+func DeviceToEntity(device models.Device) entity.Device {
 	e := entity.Device{
 		ID:          device.ID,
 		NamespaceID: device.NamespaceID.String,
 		Registred:   device.Registered,
-		EnroledAt:   device.EnroledAt,
 		EnrolStatus: entity.EnroledStatus.FromString(device.Enroled),
 	}
+	if device.Registered {
+		e.RegisteredAt = device.RegisteredAt
+	}
+
+	if e.EnrolStatus == entity.EnroledStatus {
+		e.EnroledAt = device.EnroledAt
+	}
+
 	if device.CertificateSn.Valid {
 		e.CertificateSerialNumber = device.CertificateSn.String
 	}
 	if device.DeviceSetID.Valid {
 		e.SetID = &device.DeviceSetID.String
+	}
+	return e
+}
+
+func DevicesToEntity(model []models.Device) []entity.Device {
+	entities := make([]entity.Device, 0, len(model))
+	for _, model := range model {
+		entities = append(entities, DeviceToEntity(model))
+	}
+	return entities
+}
+
+func ConfigurationToEntity(c models.Configuration) entity.Configuration {
+	e := entity.Configuration{
+		ID:              c.ID,
+		HeartbeatPeriod: time.Duration(c.HeartbeatPeriodSeconds.Int64 * int64(time.Second)),
+	}
+	if c.LogLevel.Valid {
+		e.LogLevel = c.LogLevel.String
 	}
 	return e
 }
@@ -101,6 +136,25 @@ func SetToEntity(s []models.SetJoin) entity.Set {
 	}
 
 	return set
+}
+
+func SetToModel(set entity.Set) models.DeviceSet {
+	model := models.DeviceSet{
+		ID:          set.Name,
+		NamespaceID: set.NamespaceID,
+	}
+	if set.Configuration != nil {
+		model.ConfigurationID = sql.NullString{Valid: true, String: set.Configuration.ID}
+	}
+	return model
+}
+
+func NamespaceToModel(namespace entity.Namespace) models.Namespace {
+	return models.Namespace{
+		ID:              namespace.Name,
+		IsDefault:       sql.NullBool{Valid: true, Bool: namespace.IsDefault},
+		ConfigurationID: namespace.Configuration.ID,
+	}
 }
 
 func NamespacesModelToEntity(namespaces []models.NamespaceJoin) []entity.Namespace {

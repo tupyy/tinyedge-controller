@@ -28,15 +28,15 @@ type AdminServiceClient interface {
 	// GetDevice returns a device.
 	GetDevice(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Device, error)
 	// AddWorkloadToSet add a device to a set.
-	AddDeviceToSet(ctx context.Context, in *DeviceToSetRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	// RemoveDeviceFromSet removes a device from a set.
-	RemoveDeviceFromSet(ctx context.Context, in *DeviceToSetRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	UpdateDevice(ctx context.Context, in *UpdateDeviceRequest, opts ...grpc.CallOption) (*common.Device, error)
 	// GetSets returns a list of device sets.
 	GetSets(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*SetsListResponse, error)
 	// GetSet returns a device set.
 	GetSet(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Set, error)
 	// AddSet adds a set
 	AddSet(ctx context.Context, in *AddSetRequest, opts ...grpc.CallOption) (*common.Set, error)
+	// AddNamespace creates a new namespace
+	AddNamespace(ctx context.Context, in *AddNamespaceRequest, opts ...grpc.CallOption) (*Namespace, error)
 	// GetNamespaces returns a list with namespaces
 	GetNamespaces(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*NamespaceListResponse, error)
 	// GetManifests return a list of manifests
@@ -75,18 +75,9 @@ func (c *adminServiceClient) GetDevice(ctx context.Context, in *IdRequest, opts 
 	return out, nil
 }
 
-func (c *adminServiceClient) AddDeviceToSet(ctx context.Context, in *DeviceToSetRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
-	err := c.cc.Invoke(ctx, "/AdminService/AddDeviceToSet", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *adminServiceClient) RemoveDeviceFromSet(ctx context.Context, in *DeviceToSetRequest, opts ...grpc.CallOption) (*common.Empty, error) {
-	out := new(common.Empty)
-	err := c.cc.Invoke(ctx, "/AdminService/RemoveDeviceFromSet", in, out, opts...)
+func (c *adminServiceClient) UpdateDevice(ctx context.Context, in *UpdateDeviceRequest, opts ...grpc.CallOption) (*common.Device, error) {
+	out := new(common.Device)
+	err := c.cc.Invoke(ctx, "/AdminService/UpdateDevice", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -114,6 +105,15 @@ func (c *adminServiceClient) GetSet(ctx context.Context, in *IdRequest, opts ...
 func (c *adminServiceClient) AddSet(ctx context.Context, in *AddSetRequest, opts ...grpc.CallOption) (*common.Set, error) {
 	out := new(common.Set)
 	err := c.cc.Invoke(ctx, "/AdminService/AddSet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) AddNamespace(ctx context.Context, in *AddNamespaceRequest, opts ...grpc.CallOption) (*Namespace, error) {
+	out := new(Namespace)
+	err := c.cc.Invoke(ctx, "/AdminService/AddNamespace", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -174,15 +174,15 @@ type AdminServiceServer interface {
 	// GetDevice returns a device.
 	GetDevice(context.Context, *IdRequest) (*common.Device, error)
 	// AddWorkloadToSet add a device to a set.
-	AddDeviceToSet(context.Context, *DeviceToSetRequest) (*common.Empty, error)
-	// RemoveDeviceFromSet removes a device from a set.
-	RemoveDeviceFromSet(context.Context, *DeviceToSetRequest) (*common.Empty, error)
+	UpdateDevice(context.Context, *UpdateDeviceRequest) (*common.Device, error)
 	// GetSets returns a list of device sets.
 	GetSets(context.Context, *ListRequest) (*SetsListResponse, error)
 	// GetSet returns a device set.
 	GetSet(context.Context, *IdRequest) (*common.Set, error)
 	// AddSet adds a set
 	AddSet(context.Context, *AddSetRequest) (*common.Set, error)
+	// AddNamespace creates a new namespace
+	AddNamespace(context.Context, *AddNamespaceRequest) (*Namespace, error)
 	// GetNamespaces returns a list with namespaces
 	GetNamespaces(context.Context, *ListRequest) (*NamespaceListResponse, error)
 	// GetManifests return a list of manifests
@@ -206,11 +206,8 @@ func (UnimplementedAdminServiceServer) GetDevices(context.Context, *DevicesListR
 func (UnimplementedAdminServiceServer) GetDevice(context.Context, *IdRequest) (*common.Device, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDevice not implemented")
 }
-func (UnimplementedAdminServiceServer) AddDeviceToSet(context.Context, *DeviceToSetRequest) (*common.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddDeviceToSet not implemented")
-}
-func (UnimplementedAdminServiceServer) RemoveDeviceFromSet(context.Context, *DeviceToSetRequest) (*common.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveDeviceFromSet not implemented")
+func (UnimplementedAdminServiceServer) UpdateDevice(context.Context, *UpdateDeviceRequest) (*common.Device, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDevice not implemented")
 }
 func (UnimplementedAdminServiceServer) GetSets(context.Context, *ListRequest) (*SetsListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSets not implemented")
@@ -220,6 +217,9 @@ func (UnimplementedAdminServiceServer) GetSet(context.Context, *IdRequest) (*com
 }
 func (UnimplementedAdminServiceServer) AddSet(context.Context, *AddSetRequest) (*common.Set, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddSet not implemented")
+}
+func (UnimplementedAdminServiceServer) AddNamespace(context.Context, *AddNamespaceRequest) (*Namespace, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddNamespace not implemented")
 }
 func (UnimplementedAdminServiceServer) GetNamespaces(context.Context, *ListRequest) (*NamespaceListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNamespaces not implemented")
@@ -285,38 +285,20 @@ func _AdminService_GetDevice_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AdminService_AddDeviceToSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeviceToSetRequest)
+func _AdminService_UpdateDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDeviceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServiceServer).AddDeviceToSet(ctx, in)
+		return srv.(AdminServiceServer).UpdateDevice(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AdminService/AddDeviceToSet",
+		FullMethod: "/AdminService/UpdateDevice",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).AddDeviceToSet(ctx, req.(*DeviceToSetRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AdminService_RemoveDeviceFromSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeviceToSetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminServiceServer).RemoveDeviceFromSet(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/AdminService/RemoveDeviceFromSet",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServiceServer).RemoveDeviceFromSet(ctx, req.(*DeviceToSetRequest))
+		return srv.(AdminServiceServer).UpdateDevice(ctx, req.(*UpdateDeviceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -371,6 +353,24 @@ func _AdminService_AddSet_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).AddSet(ctx, req.(*AddSetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_AddNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddNamespaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).AddNamespace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AdminService/AddNamespace",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).AddNamespace(ctx, req.(*AddNamespaceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -481,12 +481,8 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AdminService_GetDevice_Handler,
 		},
 		{
-			MethodName: "AddDeviceToSet",
-			Handler:    _AdminService_AddDeviceToSet_Handler,
-		},
-		{
-			MethodName: "RemoveDeviceFromSet",
-			Handler:    _AdminService_RemoveDeviceFromSet_Handler,
+			MethodName: "UpdateDevice",
+			Handler:    _AdminService_UpdateDevice_Handler,
 		},
 		{
 			MethodName: "GetSets",
@@ -499,6 +495,10 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddSet",
 			Handler:    _AdminService_AddSet_Handler,
+		},
+		{
+			MethodName: "AddNamespace",
+			Handler:    _AdminService_AddNamespace_Handler,
 		},
 		{
 			MethodName: "GetNamespaces",

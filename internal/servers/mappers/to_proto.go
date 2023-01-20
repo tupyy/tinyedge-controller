@@ -10,7 +10,7 @@ import (
 
 func MapConfigurationToProto(conf entity.ConfigurationResponse) *edgepb.ConfigurationResponse {
 	response := &edgepb.ConfigurationResponse{
-		Hash:      conf.Hash(),
+		Hash:      conf.Hash,
 		Workloads: make([]*common.Workload, 0, len(conf.Workloads)),
 		Secrets:   make([]*common.Secret, 0, len(conf.Secrets)),
 	}

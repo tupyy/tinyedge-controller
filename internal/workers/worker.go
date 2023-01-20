@@ -13,11 +13,11 @@ import (
 
 type GitOpsWorker struct {
 	referenceService  *reference.Service
-	repositoryService *repository.RepositoryService
-	confService       *configuration.ConfigurationService
+	repositoryService *repository.Service
+	confService       *configuration.Service
 }
 
-func NewGitOpsWorker(ref *reference.Service, r *repository.RepositoryService, c *configuration.ConfigurationService) *GitOpsWorker {
+func NewGitOpsWorker(ref *reference.Service, r *repository.Service, c *configuration.Service) *GitOpsWorker {
 	return &GitOpsWorker{
 		referenceService:  ref,
 		repositoryService: r,
