@@ -2,11 +2,10 @@ package reference
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"go.uber.org/zap"
 )
 
@@ -49,7 +48,7 @@ func (w *Service) UpdateReferences(ctx context.Context, repo entity.Repository) 
 	)
 
 	for _, c := range created {
-		if err := w.refReaderWriter.InsertReference(ctx, c); err != nil && !errors.Is(err, common.ErrResourceAlreadyExists) {
+		if err := w.refReaderWriter.InsertReference(ctx, c); err != nil && !errService.IsResourceAlreadyExists(err) {
 			return fmt.Errorf("unable to insert reference %q: %w", c.Id, err)
 		}
 		if err := w.UpdateRelations(ctx, c); err != nil {
@@ -98,13 +97,13 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 	newNamespaceSelectors := substract(m.NamespaceIDs, oldManifest.NamespaceIDs, func(i string) string { return i })
 	if err := updateRelation(ctx, newNamespaceSelectors, m.Id, func(ctx context.Context, namespaceID, referenceID string) error {
 		if _, err := w.deviceReader.GetNamespace(ctx, namespaceID); err != nil {
-			if errors.Is(err, common.ErrResourceNotFound) {
+			if errService.IsResourceNotFound(err) {
 				return nil
 			}
 			return fmt.Errorf("unable to create relation between namespace %q and reference %q: %w", namespaceID, referenceID, err)
 		}
 		if err := w.refReaderWriter.CreateRelation(ctx, entity.NewNamespaceRelation(namespaceID, referenceID)); err != nil {
-			if !errors.Is(err, common.ErrResourceAlreadyExists) {
+			if !errService.IsResourceAlreadyExists(err) {
 				return fmt.Errorf("unable to create relation between namespace %q and reference %q: %w", namespaceID, referenceID, err)
 			}
 		}
@@ -117,13 +116,13 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 	newSetSelectors := substract(m.SetIDs, oldManifest.SetIDs, func(i string) string { return i })
 	if err := updateRelation(ctx, newSetSelectors, m.Id, func(ctx context.Context, setID, referenceID string) error {
 		if _, err := w.deviceReader.GetSet(ctx, setID); err != nil {
-			if errors.Is(err, common.ErrResourceNotFound) {
+			if errService.IsResourceNotFound(err) {
 				return nil
 			}
 			return fmt.Errorf("unable to create relation between set %q and reference %q: %w", setID, referenceID, err)
 		}
 		if err := w.refReaderWriter.CreateRelation(ctx, entity.NewSetRelation(setID, referenceID)); err != nil {
-			if !errors.Is(err, common.ErrResourceAlreadyExists) {
+			if !errService.IsResourceAlreadyExists(err) {
 				return fmt.Errorf("unable to create relation between set %q and reference %q: %w", setID, referenceID, err)
 			}
 		}
@@ -136,13 +135,13 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 	newDeviceSelectors := substract(m.DeviceIDs, oldManifest.DeviceIDs, func(i string) string { return i })
 	if err := updateRelation(ctx, newDeviceSelectors, m.Id, func(ctx context.Context, deviceID, referenceID string) error {
 		if _, err := w.deviceReader.GetDevice(ctx, deviceID); err != nil {
-			if errors.Is(err, common.ErrResourceNotFound) {
+			if errService.IsResourceNotFound(err) {
 				return nil
 			}
 			return fmt.Errorf("unable to create relation between device %q and reference %q: %w", deviceID, referenceID, err)
 		}
 		if err := w.refReaderWriter.CreateRelation(ctx, entity.NewDeviceRelation(deviceID, referenceID)); err != nil {
-			if !errors.Is(err, common.ErrResourceAlreadyExists) {
+			if !errService.IsResourceAlreadyExists(err) {
 				return fmt.Errorf("unable to create relation between device %q and reference %q: %w", deviceID, referenceID, err)
 			}
 		}
@@ -156,7 +155,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 	oldNamespaceSelectors := substract(oldManifest.NamespaceIDs, m.NamespaceIDs, func(i string) string { return i })
 	if err := updateRelation(ctx, oldNamespaceSelectors, m.Id, func(ctx context.Context, namespaceID, referenceID string) error {
 		if _, err := w.deviceReader.GetNamespace(ctx, namespaceID); err != nil {
-			if errors.Is(err, common.ErrResourceNotFound) {
+			if errService.IsResourceNotFound(err) {
 				return nil
 			}
 		}
@@ -173,7 +172,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 	oldSetSelectors := substract(oldManifest.SetIDs, m.SetIDs, func(i string) string { return i })
 	if err := updateRelation(ctx, oldSetSelectors, m.Id, func(ctx context.Context, setID, referenceID string) error {
 		if _, err := w.deviceReader.GetSet(ctx, setID); err != nil {
-			if errors.Is(err, common.ErrResourceNotFound) {
+			if errService.IsResourceNotFound(err) {
 				return nil
 			}
 		}
@@ -190,7 +189,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 	oldDeviceSelectors := substract(oldManifest.DeviceIDs, m.DeviceIDs, func(i string) string { return i })
 	if err := updateRelation(ctx, oldDeviceSelectors, m.Id, func(ctx context.Context, deviceID, referenceID string) error {
 		if _, err := w.deviceReader.GetDevice(ctx, deviceID); err != nil {
-			if errors.Is(err, common.ErrResourceNotFound) {
+			if errService.IsResourceNotFound(err) {
 				return nil
 			}
 		}
@@ -214,7 +213,7 @@ func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) er
 		case entity.NamespaceSelector:
 			namespace, err := w.deviceReader.GetNamespace(ctx, s.Value)
 			if err != nil {
-				if errors.Is(err, common.ErrResourceNotFound) {
+				if errService.IsResourceNotFound(err) {
 					zap.S().Warnw("unable to create relation. namespace does not exist", "namespace", s.Value)
 					continue
 				}
@@ -227,7 +226,7 @@ func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) er
 		case entity.SetSelector:
 			set, err := w.deviceReader.GetSet(ctx, s.Value)
 			if err != nil {
-				if errors.Is(err, common.ErrResourceNotFound) {
+				if errService.IsResourceNotFound(err) {
 					zap.S().Warnw("unable to create relation. set does not exist", "set", s.Value)
 					continue
 				}
@@ -240,7 +239,7 @@ func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) er
 		case entity.DeviceSelector:
 			device, err := w.deviceReader.GetDevice(ctx, s.Value)
 			if err != nil {
-				if errors.Is(err, common.ErrResourceNotFound) {
+				if errService.IsResourceNotFound(err) {
 					zap.S().Warnw("unable to create relation. device does not exist", "device_id", s.Value)
 					continue
 				}

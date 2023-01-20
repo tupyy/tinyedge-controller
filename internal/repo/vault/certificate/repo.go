@@ -9,7 +9,7 @@ import (
 
 	vvault "github.com/hashicorp/vault/api"
 	"github.com/tupyy/tinyedge-controller/internal/clients/vault"
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"go.uber.org/zap"
 )
 
@@ -78,7 +78,7 @@ func (c *CertficateRepo) GetCertificate(ctx context.Context, sn string) ([]byte,
 	}
 
 	if secret == nil {
-		return []byte{}, false, time.Time{}, fmt.Errorf("device certificate %q not found: %w", sn, common.ErrCertificateNotFound)
+		return []byte{}, false, time.Time{}, errService.NewResourceNotFoundError("device certificate", sn)
 	}
 
 	certificate, _ := extract(secret, "certificate")

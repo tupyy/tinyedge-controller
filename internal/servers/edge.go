@@ -2,12 +2,11 @@ package servers
 
 import (
 	"context"
-	"errors"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	"github.com/tupyy/tinyedge-controller/internal/servers/mappers"
-	errService "github.com/tupyy/tinyedge-controller/internal/services/common"
 	"github.com/tupyy/tinyedge-controller/internal/services/edge"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"github.com/tupyy/tinyedge-controller/pkg/grpc/common"
 	pb "github.com/tupyy/tinyedge-controller/pkg/grpc/edge"
 	"go.uber.org/zap"
@@ -43,11 +42,10 @@ func (e *EdgeServer) Enrol(ctx context.Context, req *pb.EnrolRequest) (*pb.Enrol
 func (e *EdgeServer) Register(ctx context.Context, req *pb.RegistrationRequest) (*pb.RegistrationResponse, error) {
 	certificate, err := e.edgeService.Register(ctx, req.DeviceId, req.CertificateRequest)
 	if err != nil {
-		if errors.Is(err, errService.ErrDeviceNotEnroled) {
+		switch err.(type) {
+		case errService.DeviceNotEnroledError:
 			return nil, status.Errorf(codes.InvalidArgument, "unable to register device %q. Device is not enroled", req.DeviceId)
-		}
-
-		if errors.Is(err, errService.ErrResourceNotFound) {
+		case errService.ResourseNotFoundError:
 			return nil, status.Errorf(codes.NotFound, "device %q not found. Please enrol the device first.", req.DeviceId)
 		}
 

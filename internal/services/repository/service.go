@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 )
 
 type Service struct {
@@ -27,7 +27,7 @@ func (r *Service) GetRepositories(ctx context.Context) ([]entity.Repository, err
 
 func (r *Service) Open(ctx context.Context, repo entity.Repository) error {
 	if repo.LocalPath == "" {
-		return common.ErrResourceNotFound
+		return errService.NewResourceNotFoundError("git repository", repo.Id)
 	}
 	_, err := r.gitReaderWriter.Open(ctx, repo)
 	if err != nil {

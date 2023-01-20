@@ -7,7 +7,7 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	models "github.com/tupyy/tinyedge-controller/internal/repo/models/pg"
 	"github.com/tupyy/tinyedge-controller/internal/repo/postgres/mappers"
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"gorm.io/gorm"
 )
 
@@ -32,14 +32,14 @@ func NewRepository(client pgclient.Client) (*ReferenceRepository, error) {
 
 func (m *ReferenceRepository) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return []entity.Repository{}, common.ErrPostgresNotAvailable
+		return []entity.Repository{}, errService.NewPostgresNotAvailableError("repository")
 	}
 
 	repos := []models.Repo{}
 
 	if err := m.getDb(ctx).Find(&repos).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return []entity.Repository{}, common.ErrPostgresNotAvailable
+			return []entity.Repository{}, errService.NewPostgresNotAvailableError("repository")
 		}
 		return []entity.Repository{}, err
 	}
@@ -58,14 +58,14 @@ func (m *ReferenceRepository) GetRepositories(ctx context.Context) ([]entity.Rep
 
 func (m *ReferenceRepository) InsertRepository(ctx context.Context, r entity.Repository) error {
 	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
+		return errService.NewPostgresNotAvailableError("repository")
 	}
 
 	model := mappers.RepoEntityToModel(r)
 
 	if err := m.getDb(ctx).Create(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
+			return errService.NewPostgresNotAvailableError("repository")
 		}
 		return err
 	}
@@ -74,14 +74,14 @@ func (m *ReferenceRepository) InsertRepository(ctx context.Context, r entity.Rep
 
 func (m *ReferenceRepository) UpdateRepository(ctx context.Context, r entity.Repository) error {
 	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
+		return errService.NewPostgresNotAvailableError("repository")
 	}
 
 	model := mappers.RepoEntityToModel(r)
 
 	if err := m.getDb(ctx).Where("id = ?", model.ID).Save(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
+			return errService.NewPostgresNotAvailableError("repository")
 		}
 		return err
 	}

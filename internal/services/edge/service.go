@@ -3,13 +3,12 @@ package edge
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	"github.com/tupyy/tinyedge-controller/internal/services/certificate"
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"go.uber.org/zap"
 )
 
@@ -34,7 +33,7 @@ func New(dr DeviceReaderWriter, confReader ConfigurationReader, certWriter *cert
 func (s *Service) Enrol(ctx context.Context, deviceID string) (status entity.EnrolStatus, err error) {
 	d, err := s.deviceReaderWriter.GetDevice(ctx, deviceID)
 	if err != nil {
-		if !errors.Is(err, common.ErrResourceNotFound) {
+		if !errService.IsResourceNotFound(err) {
 			return entity.NotEnroledStatus, err
 		}
 		// device not found. create the device
@@ -60,7 +59,7 @@ func (s *Service) Enrol(ctx context.Context, deviceID string) (status entity.Enr
 func (s *Service) IsEnroled(ctx context.Context, deviceID string) (bool, error) {
 	device, err := s.deviceReaderWriter.GetDevice(ctx, deviceID)
 	if err != nil {
-		if errors.Is(err, common.ErrResourceNotFound) {
+		if !errService.IsResourceNotFound(err) {
 			return false, nil
 		}
 		return false, err

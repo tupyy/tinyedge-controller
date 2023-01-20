@@ -3,12 +3,13 @@ package postgres
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	pgclient "github.com/tupyy/tinyedge-controller/internal/clients/pg"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	models "github.com/tupyy/tinyedge-controller/internal/repo/models/pg"
 	"github.com/tupyy/tinyedge-controller/internal/repo/postgres/mappers"
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -34,7 +35,7 @@ func NewReferenceRepository(client pgclient.Client) (*ReferenceRepository, error
 
 func (m *ReferenceRepository) GetReferences(ctx context.Context) ([]entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
+		return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	manifests := []models.ManifestJoin{}
@@ -42,7 +43,7 @@ func (m *ReferenceRepository) GetReferences(ctx context.Context) ([]entity.Manif
 	tx := newManifestQuery(ctx, m.db).Build()
 	if err := tx.Find(&manifests).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
+			return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return []entity.ManifestReference{}, err
 	}
@@ -57,7 +58,7 @@ func (m *ReferenceRepository) GetReferences(ctx context.Context) ([]entity.Manif
 
 func (m *ReferenceRepository) GetReference(ctx context.Context, id string) (entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return entity.ManifestReference{}, common.ErrPostgresNotAvailable
+		return entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	manifests := []models.ManifestJoin{}
@@ -65,13 +66,13 @@ func (m *ReferenceRepository) GetReference(ctx context.Context, id string) (enti
 	tx := newManifestQuery(ctx, m.db).WithReferenceID(id).Build()
 	if err := tx.Find(&manifests).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return entity.ManifestReference{}, common.ErrPostgresNotAvailable
+			return entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return entity.ManifestReference{}, err
 	}
 
 	if len(manifests) == 0 {
-		return entity.ManifestReference{}, common.ErrResourceNotFound
+		return entity.ManifestReference{}, errService.NewResourceNotFoundError("reference", id)
 	}
 
 	return mappers.ManifestModelToEntity(manifests), nil
@@ -79,7 +80,7 @@ func (m *ReferenceRepository) GetReference(ctx context.Context, id string) (enti
 
 func (m *ReferenceRepository) GetRepositoryReferences(ctx context.Context, r entity.Repository) ([]entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
+		return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	manifests := []models.ManifestJoin{}
@@ -87,7 +88,7 @@ func (m *ReferenceRepository) GetRepositoryReferences(ctx context.Context, r ent
 	tx := newManifestQuery(ctx, m.db).WithRepoId(r.Id).Build()
 	if err := tx.Find(&manifests).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
+			return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return []entity.ManifestReference{}, err
 	}
@@ -101,7 +102,7 @@ func (m *ReferenceRepository) GetRepositoryReferences(ctx context.Context, r ent
 
 func (m *ReferenceRepository) InsertReference(ctx context.Context, ref entity.ManifestReference) error {
 	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
+		return errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	exists, err := m.isExists(ctx, ref)
@@ -110,14 +111,14 @@ func (m *ReferenceRepository) InsertReference(ctx context.Context, ref entity.Ma
 	}
 
 	if exists {
-		return common.ErrResourceAlreadyExists
+		return errService.NewResourceAlreadyExistsError("reference", ref.Id)
 	}
 
 	model := mappers.ManifestEntityToModel(ref)
 
 	if err := m.getDb(ctx).Create(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
+			return errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return err
 	}
@@ -126,17 +127,17 @@ func (m *ReferenceRepository) InsertReference(ctx context.Context, ref entity.Ma
 
 func (m *ReferenceRepository) UpdateReference(ctx context.Context, ref entity.ManifestReference) error {
 	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
+		return errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	model := mappers.ManifestEntityToModel(ref)
 
 	if err := m.getDb(ctx).Where("id = ?", model.ID).Save(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
+			return errService.NewPostgresNotAvailableError("reference repository")
 		}
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return common.ErrResourceNotFound
+			return errService.NewResourceNotFoundError("reference", ref.Id)
 		}
 		return err
 	}
@@ -146,7 +147,7 @@ func (m *ReferenceRepository) UpdateReference(ctx context.Context, ref entity.Ma
 
 func (m *ReferenceRepository) DeleteReference(ctx context.Context, ref entity.ManifestReference) error {
 	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
+		return errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	exists, err := m.isExists(ctx, ref)
@@ -160,7 +161,7 @@ func (m *ReferenceRepository) DeleteReference(ctx context.Context, ref entity.Ma
 
 	if err := m.getDb(ctx).Where("id = ?", ref.Id).Delete(&models.ManifestReference{}).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
+			return errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return err
 	}
@@ -170,14 +171,14 @@ func (m *ReferenceRepository) DeleteReference(ctx context.Context, ref entity.Ma
 
 func (m *ReferenceRepository) GetNamespaceReferences(ctx context.Context, namespaceID string) ([]entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
+		return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	models := []models.ManifestJoin{}
 	tx := newManifestQuery(ctx, m.db).WithNamespaceID(namespaceID).Build()
 	if err := tx.Find(&models).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
+			return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return []entity.ManifestReference{}, err
 	}
@@ -191,7 +192,7 @@ func (m *ReferenceRepository) GetNamespaceReferences(ctx context.Context, namesp
 
 func (m *ReferenceRepository) GetSetReferences(ctx context.Context, setID string) ([]entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
+		return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	models := []models.ManifestJoin{}
@@ -199,7 +200,7 @@ func (m *ReferenceRepository) GetSetReferences(ctx context.Context, setID string
 	tx := newManifestQuery(ctx, m.db).WithSetID(setID).Build()
 	if err := tx.Find(&models).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
+			return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return []entity.ManifestReference{}, err
 	}
@@ -213,7 +214,7 @@ func (m *ReferenceRepository) GetSetReferences(ctx context.Context, setID string
 
 func (m *ReferenceRepository) GetDeviceReferences(ctx context.Context, deviceID string) ([]entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
+		return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	models := []models.ManifestJoin{}
@@ -221,7 +222,7 @@ func (m *ReferenceRepository) GetDeviceReferences(ctx context.Context, deviceID 
 	tx := newManifestQuery(ctx, m.db).WithDeviceID(deviceID).Build()
 	if err := tx.Find(&models).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return []entity.ManifestReference{}, common.ErrPostgresNotAvailable
+			return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return []entity.ManifestReference{}, err
 	}
@@ -262,7 +263,7 @@ func (m *ReferenceRepository) DeleteRelation(ctx context.Context, relation entit
 
 func (m *ReferenceRepository) createNamespaceRelation(ctx context.Context, namespaceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
+		return errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	model := models.NamespacesReferences{
@@ -279,7 +280,7 @@ func (m *ReferenceRepository) createNamespaceRelation(ctx context.Context, names
 	}
 
 	if exists {
-		return common.ErrResourceAlreadyExists
+		return errService.NewResourceAlreadyExistsError(fmt.Sprintf("relation between namespace %q and reference", namespaceID), manifestID)
 	}
 
 	// check if the relation already exists
@@ -290,7 +291,7 @@ func (m *ReferenceRepository) createNamespaceRelation(ctx context.Context, names
 
 	if err := m.getDb(ctx).Create(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
+			return errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return err
 	}
@@ -300,7 +301,7 @@ func (m *ReferenceRepository) createNamespaceRelation(ctx context.Context, names
 
 func (m *ReferenceRepository) deleteNamespaceRelation(ctx context.Context, namespaceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
+		return errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
@@ -318,7 +319,7 @@ func (m *ReferenceRepository) deleteNamespaceRelation(ctx context.Context, names
 	model := models.NamespacesReferences{}
 	if err := m.getDb(ctx).Where("namespace_id = ? AND manifest_reference_id = ?", namespaceID, manifestID).Delete(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
+			return errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return err
 	}
@@ -328,7 +329,7 @@ func (m *ReferenceRepository) deleteNamespaceRelation(ctx context.Context, names
 
 func (m *ReferenceRepository) createSetRelation(ctx context.Context, setID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
+		return errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	model := models.SetsReferences{
@@ -345,7 +346,7 @@ func (m *ReferenceRepository) createSetRelation(ctx context.Context, setID, mani
 	}
 
 	if exists {
-		return common.ErrResourceAlreadyExists
+		return errService.NewResourceAlreadyExistsError(fmt.Sprintf("relation between set %q and reference", setID), manifestID)
 	}
 
 	// check if the relation already exists
@@ -356,7 +357,7 @@ func (m *ReferenceRepository) createSetRelation(ctx context.Context, setID, mani
 
 	if err := m.getDb(ctx).Create(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
+			return errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return err
 	}
@@ -366,7 +367,7 @@ func (m *ReferenceRepository) createSetRelation(ctx context.Context, setID, mani
 
 func (m *ReferenceRepository) deleteSetRelation(ctx context.Context, setID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
+		return errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
@@ -384,7 +385,7 @@ func (m *ReferenceRepository) deleteSetRelation(ctx context.Context, setID, mani
 	model := models.SetsReferences{}
 	if err := m.getDb(ctx).Where("device_set_id = ? AND manifest_reference_id = ?", setID, manifestID).Delete(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
+			return errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return err
 	}
@@ -394,7 +395,7 @@ func (m *ReferenceRepository) deleteSetRelation(ctx context.Context, setID, mani
 
 func (m *ReferenceRepository) createDeviceRelation(ctx context.Context, deviceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
+		return errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
@@ -406,7 +407,7 @@ func (m *ReferenceRepository) createDeviceRelation(ctx context.Context, deviceID
 	}
 
 	if exists {
-		return common.ErrResourceAlreadyExists
+		return errService.NewResourceAlreadyExistsError(fmt.Sprintf("relation between device %q and reference", deviceID), manifestID)
 	}
 
 	model := models.DevicesReferences{
@@ -422,7 +423,7 @@ func (m *ReferenceRepository) createDeviceRelation(ctx context.Context, deviceID
 
 	if err := m.getDb(ctx).Create(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
+			return errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return err
 	}
@@ -432,7 +433,7 @@ func (m *ReferenceRepository) createDeviceRelation(ctx context.Context, deviceID
 
 func (m *ReferenceRepository) deleteDeviceRelation(ctx context.Context, deviceID, manifestID string) error {
 	if !m.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
+		return errService.NewPostgresNotAvailableError("reference repository")
 	}
 
 	exists, err := m.isRelationExists(ctx, func(db *gorm.DB) *gorm.DB {
@@ -450,7 +451,7 @@ func (m *ReferenceRepository) deleteDeviceRelation(ctx context.Context, deviceID
 	model := models.DevicesReferences{}
 	if err := m.getDb(ctx).Where("device_id = ? AND manifest_reference_id = ?", deviceID, manifestID).Delete(&model).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return common.ErrPostgresNotAvailable
+			return errService.NewPostgresNotAvailableError("reference repository")
 		}
 		return err
 	}

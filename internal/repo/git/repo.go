@@ -18,7 +18,7 @@ import (
 	goyaml "github.com/go-yaml/yaml"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	manifestv1 "github.com/tupyy/tinyedge-controller/internal/repo/models/manifest/v1"
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
 	k8syaml "sigs.k8s.io/yaml"
@@ -39,7 +39,7 @@ func (g *GitRepo) Open(ctx context.Context, r entity.Repository) (entity.Reposit
 	_, err := g.openRepository(ctx, r)
 	if err != nil {
 		if errors.Is(err, git.ErrRepositoryNotExists) {
-			return entity.Repository{}, common.ErrResourceNotFound
+			return entity.Repository{}, errService.NewResourceNotFoundError("repository", r.Id)
 		}
 		return entity.Repository{}, err
 	}

@@ -6,9 +6,9 @@ import (
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	"github.com/tupyy/tinyedge-controller/internal/servers/mappers"
-	errService "github.com/tupyy/tinyedge-controller/internal/services/common"
 	"github.com/tupyy/tinyedge-controller/internal/services/configuration"
 	"github.com/tupyy/tinyedge-controller/internal/services/device"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
 	"github.com/tupyy/tinyedge-controller/internal/services/repository"
 	"github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
@@ -54,7 +54,7 @@ func (a *AdminServer) GetDevice(ctx context.Context, req *pb.IdRequest) (*common
 	device, err := a.deviceService.GetDevice(ctx, req.Id)
 	if err != nil {
 		if errService.IsResourceNotFound(err) {
-			return nil, status.Errorf(codes.NotFound, "device %q is not found", req.Id)
+			return nil, status.Errorf(codes.NotFound, err.Error())
 		}
 		return nil, status.Error(codes.Internal, "internal error")
 	}
@@ -65,7 +65,7 @@ func (a *AdminServer) UpdateDevice(ctx context.Context, req *pb.UpdateDeviceRequ
 	device, err := a.deviceService.GetDevice(ctx, req.DeviceId)
 	if err != nil {
 		if errService.IsResourceNotFound(err) {
-			return &common.Device{}, status.Errorf(codes.NotFound, "device %q not found", req.DeviceId)
+			return &common.Device{}, status.Errorf(codes.NotFound, err.Error())
 		}
 		return &common.Device{}, status.Error(codes.Internal, "internal error")
 	}
@@ -74,7 +74,7 @@ func (a *AdminServer) UpdateDevice(ctx context.Context, req *pb.UpdateDeviceRequ
 		_, err := a.deviceService.GetSet(ctx, req.SetId)
 		if err != nil {
 			if errService.IsResourceNotFound(err) {
-				return &common.Device{}, status.Errorf(codes.NotFound, "set %q not found", req.SetId)
+				return &common.Device{}, status.Errorf(codes.NotFound, err.Error())
 			}
 			return &common.Device{}, status.Errorf(codes.Internal, "internal error")
 		}
@@ -85,7 +85,7 @@ func (a *AdminServer) UpdateDevice(ctx context.Context, req *pb.UpdateDeviceRequ
 		_, err := a.deviceService.GetNamespace(ctx, req.NamespaceId)
 		if err != nil {
 			if errService.IsResourceNotFound(err) {
-				return &common.Device{}, status.Errorf(codes.NotFound, "namespace %q not found", req.NamespaceId)
+				return &common.Device{}, status.Errorf(codes.NotFound, err.Error())
 			}
 			return &common.Device{}, status.Errorf(codes.Internal, "internal error")
 		}
@@ -96,7 +96,7 @@ func (a *AdminServer) UpdateDevice(ctx context.Context, req *pb.UpdateDeviceRequ
 		_, err := a.confService.GetConfiguration(ctx, req.ConfigurationId)
 		if err != nil {
 			if errService.IsResourceNotFound(err) {
-				return &common.Device{}, status.Errorf(codes.NotFound, "configuration %q not found", req.ConfigurationId)
+				return &common.Device{}, status.Errorf(codes.NotFound, err.Error())
 			}
 			return &common.Device{}, status.Errorf(codes.Internal, "internal error")
 		}
@@ -128,7 +128,7 @@ func (a *AdminServer) AddSet(ctx context.Context, req *pb.AddSetRequest) (*commo
 
 	err := a.deviceService.CreateSet(ctx, set)
 	if errService.IsResourceAlreadyExists(err) {
-		return nil, status.Errorf(codes.AlreadyExists, "set %q already exists", req.SetName)
+		return nil, status.Errorf(codes.AlreadyExists, err.Error())
 	} else if errService.IsResourceNotFound(err) {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	} else if err != nil {
@@ -155,7 +155,7 @@ func (a *AdminServer) AddNamespace(ctx context.Context, req *pb.AddNamespaceRequ
 	})
 
 	if errService.IsResourceAlreadyExists(err) {
-		return nil, status.Errorf(codes.AlreadyExists, "namespace %q already exists", req.Name)
+		return nil, status.Errorf(codes.AlreadyExists, err.Error())
 	} else if err != nil {
 		return nil, status.Error(codes.Internal, "internal error")
 	}
@@ -188,7 +188,7 @@ func (a *AdminServer) GetSet(ctx context.Context, req *pb.IdRequest) (*common.Se
 	set, err := a.deviceService.GetSet(ctx, req.Id)
 	if err != nil {
 		if errService.IsResourceNotFound(err) {
-			return nil, status.Errorf(codes.NotFound, "set %q is not found", req.Id)
+			return nil, status.Errorf(codes.NotFound, err.Error())
 		}
 		return nil, status.Error(codes.Internal, "internal error")
 	}
@@ -257,7 +257,7 @@ func (a *AdminServer) GetManifest(ctx context.Context, req *pb.IdRequest) (*pb.M
 	manifest, err := a.manifestService.GetManifest(ctx, req.Id)
 	if err != nil {
 		if errService.IsResourceNotFound(err) {
-			return nil, status.Errorf(codes.NotFound, "manifest %q is not found", req.Id)
+			return nil, status.Errorf(codes.NotFound, err.Error())
 		}
 		return nil, status.Error(codes.Internal, "internal error")
 	}

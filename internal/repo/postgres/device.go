@@ -10,9 +10,13 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	models "github.com/tupyy/tinyedge-controller/internal/repo/models/pg"
 	"github.com/tupyy/tinyedge-controller/internal/repo/postgres/mappers"
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+)
+
+var (
+	errResourceNotFound = errors.New("resource not found")
 )
 
 type DeviceRepo struct {
@@ -36,16 +40,16 @@ func NewDeviceRepo(client pgclient.Client) (*DeviceRepo, error) {
 
 func (d *DeviceRepo) GetDevice(ctx context.Context, id string) (entity.Device, error) {
 	if !d.circuitBreaker.IsAvailable() {
-		return entity.Device{}, common.ErrPostgresNotAvailable
+		return entity.Device{}, errService.NewPostgresNotAvailableError("device repository")
 	}
 	m := models.Device{}
 
 	if err := d.getDb(ctx).Where("id = ?", id).First(&m).Error; err != nil {
 		if d.checkNetworkError(err) {
-			return entity.Device{}, common.ErrPostgresNotAvailable
+			return entity.Device{}, errService.NewPostgresNotAvailableError("device repository")
 		}
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.Device{}, common.ErrResourceNotFound
+			return entity.Device{}, errService.NewResourceNotFoundError("device", id)
 		}
 		return entity.Device{}, err
 	}
@@ -54,14 +58,14 @@ func (d *DeviceRepo) GetDevice(ctx context.Context, id string) (entity.Device, e
 
 func (d *DeviceRepo) GetDevices(ctx context.Context) ([]entity.Device, error) {
 	if !d.circuitBreaker.IsAvailable() {
-		return []entity.Device{}, common.ErrPostgresNotAvailable
+		return []entity.Device{}, errService.NewPostgresNotAvailableError("device repository")
 	}
 
 	m := []models.Device{}
 
 	if err := d.getDb(ctx).Find(&m).Error; err != nil {
 		if d.checkNetworkError(err) {
-			return []entity.Device{}, common.ErrPostgresNotAvailable
+			return []entity.Device{}, errService.NewPostgresNotAvailableError("device repository")
 		}
 		return []entity.Device{}, err
 	}
@@ -75,16 +79,16 @@ func (d *DeviceRepo) GetDevices(ctx context.Context) ([]entity.Device, error) {
 
 func (d *DeviceRepo) GetConfiguration(ctx context.Context, id string) (entity.Configuration, error) {
 	if !d.circuitBreaker.IsAvailable() {
-		return entity.Configuration{}, common.ErrPostgresNotAvailable
+		return entity.Configuration{}, errService.NewPostgresNotAvailableError("device repository")
 	}
 	m := models.Configuration{}
 
 	if err := d.getDb(ctx).Where("id = ?", id).First(&m).Error; err != nil {
 		if d.checkNetworkError(err) {
-			return entity.Configuration{}, common.ErrPostgresNotAvailable
+			return entity.Configuration{}, errService.NewPostgresNotAvailableError("device repository")
 		}
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.Configuration{}, common.ErrResourceNotFound
+			return entity.Configuration{}, errService.NewResourceNotFoundError("configuration", id)
 		}
 		return entity.Configuration{}, err
 	}
@@ -94,7 +98,7 @@ func (d *DeviceRepo) GetConfiguration(ctx context.Context, id string) (entity.Co
 
 func (d *DeviceRepo) GetSet(ctx context.Context, id string) (entity.Set, error) {
 	if !d.circuitBreaker.IsAvailable() {
-		return entity.Set{}, common.ErrPostgresNotAvailable
+		return entity.Set{}, errService.NewPostgresNotAvailableError("device repository")
 	}
 
 	s := []models.SetJoin{}
@@ -110,16 +114,16 @@ func (d *DeviceRepo) GetSet(ctx context.Context, id string) (entity.Set, error) 
 
 	if err := tx.Find(&s).Error; err != nil {
 		if d.checkNetworkError(err) {
-			return entity.Set{}, common.ErrPostgresNotAvailable
+			return entity.Set{}, errService.NewPostgresNotAvailableError("device repository")
 		}
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.Set{}, common.ErrResourceNotFound
+			return entity.Set{}, errService.NewResourceNotFoundError("set", id)
 		}
 		return entity.Set{}, err
 	}
 
 	if len(s) == 0 {
-		return entity.Set{}, common.ErrResourceNotFound
+		return entity.Set{}, errService.NewResourceNotFoundError("set", id)
 	}
 
 	return mappers.SetToEntity(s), nil
@@ -127,7 +131,7 @@ func (d *DeviceRepo) GetSet(ctx context.Context, id string) (entity.Set, error) 
 
 func (d *DeviceRepo) GetSets(ctx context.Context) ([]entity.Set, error) {
 	if !d.circuitBreaker.IsAvailable() {
-		return []entity.Set{}, common.ErrPostgresNotAvailable
+		return []entity.Set{}, errService.NewPostgresNotAvailableError("device repository")
 	}
 
 	s := []models.SetJoin{}
@@ -142,7 +146,7 @@ func (d *DeviceRepo) GetSets(ctx context.Context) ([]entity.Set, error) {
 
 	if err := tx.Find(&s).Error; err != nil {
 		if d.checkNetworkError(err) {
-			return []entity.Set{}, common.ErrPostgresNotAvailable
+			return []entity.Set{}, errService.NewPostgresNotAvailableError("device repository")
 		}
 		return []entity.Set{}, err
 	}
@@ -156,7 +160,7 @@ func (d *DeviceRepo) GetSets(ctx context.Context) ([]entity.Set, error) {
 
 func (d *DeviceRepo) GetNamespace(ctx context.Context, id string) (entity.Namespace, error) {
 	if !d.circuitBreaker.IsAvailable() {
-		return entity.Namespace{}, common.ErrPostgresNotAvailable
+		return entity.Namespace{}, errService.NewPostgresNotAvailableError("device repository")
 	}
 
 	n := []models.NamespaceJoin{}
@@ -172,13 +176,13 @@ func (d *DeviceRepo) GetNamespace(ctx context.Context, id string) (entity.Namesp
 
 	if err := tx.Find(&n).Error; err != nil {
 		if d.checkNetworkError(err) {
-			return entity.Namespace{}, common.ErrPostgresNotAvailable
+			return entity.Namespace{}, errService.NewPostgresNotAvailableError("device repository")
 		}
 		return entity.Namespace{}, err
 	}
 
 	if len(n) == 0 {
-		return entity.Namespace{}, common.ErrResourceNotFound
+		return entity.Namespace{}, errService.NewResourceNotFoundError("namespace", id)
 	}
 
 	return mappers.NamespaceModelToEntity(n), nil
@@ -186,7 +190,7 @@ func (d *DeviceRepo) GetNamespace(ctx context.Context, id string) (entity.Namesp
 
 func (d *DeviceRepo) GetNamespaces(ctx context.Context) ([]entity.Namespace, error) {
 	if !d.circuitBreaker.IsAvailable() {
-		return []entity.Namespace{}, common.ErrPostgresNotAvailable
+		return []entity.Namespace{}, errService.NewPostgresNotAvailableError("device repository")
 	}
 
 	n := []models.NamespaceJoin{}
@@ -201,10 +205,7 @@ func (d *DeviceRepo) GetNamespaces(ctx context.Context) ([]entity.Namespace, err
 
 	if err := tx.Find(&n).Error; err != nil {
 		if d.checkNetworkError(err) {
-			return []entity.Namespace{}, common.ErrPostgresNotAvailable
-		}
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return []entity.Namespace{}, common.ErrResourceNotFound
+			return []entity.Namespace{}, errService.NewPostgresNotAvailableError("device repository")
 		}
 		return []entity.Namespace{}, err
 	}
@@ -219,8 +220,8 @@ func (d *DeviceRepo) GetNamespaces(ctx context.Context) ([]entity.Namespace, err
 func (d *DeviceRepo) CreateSet(ctx context.Context, set entity.Set) error {
 	_, err := d.GetSet(ctx, set.Name)
 	if err == nil {
-		return fmt.Errorf("%w set %q already exists", common.ErrResourceAlreadyExists, set.Name)
-	} else if !errors.Is(err, common.ErrResourceNotFound) {
+		return errService.NewResourceAlreadyExistsError("set", set.Name)
+	} else if _, ok := err.(errService.ResourseNotFoundError); !ok {
 		return err
 	}
 
@@ -234,7 +235,7 @@ func (d *DeviceRepo) CreateSet(ctx context.Context, set entity.Set) error {
 
 func (d *DeviceRepo) CreateNamespace(ctx context.Context, namespace entity.Namespace) error {
 	if !d.circuitBreaker.IsAvailable() {
-		return common.ErrPostgresNotAvailable
+		return errService.NewPostgresNotAvailableError("device repository")
 	}
 
 	// try to find if we have already a default namespace. If there is none, enforce the is_default on the current namespace.
@@ -267,8 +268,11 @@ func (d *DeviceRepo) CreateNamespace(ctx context.Context, namespace entity.Names
 }
 
 func (d *DeviceRepo) Create(ctx context.Context, device entity.Device) error {
-	deviceModel := mappers.MapEntityToModel(device)
+	if !d.circuitBreaker.IsAvailable() {
+		return errService.NewPostgresNotAvailableError("device repository")
+	}
 
+	deviceModel := mappers.MapEntityToModel(device)
 	if err := d.getDb(ctx).Create(&deviceModel).Error; err != nil {
 		return err
 	}
@@ -277,9 +281,15 @@ func (d *DeviceRepo) Create(ctx context.Context, device entity.Device) error {
 }
 
 func (d *DeviceRepo) Update(ctx context.Context, device entity.Device) error {
-	model := mappers.MapEntityToModel(device)
+	if !d.circuitBreaker.IsAvailable() {
+		return errService.NewPostgresNotAvailableError("device repository")
+	}
 
+	model := mappers.MapEntityToModel(device)
 	if err := d.getDb(ctx).Save(&model).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errService.NewResourceNotFoundError("device", device.ID)
+		}
 		return err
 	}
 

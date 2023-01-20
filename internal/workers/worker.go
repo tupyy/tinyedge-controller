@@ -2,10 +2,9 @@ package workers
 
 import (
 	"context"
-	"errors"
 
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
 	"github.com/tupyy/tinyedge-controller/internal/services/configuration"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"github.com/tupyy/tinyedge-controller/internal/services/reference"
 	"github.com/tupyy/tinyedge-controller/internal/services/repository"
 	"go.uber.org/zap"
@@ -34,7 +33,7 @@ func (g *GitOpsWorker) Do(ctx context.Context) error {
 	for _, repo := range repos {
 		err := g.repositoryService.Open(ctx, repo)
 		if err != nil {
-			if errors.Is(err, common.ErrResourceNotFound) {
+			if errService.IsResourceNotFound(err) {
 				// clone it
 				clone, err := g.repositoryService.Clone(ctx, repo.Url, repo.Id)
 				if err != nil {

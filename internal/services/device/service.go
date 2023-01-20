@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 )
 
 type Service struct {
@@ -47,8 +47,8 @@ func (w *Service) UpdateDevice(ctx context.Context, device entity.Device) error 
 func (w *Service) CreateNamespace(ctx context.Context, namespace entity.Namespace) error {
 	_, err := w.GetNamespace(ctx, namespace.Name)
 	if err == nil {
-		return fmt.Errorf("namespace %q already exists: %w", namespace.Name, common.ErrResourceAlreadyExists)
-	} else if !common.IsResourceNotFound(err) {
+		return errService.NewResourceAlreadyExistsError("namespace", namespace.Name)
+	} else if _, ok := err.(errService.ResourseNotFoundError); !ok {
 		return err
 	}
 
@@ -58,8 +58,8 @@ func (w *Service) CreateNamespace(ctx context.Context, namespace entity.Namespac
 func (w *Service) CreateSet(ctx context.Context, set entity.Set) error {
 	_, err := w.GetSet(ctx, set.Name)
 	if err == nil {
-		return fmt.Errorf("set %q already exists: %w", set.Name, common.ErrResourceAlreadyExists)
-	} else if !common.IsResourceNotFound(err) {
+		return errService.NewResourceAlreadyExistsError("set", set.Name)
+	} else if _, ok := err.(errService.ResourseNotFoundError); !ok {
 		return err
 	}
 
@@ -69,8 +69,8 @@ func (w *Service) CreateSet(ctx context.Context, set entity.Set) error {
 	}
 
 	_, err = w.GetNamespace(ctx, set.NamespaceID)
-	if common.IsResourceNotFound(err) {
-		return fmt.Errorf("%w: namespace %q", common.ErrResourceNotFound, set.NamespaceID)
+	if err != nil {
+		return err
 	}
 
 	return w.pgDeviceRepo.CreateSet(ctx, set)

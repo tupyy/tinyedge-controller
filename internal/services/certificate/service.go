@@ -5,14 +5,13 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"go.uber.org/zap"
 )
 
@@ -42,7 +41,7 @@ func (m *Service) GetCertificate(ctx context.Context, serialNumber string) (enti
 
 	cert, isRevoked, revokedAt, err := m.repo.GetCertificate(ctx, formatSerialNumber(serialNumber))
 	if err != nil {
-		if errors.Is(err, common.ErrCertificateNotFound) {
+		if errService.IsResourceNotFound(err) {
 			return entity.CertificateGroup{}, err
 		}
 		return entity.CertificateGroup{}, fmt.Errorf("unable to read certificate %q", serialNumber)
