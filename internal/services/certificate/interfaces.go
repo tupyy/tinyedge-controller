@@ -1,4 +1,4 @@
-package common
+package certificate
 
 import (
 	"context"
@@ -26,8 +26,4 @@ type ConfigurationCacheReaderWriter interface {
 	Get(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error)
 	Put(ctx context.Context, deviceID string, conf entity.ConfigurationResponse) error
 	Delete(ctx context.Context, deviceID string) error
-}
-
-type SecretReader interface {
-	GetSecret(ctx context.Context, path, key string) (entity.Secret, error)
 }

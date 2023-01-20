@@ -20,19 +20,19 @@ const (
 )
 
 type Service struct {
-	deviceRepo  common.DeviceReaderWriter
-	confReader  common.ConfigurationReader
-	certService *certificate.Service
+	deviceReaderWriter DeviceReaderWriter
+	confReader         ConfigurationReader
+	certService        *certificate.Service
 }
 
-func New(dr common.DeviceReaderWriter, confReader common.ConfigurationReader, certWriter *certificate.Service) *Service {
+func New(dr DeviceReaderWriter, confReader ConfigurationReader, certWriter *certificate.Service) *Service {
 	return &Service{dr, confReader, certWriter}
 }
 
 // Enrol tries to enrol a device. If enable-auto-enrolment is true then the device is automatically
 // enrolled. If false, the device is created but not enroled yet.
 func (s *Service) Enrol(ctx context.Context, deviceID string) (status entity.EnrolStatus, err error) {
-	d, err := s.deviceRepo.GetDevice(ctx, deviceID)
+	d, err := s.deviceReaderWriter.GetDevice(ctx, deviceID)
 	if err != nil {
 		if !errors.Is(err, common.ErrResourceNotFound) {
 			return entity.NotEnroledStatus, err
@@ -45,7 +45,7 @@ func (s *Service) Enrol(ctx context.Context, deviceID string) (status entity.Enr
 			EnroledAt:   time.Now().UTC(),
 		}
 		device.EnrolStatus = entity.EnroledStatus
-		err = s.deviceRepo.Create(ctx, device)
+		err = s.deviceReaderWriter.Create(ctx, device)
 		if err != nil {
 			return entity.NotEnroledStatus, err
 		}
@@ -58,7 +58,7 @@ func (s *Service) Enrol(ctx context.Context, deviceID string) (status entity.Enr
 }
 
 func (s *Service) IsEnroled(ctx context.Context, deviceID string) (bool, error) {
-	device, err := s.deviceRepo.GetDevice(ctx, deviceID)
+	device, err := s.deviceReaderWriter.GetDevice(ctx, deviceID)
 	if err != nil {
 		if errors.Is(err, common.ErrResourceNotFound) {
 			return false, nil
@@ -69,7 +69,7 @@ func (s *Service) IsEnroled(ctx context.Context, deviceID string) (bool, error) 
 }
 
 func (s *Service) Register(ctx context.Context, deviceID string, csr string) (entity.CertificateGroup, error) {
-	device, err := s.deviceRepo.GetDevice(ctx, deviceID)
+	device, err := s.deviceReaderWriter.GetDevice(ctx, deviceID)
 	if err != nil {
 		return entity.CertificateGroup{}, err
 	}
@@ -88,7 +88,7 @@ func (s *Service) Register(ctx context.Context, deviceID string, csr string) (en
 	device.RegisteredAt = time.Now().UTC()
 	device.CertificateSerialNumber = certificate.GetSerialNumber()
 
-	if err := s.deviceRepo.Update(ctx, device); err != nil {
+	if err := s.deviceReaderWriter.Update(ctx, device); err != nil {
 		return entity.CertificateGroup{}, fmt.Errorf("unable to update device %q: %w", deviceID, err)
 	}
 
@@ -98,7 +98,7 @@ func (s *Service) Register(ctx context.Context, deviceID string, csr string) (en
 }
 
 func (s *Service) IsRegistered(ctx context.Context, deviceID string) (bool, error) {
-	device, err := s.deviceRepo.GetDevice(ctx, deviceID)
+	device, err := s.deviceReaderWriter.GetDevice(ctx, deviceID)
 	if err != nil {
 		return false, err
 	}

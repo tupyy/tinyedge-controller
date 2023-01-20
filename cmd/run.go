@@ -20,7 +20,6 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/clients/vault"
 	"github.com/tupyy/tinyedge-controller/internal/configuration"
 	"github.com/tupyy/tinyedge-controller/internal/interceptors"
-	"github.com/tupyy/tinyedge-controller/internal/repo/cache"
 	"github.com/tupyy/tinyedge-controller/internal/repo/git"
 	pgRepo "github.com/tupyy/tinyedge-controller/internal/repo/postgres"
 	certRepo "github.com/tupyy/tinyedge-controller/internal/repo/vault/certificate"
@@ -32,6 +31,7 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/services/device"
 	"github.com/tupyy/tinyedge-controller/internal/services/edge"
 	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
+	"github.com/tupyy/tinyedge-controller/internal/services/reference"
 	"github.com/tupyy/tinyedge-controller/internal/services/repository"
 	"github.com/tupyy/tinyedge-controller/internal/workers"
 	"github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
@@ -92,7 +92,7 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			zap.S().Fatal(err)
 		}
-		cacheRepo := cache.NewCacheRepo()
+		// cacheRepo := cache.NewCacheRepo()
 
 		// git repo
 		gitRepo := git.New("/home/cosmin/tmp/git")
@@ -100,15 +100,16 @@ var runCmd = &cobra.Command{
 		// create services
 		zap.S().Info("create services")
 		certService := certificate.New(certRepo)
-		workService := manifest.New(deviceRepo, refRepo, gitRepo, secretRepo)
-		configurationService := confService.New(deviceRepo, workService, cacheRepo)
+		manifestService := manifest.New(refRepo, gitRepo, secretRepo)
+		deviceService := device.New(deviceRepo)
+		configurationService := confService.New(deviceService, manifestService, deviceRepo)
 		edgeService := edge.New(deviceRepo, configurationService, certService)
 		authService := auth.New(certService, deviceRepo)
 		repoService := repository.NewRepositoryService(repoRepo, gitRepo)
-		deviceService := device.New(deviceRepo)
+		referenceService := reference.New(deviceRepo, refRepo, gitRepo)
 
 		scheduler := workers.New(5 * time.Second)
-		scheduler.AddWorker(workers.NewGitOpsWorker(workService, repoService, configurationService))
+		scheduler.AddWorker(workers.NewGitOpsWorker(referenceService, repoService, configurationService))
 		go scheduler.Start(ctx)
 
 		tlsConfig, err := certService.TlsConfig(ctx, conf.DefaultCertificateTTL)
@@ -133,7 +134,7 @@ var runCmd = &cobra.Command{
 		go grpcEdgeServer.Serve(lis)
 
 		grpcAdminServer := createAdminServer(logger)
-		adminServer := servers.NewAdminServer(repoService, workService, deviceService, configurationService)
+		adminServer := servers.NewAdminServer(repoService, manifestService, deviceService, configurationService)
 		admin.RegisterAdminServiceServer(grpcAdminServer, adminServer)
 		grpcAdminServer.Serve(connAdmin)
 	},

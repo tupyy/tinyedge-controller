@@ -8,16 +8,16 @@ import (
 )
 
 type Service struct {
-	gitRepo common.GitReaderWriter
-	pgRepo  common.RepositoryReaderWriter
+	gitReaderWriter  GitReaderWriter
+	repoReaderWriter RepositoryReaderWriter
 }
 
-func NewRepositoryService(p common.RepositoryReaderWriter, g common.GitReaderWriter) *Service {
-	return &Service{gitRepo: g, pgRepo: p}
+func NewRepositoryService(repoReaderWriter RepositoryReaderWriter, gitReaderWriter GitReaderWriter) *Service {
+	return &Service{gitReaderWriter: gitReaderWriter, repoReaderWriter: repoReaderWriter}
 }
 
 func (r *Service) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
-	repos, err := r.pgRepo.GetRepositories(ctx)
+	repos, err := r.repoReaderWriter.GetRepositories(ctx)
 	if err != nil {
 		return []entity.Repository{}, err
 	}
@@ -29,7 +29,7 @@ func (r *Service) Open(ctx context.Context, repo entity.Repository) error {
 	if repo.LocalPath == "" {
 		return common.ErrResourceNotFound
 	}
-	_, err := r.gitRepo.Open(ctx, repo)
+	_, err := r.gitReaderWriter.Open(ctx, repo)
 	if err != nil {
 		return err
 	}
@@ -37,16 +37,16 @@ func (r *Service) Open(ctx context.Context, repo entity.Repository) error {
 }
 
 func (r *Service) Clone(ctx context.Context, url, name string) (entity.Repository, error) {
-	return r.gitRepo.Clone(ctx, url, name)
+	return r.gitReaderWriter.Clone(ctx, url, name)
 }
 
 func (w *Service) PullRepository(ctx context.Context, repo entity.Repository) (entity.Repository, error) {
-	err := w.gitRepo.Pull(ctx, repo)
+	err := w.gitReaderWriter.Pull(ctx, repo)
 	if err != nil {
 		return entity.Repository{}, err
 	}
 
-	headSha, err := w.gitRepo.GetHeadSha(ctx, repo)
+	headSha, err := w.gitReaderWriter.GetHeadSha(ctx, repo)
 	if err != nil {
 		return entity.Repository{}, err
 	}
@@ -57,12 +57,12 @@ func (w *Service) PullRepository(ctx context.Context, repo entity.Repository) (e
 }
 
 func (w *Service) Update(ctx context.Context, r entity.Repository) error {
-	if err := w.pgRepo.UpdateRepository(ctx, r); err != nil {
+	if err := w.repoReaderWriter.UpdateRepository(ctx, r); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (w *Service) Add(ctx context.Context, r entity.Repository) error {
-	return w.pgRepo.InsertRepository(ctx, r)
+	return w.repoReaderWriter.InsertRepository(ctx, r)
 }

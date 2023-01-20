@@ -17,12 +17,12 @@ import (
 )
 
 type Service struct {
-	repo common.CertificateReaderWriter
+	repo CertificateReaderWriter
 }
 
-func New(r common.CertificateReaderWriter) *Service {
+func New(certReaderWriter CertificateReaderWriter) *Service {
 	return &Service{
-		repo: r,
+		repo: certReaderWriter,
 	}
 }
 

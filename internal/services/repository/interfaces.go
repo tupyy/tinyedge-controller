@@ -1,10 +1,24 @@
-package common
+package repository
 
 import (
 	"context"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 )
+
+type RepositoryReader interface {
+	GetRepositories(ctx context.Context) ([]entity.Repository, error)
+}
+
+type RepositoryWriter interface {
+	InsertRepository(ctx context.Context, r entity.Repository) error
+	UpdateRepository(ctx context.Context, r entity.Repository) error
+}
+
+type RepositoryReaderWriter interface {
+	RepositoryReader
+	RepositoryWriter
+}
 
 type GitReader interface {
 	Open(ctx context.Context, r entity.Repository) (entity.Repository, error)
@@ -21,10 +35,4 @@ type GitWriter interface {
 type GitReaderWriter interface {
 	GitReader
 	GitWriter
-}
-
-type ConfigurationReader interface {
-	// GetConfiguration returns the configuration for a device.
-	GetDeviceConfiguration(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error)
-	GetConfiguration(ctx context.Context, id string) (entity.Configuration, error)
 }

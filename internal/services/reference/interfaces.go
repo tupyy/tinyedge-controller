@@ -1,10 +1,16 @@
-package common
+package reference
 
 import (
 	"context"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 )
+
+type DeviceReader interface {
+	GetDevice(ctx context.Context, id string) (entity.Device, error)
+	GetNamespace(ctx context.Context, id string) (entity.Namespace, error)
+	GetSet(ctx context.Context, id string) (entity.Set, error)
+}
 
 type ReferenceReader interface {
 	GetReferences(ctx context.Context) ([]entity.ManifestReference, error)
@@ -27,4 +33,8 @@ type ReferenceWriter interface {
 type ReferenceReaderWriter interface {
 	ReferenceReader
 	ReferenceWriter
+}
+
+type GitReader interface {
+	GetReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error)
 }

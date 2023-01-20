@@ -4,27 +4,27 @@ import (
 	"context"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
+	"github.com/tupyy/tinyedge-controller/internal/services/device"
 	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
 	"go.uber.org/zap"
 )
 
 type Service struct {
-	manifestReader  *manifest.Service
-	deviceReader    common.DeviceReader
-	cacheReadWriter common.ConfigurationCacheReaderWriter
+	manifestReader *manifest.Service
+	deviceReader   *device.Service
+	confReader     ConfigurationReader
 }
 
-func New(deviceReader common.DeviceReader, manifestReader *manifest.Service, cacheReaderWriter common.ConfigurationCacheReaderWriter) *Service {
+func New(deviceReader *device.Service, manifestReader *manifest.Service, confReader ConfigurationReader) *Service {
 	return &Service{
-		manifestReader:  manifestReader,
-		deviceReader:    deviceReader,
-		cacheReadWriter: cacheReaderWriter,
+		manifestReader: manifestReader,
+		deviceReader:   deviceReader,
+		confReader:     confReader,
 	}
 }
 
 func (c *Service) GetConfiguration(ctx context.Context, id string) (entity.Configuration, error) {
-	return c.deviceReader.GetConfiguration(ctx, id)
+	return c.confReader.GetConfiguration(ctx, id)
 }
 
 func (c *Service) GetDeviceConfiguration(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error) {
@@ -49,10 +49,10 @@ func (c *Service) GetDeviceConfiguration(ctx context.Context, deviceID string) (
 	}
 	confResponse := createConfigurationResponse(configuration, manifests)
 
-	err = c.cacheReadWriter.Put(ctx, device.ID, confResponse)
-	if err != nil {
-		zap.S().Errorw("unable to save configuration to cache", "error", err)
-	}
+	// err = c.cacheReadWriter.Put(ctx, device.ID, confResponse)
+	// if err != nil {
+	// 	zap.S().Errorw("unable to save configuration to cache", "error", err)
+	// }
 
 	zap.S().Debugw("configuration", "configuration", confResponse)
 	return confResponse, nil

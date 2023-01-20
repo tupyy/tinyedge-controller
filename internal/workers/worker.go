@@ -6,7 +6,7 @@ import (
 
 	"github.com/tupyy/tinyedge-controller/internal/services/common"
 	"github.com/tupyy/tinyedge-controller/internal/services/configuration"
-	reference "github.com/tupyy/tinyedge-controller/internal/services/manifest"
+	"github.com/tupyy/tinyedge-controller/internal/services/reference"
 	"github.com/tupyy/tinyedge-controller/internal/services/repository"
 	"go.uber.org/zap"
 )

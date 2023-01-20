@@ -9,10 +9,10 @@ import (
 )
 
 type Service struct {
-	pgDeviceRepo common.DeviceReaderWriter
+	pgDeviceRepo DeviceReaderWriter
 }
 
-func New(pgDeviceRepo common.DeviceReaderWriter) *Service {
+func New(pgDeviceRepo DeviceReaderWriter) *Service {
 	return &Service{pgDeviceRepo: pgDeviceRepo}
 }
 

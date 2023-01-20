@@ -97,6 +97,21 @@ func (g *GitRepo) GetHeadSha(ctx context.Context, r entity.Repository) (string, 
 	return ref.Hash().String(), err
 }
 
+// GetReferences returns a list of references from all manifest works found in the git repository
+func (g *GitRepo) GetReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
+	manifests, err := g.GetManifests(ctx, repo)
+	if err != nil {
+		return []entity.ManifestReference{}, fmt.Errorf("unable to get reference for repo %q: %w", repo.Id, err)
+	}
+
+	refs := make([]entity.ManifestReference, 0, len(manifests))
+	for _, manifest := range manifests {
+		refs = append(refs, g.createReference(manifest, repo))
+	}
+
+	return refs, nil
+}
+
 // GetManifestWorks returns all the manifest work found in the repo.
 // Only the valid manifest works are returned
 func (g *GitRepo) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.ManifestWork, error) {
@@ -118,6 +133,7 @@ func (g *GitRepo) GetManifests(ctx context.Context, repo entity.Repository) ([]e
 	return manifests, nil
 }
 
+// GetManifest return the manifest referred by ref
 func (g *GitRepo) GetManifest(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
 	return g.getManifest(ctx, ref.Path, ref.Repo.LocalPath)
 }
@@ -406,4 +422,30 @@ func (g *GitRepo) getMainBranch(r *git.Repository) (string, error) {
 		return "master", nil
 	}
 	return "", fmt.Errorf("no branch named \"main\" or \"master\" in repo")
+}
+
+func (g *GitRepo) createReference(manifest entity.ManifestWork, repo entity.Repository) entity.ManifestReference {
+	ref := entity.ManifestReference{
+		Id:           manifest.Id,
+		Hash:         manifest.Hash,
+		Path:         manifest.Path,
+		Valid:        manifest.Valid,
+		Repo:         repo,
+		DeviceIDs:    make([]string, 0, len(manifest.Selectors)),
+		SetIDs:       make([]string, 0, len(manifest.Selectors)),
+		NamespaceIDs: make([]string, 0, len(manifest.Selectors)),
+	}
+
+	for _, s := range manifest.Selectors {
+		switch s.Type {
+		case entity.NamespaceSelector:
+			ref.NamespaceIDs = append(ref.NamespaceIDs, s.Value)
+		case entity.SetSelector:
+			ref.SetIDs = append(ref.SetIDs, s.Value)
+		case entity.DeviceSelector:
+			ref.DeviceIDs = append(ref.DeviceIDs, s.Value)
+		}
+	}
+
+	return ref
 }

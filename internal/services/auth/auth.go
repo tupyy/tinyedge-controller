@@ -8,16 +8,15 @@ import (
 	"strings"
 
 	"github.com/tupyy/tinyedge-controller/internal/services/certificate"
-	"github.com/tupyy/tinyedge-controller/internal/services/common"
 	"go.uber.org/zap"
 )
 
 type Service struct {
 	certManager  *certificate.Service
-	deviceReader common.DeviceReader
+	deviceReader DeviceReader
 }
 
-func New(certManager *certificate.Service, deviceReader common.DeviceReader) *Service {
+func New(certManager *certificate.Service, deviceReader DeviceReader) *Service {
 	return &Service{certManager, deviceReader}
 }
 
