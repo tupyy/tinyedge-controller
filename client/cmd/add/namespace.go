@@ -23,7 +23,7 @@ var addNamespace = &cobra.Command{
 
 		fn := func(ctx context.Context, client adminGrpc.AdminServiceClient) (*adminGrpc.Namespace, error) {
 			req := &adminGrpc.AddNamespaceRequest{
-				Name:            args[0],
+				Id:              args[0],
 				ConfigurationId: configurationID,
 				IsDefault:       isDefault,
 			}

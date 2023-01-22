@@ -43,6 +43,8 @@ type AdminServiceClient interface {
 	AddNamespace(ctx context.Context, in *AddNamespaceRequest, opts ...grpc.CallOption) (*Namespace, error)
 	// DeleteNamespace removes the namespace
 	DeleteNamespace(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Namespace, error)
+	// UpdateNamespace updates the namespace.
+	UpdateNamespace(ctx context.Context, in *UpdateNamespaceRequest, opts ...grpc.CallOption) (*Namespace, error)
 	// GetNamespaces returns a list with namespaces
 	GetNamespaces(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*NamespaceListResponse, error)
 	// GetManifests return a list of manifests
@@ -153,6 +155,15 @@ func (c *adminServiceClient) DeleteNamespace(ctx context.Context, in *IdRequest,
 	return out, nil
 }
 
+func (c *adminServiceClient) UpdateNamespace(ctx context.Context, in *UpdateNamespaceRequest, opts ...grpc.CallOption) (*Namespace, error) {
+	out := new(Namespace)
+	err := c.cc.Invoke(ctx, "/AdminService/UpdateNamespace", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *adminServiceClient) GetNamespaces(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*NamespaceListResponse, error) {
 	out := new(NamespaceListResponse)
 	err := c.cc.Invoke(ctx, "/AdminService/GetNamespaces", in, out, opts...)
@@ -222,6 +233,8 @@ type AdminServiceServer interface {
 	AddNamespace(context.Context, *AddNamespaceRequest) (*Namespace, error)
 	// DeleteNamespace removes the namespace
 	DeleteNamespace(context.Context, *IdRequest) (*Namespace, error)
+	// UpdateNamespace updates the namespace.
+	UpdateNamespace(context.Context, *UpdateNamespaceRequest) (*Namespace, error)
 	// GetNamespaces returns a list with namespaces
 	GetNamespaces(context.Context, *ListRequest) (*NamespaceListResponse, error)
 	// GetManifests return a list of manifests
@@ -268,6 +281,9 @@ func (UnimplementedAdminServiceServer) AddNamespace(context.Context, *AddNamespa
 }
 func (UnimplementedAdminServiceServer) DeleteNamespace(context.Context, *IdRequest) (*Namespace, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNamespace not implemented")
+}
+func (UnimplementedAdminServiceServer) UpdateNamespace(context.Context, *UpdateNamespaceRequest) (*Namespace, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateNamespace not implemented")
 }
 func (UnimplementedAdminServiceServer) GetNamespaces(context.Context, *ListRequest) (*NamespaceListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNamespaces not implemented")
@@ -477,6 +493,24 @@ func _AdminService_DeleteNamespace_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_UpdateNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateNamespaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).UpdateNamespace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AdminService/UpdateNamespace",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).UpdateNamespace(ctx, req.(*UpdateNamespaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AdminService_GetNamespaces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListRequest)
 	if err := dec(in); err != nil {
@@ -613,6 +647,10 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteNamespace",
 			Handler:    _AdminService_DeleteNamespace_Handler,
+		},
+		{
+			MethodName: "UpdateNamespace",
+			Handler:    _AdminService_UpdateNamespace_Handler,
 		},
 		{
 			MethodName: "GetNamespaces",

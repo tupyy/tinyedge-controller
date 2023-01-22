@@ -10,7 +10,7 @@ import (
 
 func NamespaceToProto(n entity.Namespace) *admin.Namespace {
 	return &admin.Namespace{
-		Name:          n.Name,
+		Id:            n.Name,
 		IsDefault:     n.IsDefault,
 		Configuration: n.Configuration.ID,
 		Devices:       n.DeviceIDs,

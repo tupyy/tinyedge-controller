@@ -85,6 +85,33 @@ func (w *Service) DeleteNamespace(ctx context.Context, id string) (entity.Namesp
 	return namespace, nil
 }
 
+func (w *Service) UpdateNamespace(ctx context.Context, namespace entity.Namespace) (entity.Namespace, error) {
+	_, err := w.GetNamespace(ctx, namespace.Name)
+	if err != nil {
+		return entity.Namespace{}, err
+	}
+
+	if namespace.IsDefault {
+		// get the default namespace and if different update it
+		defaultNamespace, err := w.GetDefaultNamespace(ctx)
+		if err != nil {
+			return entity.Namespace{}, err
+		}
+		if defaultNamespace.Name != namespace.Name {
+			defaultNamespace.IsDefault = false
+			if err := w.pgDeviceRepo.UpdateNamespace(ctx, defaultNamespace); err != nil {
+				return entity.Namespace{}, err
+			}
+		}
+	}
+
+	if err := w.pgDeviceRepo.UpdateNamespace(ctx, namespace); err != nil {
+		return entity.Namespace{}, err
+	}
+
+	return namespace, nil
+}
+
 func (w *Service) GetSets(ctx context.Context) ([]entity.Set, error) {
 	return w.pgDeviceRepo.GetSets(ctx)
 }

@@ -7,7 +7,10 @@ import (
 	"github.com/spf13/cobra"
 	rootCmd "github.com/tupyy/tinyedge-controller/client/cmd"
 	adminGrpc "github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
-	"github.com/tupyy/tinyedge-controller/pkg/grpc/common"
+)
+
+var (
+	isDefault bool
 )
 
 var updateNamespace = &cobra.Command{
@@ -18,12 +21,17 @@ var updateNamespace = &cobra.Command{
 		if len(args) == 0 {
 			return fmt.Errorf("Please provide a namespace id")
 		}
-		if configurationID == "" {
-			return fmt.Errorf("Please provide at least a set id, namespace id or configuration id")
+		if configurationID == "" && !isDefault {
+			return fmt.Errorf("Please provide configuration id or set is-default flat")
 		}
 
-		fn := func(ctx context.Context, client adminGrpc.AdminServiceClient) (*common.Device, error) {
-			return nil, nil
+		fn := func(ctx context.Context, client adminGrpc.AdminServiceClient) (*adminGrpc.Namespace, error) {
+			req := &adminGrpc.UpdateNamespaceRequest{
+				Id:              args[0],
+				ConfigurationId: configurationID,
+				IsDefault:       isDefault,
+			}
+			return client.UpdateNamespace(ctx, req)
 		}
 
 		return rootCmd.RunCmd(fn)
@@ -33,4 +41,5 @@ var updateNamespace = &cobra.Command{
 func init() {
 	setCmd.AddCommand(updateNamespace)
 	updateNamespace.Flags().StringVarP(&configurationID, "configuration", "c", "", "configuration id")
+	updateNamespace.Flags().BoolVarP(&isDefault, "is-default", "d", true, "set the namespace be the default one")
 }

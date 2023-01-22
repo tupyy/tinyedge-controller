@@ -35,6 +35,9 @@ service AdminService {
     // DeleteNamespace removes the namespace
     rpc DeleteNamespace(IdRequest) returns (Namespace) {}
 
+    // UpdateNamespace updates the namespace.
+    rpc UpdateNamespace(UpdateNamespaceRequest) returns (Namespace) {}
+
     // GetNamespaces returns a list with namespaces
     rpc GetNamespaces(ListRequest) returns (NamespaceListResponse) {}
     
@@ -62,19 +65,25 @@ message ListRequest {
 }
 
 message AddSetRequest {
-    string name = 1;
+    string id = 1;
     string namespace_id = 2;
     optional string configuration_id = 3;
 }
 
 message UpdateSetRequest {
-    string name = 1;
+    string id = 1;
     optional string namespace_id = 2;
     optional string configuration_id = 3;
 }
 
+message UpdateNamespaceRequest {
+    string id = 1;
+    string configuration_id = 3;
+    bool is_default = 4;
+}
+
 message AddNamespaceRequest {
-    string name = 1;
+    string id = 1;
     bool is_default = 2;
     string configuration_id = 3;
 }
@@ -95,7 +104,7 @@ message DevicesListResponse {
 }
 
 message UpdateDeviceRequest {
-    string device_id = 1;
+    string id = 1;
     string set_id = 2;
     string namespace_id = 3;
     string configuration_id = 4;
@@ -179,7 +188,7 @@ message Selector {
 }
 
 message Namespace {
-    string name = 1;
+    string id = 1;
     bool is_default = 2;
     string configuration = 3;
     repeated string devices = 4;

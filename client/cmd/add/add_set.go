@@ -24,7 +24,7 @@ var addSet = &cobra.Command{
 
 		fn := func(ctx context.Context, client adminGrpc.AdminServiceClient) (*common.Set, error) {
 			req := &adminGrpc.AddSetRequest{
-				Name:        args[0],
+				Id:          args[0],
 				NamespaceId: namespaceID,
 			}
 			if configurationID != "" {

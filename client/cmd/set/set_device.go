@@ -30,7 +30,7 @@ var deviceToSet = &cobra.Command{
 
 		fn := func(ctx context.Context, client adminGrpc.AdminServiceClient) (*common.Device, error) {
 			req := &adminGrpc.UpdateDeviceRequest{
-				DeviceId:        deviceID,
+				Id:              deviceID,
 				SetId:           setID,
 				NamespaceId:     namepsaceID,
 				ConfigurationId: configurationID,
