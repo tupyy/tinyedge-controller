@@ -42,17 +42,24 @@ func (d *DeviceRepo) GetDevice(ctx context.Context, id string) (entity.Device, e
 	if !d.circuitBreaker.IsAvailable() {
 		return entity.Device{}, errService.NewPostgresNotAvailableError("device repository")
 	}
-	m := models.Device{}
+	m := []models.DeviceJoin{}
 
-	if err := d.getDb(ctx).Where("id = ?", id).First(&m).Error; err != nil {
+	tx := d.getDb(ctx).Table("device").
+		Select("device.*, devices_references.manifest_reference_id as manifest_id").
+		Joins("LEFT JOIN devices_references ON devices_references.device_id = device.id").
+		Where("device.id = ?", id)
+
+	if err := tx.Find(&m).Error; err != nil {
 		if d.checkNetworkError(err) {
 			return entity.Device{}, errService.NewPostgresNotAvailableError("device repository")
 		}
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entity.Device{}, errService.NewResourceNotFoundError("device", id)
-		}
 		return entity.Device{}, err
 	}
+
+	if len(m) == 0 {
+		return entity.Device{}, errService.NewResourceNotFoundError("device", id)
+	}
+
 	return mappers.DeviceToEntity(m), nil
 }
 
@@ -61,9 +68,13 @@ func (d *DeviceRepo) GetDevices(ctx context.Context) ([]entity.Device, error) {
 		return []entity.Device{}, errService.NewPostgresNotAvailableError("device repository")
 	}
 
-	m := []models.Device{}
+	m := []models.DeviceJoin{}
 
-	if err := d.getDb(ctx).Find(&m).Error; err != nil {
+	tx := d.getDb(ctx).Table("device").
+		Select("device.*, devices_references.manifest_reference_id as manifest_id").
+		Joins("LEFT JOIN devices_references ON devices_references.device_id = device.id")
+
+	if err := tx.Find(&m).Error; err != nil {
 		if d.checkNetworkError(err) {
 			return []entity.Device{}, errService.NewPostgresNotAvailableError("device repository")
 		}

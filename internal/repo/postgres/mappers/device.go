@@ -40,34 +40,54 @@ func MapEntityToModel(device entity.Device) models.Device {
 	return m
 }
 
-func DeviceToEntity(device models.Device) entity.Device {
+func DeviceToEntity(joins []models.DeviceJoin) entity.Device {
 	e := entity.Device{
-		ID:          device.ID,
-		NamespaceID: device.NamespaceID.String,
-		Registred:   device.Registered,
-		EnrolStatus: entity.EnroledStatus.FromString(device.Enroled),
+		ID:          joins[0].ID,
+		NamespaceID: joins[0].NamespaceID.String,
+		Registred:   joins[0].Registered,
+		EnrolStatus: entity.EnroledStatus.FromString(joins[0].Enroled),
+		ManifestIDS: make([]string, 0, len(joins)),
 	}
-	if device.Registered {
-		e.RegisteredAt = device.RegisteredAt
+	if joins[0].Registered {
+		e.RegisteredAt = joins[0].RegisteredAt
 	}
 
 	if e.EnrolStatus == entity.EnroledStatus {
-		e.EnroledAt = device.EnroledAt
+		e.EnroledAt = joins[0].EnroledAt
 	}
 
-	if device.CertificateSn.Valid {
-		e.CertificateSerialNumber = device.CertificateSn.String
+	if joins[0].CertificateSn.Valid {
+		e.CertificateSerialNumber = joins[0].CertificateSn.String
 	}
-	if device.DeviceSetID.Valid {
-		e.SetID = &device.DeviceSetID.String
+	if joins[0].DeviceSetID.Valid {
+		e.SetID = &joins[0].DeviceSetID.String
+	}
+	for _, j := range joins {
+		if j.ManifestId != "" {
+			e.ManifestIDS = append(e.ManifestIDS, j.ManifestId)
+
+		}
 	}
 	return e
 }
 
-func DevicesToEntity(model []models.Device) []entity.Device {
-	entities := make([]entity.Device, 0, len(model))
-	for _, model := range model {
-		entities = append(entities, DeviceToEntity(model))
+func DevicesToEntity(joins []models.DeviceJoin) []entity.Device {
+	nmap := make(map[string][]models.DeviceJoin)
+	for _, j := range joins {
+		_, ok := nmap[j.ID]
+		var jj []models.DeviceJoin
+		if !ok {
+			jj = make([]models.DeviceJoin, 0)
+		} else {
+			jj = nmap[j.ID]
+		}
+		jj = append(jj, j)
+		nmap[j.ID] = jj
+	}
+
+	entities := make([]entity.Device, 0, len(joins))
+	for _, v := range nmap {
+		entities = append(entities, DeviceToEntity(v))
 	}
 	return entities
 }

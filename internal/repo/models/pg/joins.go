@@ -4,6 +4,11 @@ import (
 	"database/sql"
 )
 
+type DeviceJoin struct {
+	Device
+	ManifestId string `gorm:"column_name:manifest_id;type:TEXT"`
+}
+
 type SetJoin struct {
 	DeviceSet
 	DeviceId                            string         `gorm:"column_name:device_id;type:TEXT"`
