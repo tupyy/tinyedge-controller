@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	"github.com/tupyy/tinyedge-controller/internal/services/certificate"
 	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"go.uber.org/zap"
 )
@@ -21,10 +20,10 @@ const (
 type Service struct {
 	deviceReaderWriter DeviceReaderWriter
 	confReader         ConfigurationReader
-	certService        *certificate.Service
+	certWriter         CertificateWriter
 }
 
-func New(dr DeviceReaderWriter, confReader ConfigurationReader, certWriter *certificate.Service) *Service {
+func New(dr DeviceReaderWriter, confReader ConfigurationReader, certWriter CertificateWriter) *Service {
 	return &Service{dr, confReader, certWriter}
 }
 
@@ -78,7 +77,7 @@ func (s *Service) Register(ctx context.Context, deviceID string, csr string) (en
 	}
 
 	cn := fmt.Sprintf("%s.%s", deviceID, BaseDomain)
-	certificate, err := s.certService.SignCSR(ctx, bytes.NewBufferString(csr).Bytes(), cn, DefaultCertificateTTL)
+	certificate, err := s.certWriter.SignCSR(ctx, bytes.NewBufferString(csr).Bytes(), cn, DefaultCertificateTTL)
 	if err != nil {
 		return entity.CertificateGroup{}, fmt.Errorf("unable to sign the csr: %w", err)
 	}

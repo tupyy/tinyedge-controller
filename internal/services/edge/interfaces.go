@@ -2,6 +2,7 @@ package edge
 
 import (
 	"context"
+	"time"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 )
@@ -24,4 +25,8 @@ type DeviceReaderWriter interface {
 
 type ConfigurationReader interface {
 	GetDeviceConfiguration(ctx context.Context, id string) (entity.ConfigurationResponse, error)
+}
+
+type CertificateWriter interface {
+	SignCSR(ctx context.Context, csr []byte, cn string, ttl time.Duration) (entity.CertificateGroup, error)
 }
