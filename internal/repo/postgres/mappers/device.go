@@ -8,7 +8,7 @@ import (
 	models "github.com/tupyy/tinyedge-controller/internal/repo/models/pg"
 )
 
-func MapEntityToModel(device entity.Device) models.Device {
+func DeviceEntityToModel(device entity.Device) models.Device {
 	m := models.Device{
 		ID:          device.ID,
 		NamespaceID: sql.NullString{Valid: true, String: device.NamespaceID},
@@ -65,7 +65,6 @@ func DeviceToEntity(joins []models.DeviceJoin) entity.Device {
 	for _, j := range joins {
 		if j.ManifestId != "" {
 			e.ManifestIDS = append(e.ManifestIDS, j.ManifestId)
-
 		}
 	}
 	return e

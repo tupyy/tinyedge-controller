@@ -332,7 +332,7 @@ func (d *DeviceRepo) Create(ctx context.Context, device entity.Device) error {
 		return errService.NewPostgresNotAvailableError("device repository")
 	}
 
-	deviceModel := mappers.MapEntityToModel(device)
+	deviceModel := mappers.DeviceEntityToModel(device)
 	if err := d.getDb(ctx).Create(&deviceModel).Error; err != nil {
 		return err
 	}
@@ -345,7 +345,7 @@ func (d *DeviceRepo) Update(ctx context.Context, device entity.Device) error {
 		return errService.NewPostgresNotAvailableError("device repository")
 	}
 
-	model := mappers.MapEntityToModel(device)
+	model := mappers.DeviceEntityToModel(device)
 	if err := d.getDb(ctx).Save(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errService.NewResourceNotFoundError("device", device.ID)

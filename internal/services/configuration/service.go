@@ -4,18 +4,16 @@ import (
 	"context"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	"github.com/tupyy/tinyedge-controller/internal/services/device"
-	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
 	"go.uber.org/zap"
 )
 
 type Service struct {
-	manifestReader *manifest.Service
-	deviceReader   *device.Service
+	manifestReader ManifestReader
+	deviceReader   DeviceReader
 	confReader     ConfigurationReader
 }
 
-func New(deviceReader *device.Service, manifestReader *manifest.Service, confReader ConfigurationReader) *Service {
+func New(deviceReader DeviceReader, manifestReader ManifestReader, confReader ConfigurationReader) *Service {
 	return &Service{
 		manifestReader: manifestReader,
 		deviceReader:   deviceReader,

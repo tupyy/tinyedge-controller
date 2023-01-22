@@ -7,7 +7,13 @@ import (
 )
 
 type DeviceReader interface {
-	GetDevice(ctx context.Context)
+	GetDevice(ctx context.Context, id string) (entity.Device, error)
+	GetSet(ctx context.Context, id string) (entity.Set, error)
+	GetNamespace(ctx context.Context, id string) (entity.Namespace, error)
+}
+
+type ManifestReader interface {
+	GetManifest(ctx context.Context, id string) (entity.ManifestWork, error)
 }
 type ConfigurationReader interface {
 	// GetConfiguration returns the configuration for a device.
