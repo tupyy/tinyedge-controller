@@ -40,6 +40,6 @@ var addSet = &cobra.Command{
 func init() {
 	addCmd.AddCommand(addSet)
 
-	addSet.Flags().StringVarP(&configurationID, "configuration-id", "", "", "configurationID")
-	addSet.Flags().StringVarP(&namespaceID, "namespace-id", "", "", "namespace id")
+	addSet.Flags().StringVarP(&configurationID, "configuration", "", "", "configuration id")
+	addSet.Flags().StringVarP(&namespaceID, "namespace", "", "", "namespace id")
 }

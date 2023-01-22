@@ -37,6 +37,6 @@ var addNamespace = &cobra.Command{
 func init() {
 	addCmd.AddCommand(addNamespace)
 
-	addNamespace.Flags().StringVarP(&configurationID, "configuration-id", "", "", "configurationID")
+	addNamespace.Flags().StringVarP(&configurationID, "configuration", "", "", "configuration id")
 	addNamespace.Flags().BoolVarP(&isDefault, "is-default", "", false, "true if the namespace is the default one")
 }
