@@ -188,6 +188,36 @@ func (d *DeviceRepo) GetNamespace(ctx context.Context, id string) (entity.Namesp
 	return mappers.NamespaceModelToEntity(n), nil
 }
 
+func (d *DeviceRepo) GetDefaultNamespace(ctx context.Context) (entity.Namespace, error) {
+	if !d.circuitBreaker.IsAvailable() {
+		return entity.Namespace{}, errService.NewPostgresNotAvailableError("device repository")
+	}
+
+	n := []models.NamespaceJoin{}
+	tx := d.getDb(ctx).Table("namespace").
+		Select(`device_set.*,namespace.*,
+			configuration.heartbeat_period_seconds as configuration_heartbeat_period_seconds, configuration.log_level as configuration_log_level,
+			device.id as device_id, device_set.id as device_set_id, namespaces_references.manifest_reference_id as manifest_id`).
+		Joins("LEFT JOIN device ON device.namespace_id = namespace.id").
+		Joins("LEFT JOIN device_set ON device_set.namespace_id = namespace.id").
+		Joins("LEFT JOIN namespaces_references ON namespaces_references.namespace_id = namespace.id").
+		Joins("LEFT JOIN configuration ON namespace.configuration_id = configuration.id").
+		Where("namespace.is_default = ?", true)
+
+	if err := tx.Find(&n).Error; err != nil {
+		if d.checkNetworkError(err) {
+			return entity.Namespace{}, errService.NewPostgresNotAvailableError("device repository")
+		}
+		return entity.Namespace{}, err
+	}
+
+	if len(n) == 0 {
+		return entity.Namespace{}, errService.NewResourceNotFoundErrorWithReason("Default namespace not found")
+	}
+
+	return mappers.NamespaceModelToEntity(n), nil
+}
+
 func (d *DeviceRepo) GetNamespaces(ctx context.Context) ([]entity.Namespace, error) {
 	if !d.circuitBreaker.IsAvailable() {
 		return []entity.Namespace{}, errService.NewPostgresNotAvailableError("device repository")
@@ -230,6 +260,25 @@ func (d *DeviceRepo) CreateSet(ctx context.Context, set entity.Set) error {
 		return err
 	}
 
+	return nil
+}
+
+func (d *DeviceRepo) DeleteSet(ctx context.Context, id string) error {
+	return d.getDb(ctx).Where("id = ?", id).Delete(&models.DeviceSet{}).Error
+}
+
+func (d *DeviceRepo) DeleteNamespace(ctx context.Context, id string) error {
+	return d.getDb(ctx).Where("id = ?", id).Delete(&models.Namespace{}).Error
+}
+
+func (d *DeviceRepo) UpdateNamespace(ctx context.Context, namespace entity.Namespace) error {
+	model := mappers.NamespaceToModel(namespace)
+	if err := d.getDb(ctx).Save(model).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errService.NewResourceNotFoundError("namespace", namespace.Name)
+		}
+		return err
+	}
 	return nil
 }
 

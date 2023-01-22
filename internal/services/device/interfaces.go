@@ -11,6 +11,7 @@ type DeviceReader interface {
 	GetDevice(ctx context.Context, id string) (entity.Device, error)
 	GetDevices(ctx context.Context) ([]entity.Device, error)
 	GetNamespace(ctx context.Context, id string) (entity.Namespace, error)
+	GetDefaultNamespace(ctx context.Context) (entity.Namespace, error)
 	GetNamespaces(ctx context.Context) ([]entity.Namespace, error)
 	GetSet(ctx context.Context, id string) (entity.Set, error)
 	GetSets(ctx context.Context) ([]entity.Set, error)
@@ -22,7 +23,10 @@ type DeviceWriter interface {
 	Create(ctx context.Context, device entity.Device) error
 	Update(ctx context.Context, device entity.Device) error
 	CreateSet(ctx context.Context, set entity.Set) error
+	DeleteSet(ctx context.Context, id string) error
+	DeleteNamespace(ctx context.Context, id string) error
 	CreateNamespace(ctx context.Context, namespace entity.Namespace) error
+	UpdateNamespace(ctx context.Context, namespace entity.Namespace) error
 }
 
 type DeviceReaderWriter interface {

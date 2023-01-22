@@ -128,7 +128,7 @@ type AddSetRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	SetName         string  `protobuf:"bytes,1,opt,name=set_name,json=setName,proto3" json:"set_name,omitempty"`
+	Name            string  `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	NamespaceId     string  `protobuf:"bytes,2,opt,name=namespace_id,json=namespaceId,proto3" json:"namespace_id,omitempty"`
 	ConfigurationId *string `protobuf:"bytes,3,opt,name=configuration_id,json=configurationId,proto3,oneof" json:"configuration_id,omitempty"`
 }
@@ -165,9 +165,9 @@ func (*AddSetRequest) Descriptor() ([]byte, []int) {
 	return file_admin_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *AddSetRequest) GetSetName() string {
+func (x *AddSetRequest) GetName() string {
 	if x != nil {
-		return x.SetName
+		return x.Name
 	}
 	return ""
 }
@@ -180,6 +180,69 @@ func (x *AddSetRequest) GetNamespaceId() string {
 }
 
 func (x *AddSetRequest) GetConfigurationId() string {
+	if x != nil && x.ConfigurationId != nil {
+		return *x.ConfigurationId
+	}
+	return ""
+}
+
+type UpdateSetRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name            string  `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	NamespaceId     *string `protobuf:"bytes,2,opt,name=namespace_id,json=namespaceId,proto3,oneof" json:"namespace_id,omitempty"`
+	ConfigurationId *string `protobuf:"bytes,3,opt,name=configuration_id,json=configurationId,proto3,oneof" json:"configuration_id,omitempty"`
+}
+
+func (x *UpdateSetRequest) Reset() {
+	*x = UpdateSetRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_admin_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateSetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateSetRequest) ProtoMessage() {}
+
+func (x *UpdateSetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_admin_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateSetRequest.ProtoReflect.Descriptor instead.
+func (*UpdateSetRequest) Descriptor() ([]byte, []int) {
+	return file_admin_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *UpdateSetRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateSetRequest) GetNamespaceId() string {
+	if x != nil && x.NamespaceId != nil {
+		return *x.NamespaceId
+	}
+	return ""
+}
+
+func (x *UpdateSetRequest) GetConfigurationId() string {
 	if x != nil && x.ConfigurationId != nil {
 		return *x.ConfigurationId
 	}
@@ -199,7 +262,7 @@ type AddNamespaceRequest struct {
 func (x *AddNamespaceRequest) Reset() {
 	*x = AddNamespaceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[3]
+		mi := &file_admin_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -212,7 +275,7 @@ func (x *AddNamespaceRequest) String() string {
 func (*AddNamespaceRequest) ProtoMessage() {}
 
 func (x *AddNamespaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[3]
+	mi := &file_admin_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -225,7 +288,7 @@ func (x *AddNamespaceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddNamespaceRequest.ProtoReflect.Descriptor instead.
 func (*AddNamespaceRequest) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{3}
+	return file_admin_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AddNamespaceRequest) GetName() string {
@@ -264,7 +327,7 @@ type DevicesListRequest struct {
 func (x *DevicesListRequest) Reset() {
 	*x = DevicesListRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[4]
+		mi := &file_admin_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -277,7 +340,7 @@ func (x *DevicesListRequest) String() string {
 func (*DevicesListRequest) ProtoMessage() {}
 
 func (x *DevicesListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[4]
+	mi := &file_admin_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -290,7 +353,7 @@ func (x *DevicesListRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DevicesListRequest.ProtoReflect.Descriptor instead.
 func (*DevicesListRequest) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{4}
+	return file_admin_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *DevicesListRequest) GetRegistered() bool {
@@ -342,7 +405,7 @@ type DevicesListResponse struct {
 func (x *DevicesListResponse) Reset() {
 	*x = DevicesListResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[5]
+		mi := &file_admin_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -355,7 +418,7 @@ func (x *DevicesListResponse) String() string {
 func (*DevicesListResponse) ProtoMessage() {}
 
 func (x *DevicesListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[5]
+	mi := &file_admin_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -368,7 +431,7 @@ func (x *DevicesListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DevicesListResponse.ProtoReflect.Descriptor instead.
 func (*DevicesListResponse) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{5}
+	return file_admin_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *DevicesListResponse) GetDevices() []*common.Device {
@@ -413,7 +476,7 @@ type UpdateDeviceRequest struct {
 func (x *UpdateDeviceRequest) Reset() {
 	*x = UpdateDeviceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[6]
+		mi := &file_admin_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -426,7 +489,7 @@ func (x *UpdateDeviceRequest) String() string {
 func (*UpdateDeviceRequest) ProtoMessage() {}
 
 func (x *UpdateDeviceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[6]
+	mi := &file_admin_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -439,7 +502,7 @@ func (x *UpdateDeviceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDeviceRequest.ProtoReflect.Descriptor instead.
 func (*UpdateDeviceRequest) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{6}
+	return file_admin_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateDeviceRequest) GetDeviceId() string {
@@ -484,7 +547,7 @@ type SetsListResponse struct {
 func (x *SetsListResponse) Reset() {
 	*x = SetsListResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[7]
+		mi := &file_admin_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -497,7 +560,7 @@ func (x *SetsListResponse) String() string {
 func (*SetsListResponse) ProtoMessage() {}
 
 func (x *SetsListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[7]
+	mi := &file_admin_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -510,7 +573,7 @@ func (x *SetsListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetsListResponse.ProtoReflect.Descriptor instead.
 func (*SetsListResponse) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{7}
+	return file_admin_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *SetsListResponse) GetSets() []*common.Set {
@@ -553,7 +616,7 @@ type WorkloadToSetRequest struct {
 func (x *WorkloadToSetRequest) Reset() {
 	*x = WorkloadToSetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[8]
+		mi := &file_admin_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -566,7 +629,7 @@ func (x *WorkloadToSetRequest) String() string {
 func (*WorkloadToSetRequest) ProtoMessage() {}
 
 func (x *WorkloadToSetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[8]
+	mi := &file_admin_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -579,7 +642,7 @@ func (x *WorkloadToSetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkloadToSetRequest.ProtoReflect.Descriptor instead.
 func (*WorkloadToSetRequest) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{8}
+	return file_admin_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *WorkloadToSetRequest) GetSetId() string {
@@ -610,7 +673,7 @@ type ManifestListResponse struct {
 func (x *ManifestListResponse) Reset() {
 	*x = ManifestListResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[9]
+		mi := &file_admin_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -623,7 +686,7 @@ func (x *ManifestListResponse) String() string {
 func (*ManifestListResponse) ProtoMessage() {}
 
 func (x *ManifestListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[9]
+	mi := &file_admin_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -636,7 +699,7 @@ func (x *ManifestListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ManifestListResponse.ProtoReflect.Descriptor instead.
 func (*ManifestListResponse) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{9}
+	return file_admin_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ManifestListResponse) GetManifests() []*Manifest {
@@ -679,7 +742,7 @@ type AddRepositoryRequest struct {
 func (x *AddRepositoryRequest) Reset() {
 	*x = AddRepositoryRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[10]
+		mi := &file_admin_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -692,7 +755,7 @@ func (x *AddRepositoryRequest) String() string {
 func (*AddRepositoryRequest) ProtoMessage() {}
 
 func (x *AddRepositoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[10]
+	mi := &file_admin_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -705,7 +768,7 @@ func (x *AddRepositoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddRepositoryRequest.ProtoReflect.Descriptor instead.
 func (*AddRepositoryRequest) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{10}
+	return file_admin_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *AddRepositoryRequest) GetUrl() string {
@@ -734,7 +797,7 @@ type AddRepositoryResponse struct {
 func (x *AddRepositoryResponse) Reset() {
 	*x = AddRepositoryResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[11]
+		mi := &file_admin_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -747,7 +810,7 @@ func (x *AddRepositoryResponse) String() string {
 func (*AddRepositoryResponse) ProtoMessage() {}
 
 func (x *AddRepositoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[11]
+	mi := &file_admin_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -760,7 +823,7 @@ func (x *AddRepositoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddRepositoryResponse.ProtoReflect.Descriptor instead.
 func (*AddRepositoryResponse) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{11}
+	return file_admin_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *AddRepositoryResponse) GetUrl() string {
@@ -791,7 +854,7 @@ type RepositoryListResponse struct {
 func (x *RepositoryListResponse) Reset() {
 	*x = RepositoryListResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[12]
+		mi := &file_admin_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -804,7 +867,7 @@ func (x *RepositoryListResponse) String() string {
 func (*RepositoryListResponse) ProtoMessage() {}
 
 func (x *RepositoryListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[12]
+	mi := &file_admin_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -817,7 +880,7 @@ func (x *RepositoryListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RepositoryListResponse.ProtoReflect.Descriptor instead.
 func (*RepositoryListResponse) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{12}
+	return file_admin_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *RepositoryListResponse) GetRepositories() []*Repository {
@@ -862,7 +925,7 @@ type NamespaceListResponse struct {
 func (x *NamespaceListResponse) Reset() {
 	*x = NamespaceListResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[13]
+		mi := &file_admin_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -875,7 +938,7 @@ func (x *NamespaceListResponse) String() string {
 func (*NamespaceListResponse) ProtoMessage() {}
 
 func (x *NamespaceListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[13]
+	mi := &file_admin_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -888,7 +951,7 @@ func (x *NamespaceListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NamespaceListResponse.ProtoReflect.Descriptor instead.
 func (*NamespaceListResponse) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{13}
+	return file_admin_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *NamespaceListResponse) GetNamespaces() []*Namespace {
@@ -936,7 +999,7 @@ type Repository struct {
 func (x *Repository) Reset() {
 	*x = Repository{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[14]
+		mi := &file_admin_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -949,7 +1012,7 @@ func (x *Repository) String() string {
 func (*Repository) ProtoMessage() {}
 
 func (x *Repository) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[14]
+	mi := &file_admin_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -962,7 +1025,7 @@ func (x *Repository) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Repository.ProtoReflect.Descriptor instead.
 func (*Repository) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{14}
+	return file_admin_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *Repository) GetId() string {
@@ -1040,7 +1103,7 @@ type Manifest struct {
 func (x *Manifest) Reset() {
 	*x = Manifest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[15]
+		mi := &file_admin_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1053,7 +1116,7 @@ func (x *Manifest) String() string {
 func (*Manifest) ProtoMessage() {}
 
 func (x *Manifest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[15]
+	mi := &file_admin_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1066,7 +1129,7 @@ func (x *Manifest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Manifest.ProtoReflect.Descriptor instead.
 func (*Manifest) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{15}
+	return file_admin_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *Manifest) GetId() string {
@@ -1193,7 +1256,7 @@ type Selector struct {
 func (x *Selector) Reset() {
 	*x = Selector{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[16]
+		mi := &file_admin_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1206,7 +1269,7 @@ func (x *Selector) String() string {
 func (*Selector) ProtoMessage() {}
 
 func (x *Selector) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[16]
+	mi := &file_admin_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1219,7 +1282,7 @@ func (x *Selector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Selector.ProtoReflect.Descriptor instead.
 func (*Selector) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{16}
+	return file_admin_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *Selector) GetResourceType() string {
@@ -1252,7 +1315,7 @@ type Namespace struct {
 func (x *Namespace) Reset() {
 	*x = Namespace{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_admin_proto_msgTypes[17]
+		mi := &file_admin_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1265,7 +1328,7 @@ func (x *Namespace) String() string {
 func (*Namespace) ProtoMessage() {}
 
 func (x *Namespace) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_proto_msgTypes[17]
+	mi := &file_admin_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1278,7 +1341,7 @@ func (x *Namespace) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Namespace.ProtoReflect.Descriptor instead.
 func (*Namespace) Descriptor() ([]byte, []int) {
-	return file_admin_proto_rawDescGZIP(), []int{17}
+	return file_admin_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *Namespace) GetName() string {
@@ -1334,15 +1397,25 @@ var file_admin_proto_rawDesc = []byte{
 	0x01, 0x20, 0x01, 0x28, 0x05, 0x48, 0x00, 0x52, 0x04, 0x70, 0x61, 0x67, 0x65, 0x88, 0x01, 0x01,
 	0x12, 0x17, 0x0a, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x48, 0x01,
 	0x52, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x88, 0x01, 0x01, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x70, 0x61,
-	0x67, 0x65, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x73, 0x69, 0x7a, 0x65, 0x22, 0x92, 0x01, 0x0a, 0x0d,
-	0x41, 0x64, 0x64, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a,
-	0x08, 0x73, 0x65, 0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x07, 0x73, 0x65, 0x74, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x6e, 0x61, 0x6d, 0x65,
-	0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b,
-	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x49, 0x64, 0x12, 0x2e, 0x0a, 0x10, 0x63,
-	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x0f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75,
-	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x88, 0x01, 0x01, 0x42, 0x13, 0x0a, 0x11, 0x5f,
+	0x67, 0x65, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x73, 0x69, 0x7a, 0x65, 0x22, 0x8b, 0x01, 0x0a, 0x0d,
+	0x41, 0x64, 0x64, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d,
+	0x65, 0x12, 0x21, 0x0a, 0x0c, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69,
+	0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
+	0x63, 0x65, 0x49, 0x64, 0x12, 0x2e, 0x0a, 0x10, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00,
+	0x52, 0x0f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49,
+	0x64, 0x88, 0x01, 0x01, 0x42, 0x13, 0x0a, 0x11, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75,
+	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x22, 0xa4, 0x01, 0x0a, 0x10, 0x55, 0x70,
+	0x64, 0x61, 0x74, 0x65, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12,
+	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x12, 0x26, 0x0a, 0x0c, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f,
+	0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x0b, 0x6e, 0x61, 0x6d, 0x65,
+	0x73, 0x70, 0x61, 0x63, 0x65, 0x49, 0x64, 0x88, 0x01, 0x01, 0x12, 0x2e, 0x0a, 0x10, 0x63, 0x6f,
+	0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x09, 0x48, 0x01, 0x52, 0x0f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x88, 0x01, 0x01, 0x42, 0x0f, 0x0a, 0x0d, 0x5f, 0x6e,
+	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x42, 0x13, 0x0a, 0x11, 0x5f,
 	0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64,
 	0x22, 0x73, 0x0a, 0x13, 0x41, 0x64, 0x64, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65,
 	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
@@ -1488,7 +1561,7 @@ var file_admin_proto_rawDesc = []byte{
 	0x73, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x65, 0x74, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x09, 0x52,
 	0x04, 0x73, 0x65, 0x74, 0x73, 0x12, 0x1c, 0x0a, 0x09, 0x6d, 0x61, 0x6e, 0x69, 0x66, 0x65, 0x73,
 	0x74, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x6d, 0x61, 0x6e, 0x69, 0x66, 0x65,
-	0x73, 0x74, 0x73, 0x32, 0xd6, 0x04, 0x0a, 0x0c, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x53, 0x65, 0x72,
+	0x73, 0x74, 0x73, 0x32, 0xcc, 0x05, 0x0a, 0x0c, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x53, 0x65, 0x72,
 	0x76, 0x69, 0x63, 0x65, 0x12, 0x39, 0x0a, 0x0a, 0x47, 0x65, 0x74, 0x44, 0x65, 0x76, 0x69, 0x63,
 	0x65, 0x73, 0x12, 0x13, 0x2e, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x73, 0x4c, 0x69, 0x73, 0x74,
 	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65,
@@ -1505,31 +1578,39 @@ var file_admin_proto_rawDesc = []byte{
 	0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x04, 0x2e, 0x53, 0x65, 0x74, 0x22, 0x00,
 	0x12, 0x20, 0x0a, 0x06, 0x41, 0x64, 0x64, 0x53, 0x65, 0x74, 0x12, 0x0e, 0x2e, 0x41, 0x64, 0x64,
 	0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x04, 0x2e, 0x53, 0x65, 0x74,
-	0x22, 0x00, 0x12, 0x32, 0x0a, 0x0c, 0x41, 0x64, 0x64, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
-	0x63, 0x65, 0x12, 0x14, 0x2e, 0x41, 0x64, 0x64, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
-	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0a, 0x2e, 0x4e, 0x61, 0x6d, 0x65, 0x73,
-	0x70, 0x61, 0x63, 0x65, 0x22, 0x00, 0x12, 0x37, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x4e, 0x61, 0x6d,
-	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x73, 0x12, 0x0c, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
-	0x65, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12,
-	0x35, 0x0a, 0x0c, 0x47, 0x65, 0x74, 0x4d, 0x61, 0x6e, 0x69, 0x66, 0x65, 0x73, 0x74, 0x73, 0x12,
-	0x0c, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e,
-	0x4d, 0x61, 0x6e, 0x69, 0x66, 0x65, 0x73, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x26, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x4d, 0x61, 0x6e,
-	0x69, 0x66, 0x65, 0x73, 0x74, 0x12, 0x0a, 0x2e, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x09, 0x2e, 0x4d, 0x61, 0x6e, 0x69, 0x66, 0x65, 0x73, 0x74, 0x22, 0x00, 0x12, 0x3a,
-	0x0a, 0x0f, 0x47, 0x65, 0x74, 0x52, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x65,
-	0x73, 0x12, 0x0c, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x17, 0x2e, 0x52, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f, 0x72, 0x79, 0x4c, 0x69, 0x73, 0x74,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x40, 0x0a, 0x0d, 0x41, 0x64,
-	0x64, 0x52, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f, 0x72, 0x79, 0x12, 0x15, 0x2e, 0x41, 0x64,
-	0x64, 0x52, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x1a, 0x16, 0x2e, 0x41, 0x64, 0x64, 0x52, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f,
-	0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x35, 0x5a, 0x33,
-	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x74, 0x75, 0x70, 0x79, 0x79,
-	0x2f, 0x74, 0x69, 0x6e, 0x79, 0x65, 0x64, 0x67, 0x65, 0x2d, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x6f,
-	0x6c, 0x6c, 0x65, 0x72, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x61, 0x64,
-	0x6d, 0x69, 0x6e, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x22, 0x00, 0x12, 0x1f, 0x0a, 0x09, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x65, 0x74, 0x12,
+	0x0a, 0x2e, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x04, 0x2e, 0x53, 0x65,
+	0x74, 0x22, 0x00, 0x12, 0x26, 0x0a, 0x09, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x53, 0x65, 0x74,
+	0x12, 0x11, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x04, 0x2e, 0x53, 0x65, 0x74, 0x22, 0x00, 0x12, 0x32, 0x0a, 0x0c, 0x41,
+	0x64, 0x64, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x14, 0x2e, 0x41, 0x64,
+	0x64, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x1a, 0x0a, 0x2e, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x22, 0x00, 0x12,
+	0x2b, 0x0a, 0x0f, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
+	0x63, 0x65, 0x12, 0x0a, 0x2e, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0a,
+	0x2e, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x22, 0x00, 0x12, 0x37, 0x0a, 0x0d,
+	0x47, 0x65, 0x74, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x73, 0x12, 0x0c, 0x2e,
+	0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x4e, 0x61,
+	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x35, 0x0a, 0x0c, 0x47, 0x65, 0x74, 0x4d, 0x61, 0x6e, 0x69,
+	0x66, 0x65, 0x73, 0x74, 0x73, 0x12, 0x0c, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x4d, 0x61, 0x6e, 0x69, 0x66, 0x65, 0x73, 0x74, 0x4c, 0x69,
+	0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x26, 0x0a, 0x0b,
+	0x47, 0x65, 0x74, 0x4d, 0x61, 0x6e, 0x69, 0x66, 0x65, 0x73, 0x74, 0x12, 0x0a, 0x2e, 0x49, 0x64,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x09, 0x2e, 0x4d, 0x61, 0x6e, 0x69, 0x66, 0x65,
+	0x73, 0x74, 0x22, 0x00, 0x12, 0x3a, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x52, 0x65, 0x70, 0x6f, 0x73,
+	0x69, 0x74, 0x6f, 0x72, 0x69, 0x65, 0x73, 0x12, 0x0c, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x17, 0x2e, 0x52, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f,
+	0x72, 0x79, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00,
+	0x12, 0x40, 0x0a, 0x0d, 0x41, 0x64, 0x64, 0x52, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f, 0x72,
+	0x79, 0x12, 0x15, 0x2e, 0x41, 0x64, 0x64, 0x52, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f, 0x72,
+	0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x41, 0x64, 0x64, 0x52, 0x65,
+	0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x22, 0x00, 0x42, 0x35, 0x5a, 0x33, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x74, 0x75, 0x70, 0x79, 0x79, 0x2f, 0x74, 0x69, 0x6e, 0x79, 0x65, 0x64, 0x67, 0x65, 0x2d,
+	0x63, 0x6f, 0x6e, 0x74, 0x72, 0x6f, 0x6c, 0x6c, 0x65, 0x72, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x67,
+	0x72, 0x70, 0x63, 0x2f, 0x61, 0x64, 0x6d, 0x69, 0x6e, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -1544,64 +1625,71 @@ func file_admin_proto_rawDescGZIP() []byte {
 	return file_admin_proto_rawDescData
 }
 
-var file_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_admin_proto_goTypes = []interface{}{
 	(*IdRequest)(nil),              // 0: IdRequest
 	(*ListRequest)(nil),            // 1: ListRequest
 	(*AddSetRequest)(nil),          // 2: AddSetRequest
-	(*AddNamespaceRequest)(nil),    // 3: AddNamespaceRequest
-	(*DevicesListRequest)(nil),     // 4: DevicesListRequest
-	(*DevicesListResponse)(nil),    // 5: DevicesListResponse
-	(*UpdateDeviceRequest)(nil),    // 6: UpdateDeviceRequest
-	(*SetsListResponse)(nil),       // 7: SetsListResponse
-	(*WorkloadToSetRequest)(nil),   // 8: WorkloadToSetRequest
-	(*ManifestListResponse)(nil),   // 9: ManifestListResponse
-	(*AddRepositoryRequest)(nil),   // 10: AddRepositoryRequest
-	(*AddRepositoryResponse)(nil),  // 11: AddRepositoryResponse
-	(*RepositoryListResponse)(nil), // 12: RepositoryListResponse
-	(*NamespaceListResponse)(nil),  // 13: NamespaceListResponse
-	(*Repository)(nil),             // 14: Repository
-	(*Manifest)(nil),               // 15: Manifest
-	(*Selector)(nil),               // 16: Selector
-	(*Namespace)(nil),              // 17: Namespace
-	nil,                            // 18: Manifest.LabelsEntry
-	(*common.Device)(nil),          // 19: Device
-	(*common.Set)(nil),             // 20: Set
+	(*UpdateSetRequest)(nil),       // 3: UpdateSetRequest
+	(*AddNamespaceRequest)(nil),    // 4: AddNamespaceRequest
+	(*DevicesListRequest)(nil),     // 5: DevicesListRequest
+	(*DevicesListResponse)(nil),    // 6: DevicesListResponse
+	(*UpdateDeviceRequest)(nil),    // 7: UpdateDeviceRequest
+	(*SetsListResponse)(nil),       // 8: SetsListResponse
+	(*WorkloadToSetRequest)(nil),   // 9: WorkloadToSetRequest
+	(*ManifestListResponse)(nil),   // 10: ManifestListResponse
+	(*AddRepositoryRequest)(nil),   // 11: AddRepositoryRequest
+	(*AddRepositoryResponse)(nil),  // 12: AddRepositoryResponse
+	(*RepositoryListResponse)(nil), // 13: RepositoryListResponse
+	(*NamespaceListResponse)(nil),  // 14: NamespaceListResponse
+	(*Repository)(nil),             // 15: Repository
+	(*Manifest)(nil),               // 16: Manifest
+	(*Selector)(nil),               // 17: Selector
+	(*Namespace)(nil),              // 18: Namespace
+	nil,                            // 19: Manifest.LabelsEntry
+	(*common.Device)(nil),          // 20: Device
+	(*common.Set)(nil),             // 21: Set
 }
 var file_admin_proto_depIdxs = []int32{
-	19, // 0: DevicesListResponse.devices:type_name -> Device
-	20, // 1: SetsListResponse.sets:type_name -> Set
-	15, // 2: ManifestListResponse.manifests:type_name -> Manifest
-	14, // 3: RepositoryListResponse.repositories:type_name -> Repository
-	17, // 4: NamespaceListResponse.namespaces:type_name -> Namespace
-	16, // 5: Manifest.selectors:type_name -> Selector
-	18, // 6: Manifest.labels:type_name -> Manifest.LabelsEntry
-	4,  // 7: AdminService.GetDevices:input_type -> DevicesListRequest
+	20, // 0: DevicesListResponse.devices:type_name -> Device
+	21, // 1: SetsListResponse.sets:type_name -> Set
+	16, // 2: ManifestListResponse.manifests:type_name -> Manifest
+	15, // 3: RepositoryListResponse.repositories:type_name -> Repository
+	18, // 4: NamespaceListResponse.namespaces:type_name -> Namespace
+	17, // 5: Manifest.selectors:type_name -> Selector
+	19, // 6: Manifest.labels:type_name -> Manifest.LabelsEntry
+	5,  // 7: AdminService.GetDevices:input_type -> DevicesListRequest
 	0,  // 8: AdminService.GetDevice:input_type -> IdRequest
-	6,  // 9: AdminService.UpdateDevice:input_type -> UpdateDeviceRequest
+	7,  // 9: AdminService.UpdateDevice:input_type -> UpdateDeviceRequest
 	1,  // 10: AdminService.GetSets:input_type -> ListRequest
 	0,  // 11: AdminService.GetSet:input_type -> IdRequest
 	2,  // 12: AdminService.AddSet:input_type -> AddSetRequest
-	3,  // 13: AdminService.AddNamespace:input_type -> AddNamespaceRequest
-	1,  // 14: AdminService.GetNamespaces:input_type -> ListRequest
-	1,  // 15: AdminService.GetManifests:input_type -> ListRequest
-	0,  // 16: AdminService.GetManifest:input_type -> IdRequest
-	1,  // 17: AdminService.GetRepositories:input_type -> ListRequest
-	10, // 18: AdminService.AddRepository:input_type -> AddRepositoryRequest
-	5,  // 19: AdminService.GetDevices:output_type -> DevicesListResponse
-	19, // 20: AdminService.GetDevice:output_type -> Device
-	19, // 21: AdminService.UpdateDevice:output_type -> Device
-	7,  // 22: AdminService.GetSets:output_type -> SetsListResponse
-	20, // 23: AdminService.GetSet:output_type -> Set
-	20, // 24: AdminService.AddSet:output_type -> Set
-	17, // 25: AdminService.AddNamespace:output_type -> Namespace
-	13, // 26: AdminService.GetNamespaces:output_type -> NamespaceListResponse
-	9,  // 27: AdminService.GetManifests:output_type -> ManifestListResponse
-	15, // 28: AdminService.GetManifest:output_type -> Manifest
-	12, // 29: AdminService.GetRepositories:output_type -> RepositoryListResponse
-	11, // 30: AdminService.AddRepository:output_type -> AddRepositoryResponse
-	19, // [19:31] is the sub-list for method output_type
-	7,  // [7:19] is the sub-list for method input_type
+	0,  // 13: AdminService.DeleteSet:input_type -> IdRequest
+	3,  // 14: AdminService.UpdateSet:input_type -> UpdateSetRequest
+	4,  // 15: AdminService.AddNamespace:input_type -> AddNamespaceRequest
+	0,  // 16: AdminService.DeleteNamespace:input_type -> IdRequest
+	1,  // 17: AdminService.GetNamespaces:input_type -> ListRequest
+	1,  // 18: AdminService.GetManifests:input_type -> ListRequest
+	0,  // 19: AdminService.GetManifest:input_type -> IdRequest
+	1,  // 20: AdminService.GetRepositories:input_type -> ListRequest
+	11, // 21: AdminService.AddRepository:input_type -> AddRepositoryRequest
+	6,  // 22: AdminService.GetDevices:output_type -> DevicesListResponse
+	20, // 23: AdminService.GetDevice:output_type -> Device
+	20, // 24: AdminService.UpdateDevice:output_type -> Device
+	8,  // 25: AdminService.GetSets:output_type -> SetsListResponse
+	21, // 26: AdminService.GetSet:output_type -> Set
+	21, // 27: AdminService.AddSet:output_type -> Set
+	21, // 28: AdminService.DeleteSet:output_type -> Set
+	21, // 29: AdminService.UpdateSet:output_type -> Set
+	18, // 30: AdminService.AddNamespace:output_type -> Namespace
+	18, // 31: AdminService.DeleteNamespace:output_type -> Namespace
+	14, // 32: AdminService.GetNamespaces:output_type -> NamespaceListResponse
+	10, // 33: AdminService.GetManifests:output_type -> ManifestListResponse
+	16, // 34: AdminService.GetManifest:output_type -> Manifest
+	13, // 35: AdminService.GetRepositories:output_type -> RepositoryListResponse
+	12, // 36: AdminService.AddRepository:output_type -> AddRepositoryResponse
+	22, // [22:37] is the sub-list for method output_type
+	7,  // [7:22] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
 	7,  // [7:7] is the sub-list for extension extendee
 	0,  // [0:7] is the sub-list for field type_name
@@ -1650,7 +1738,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddNamespaceRequest); i {
+			switch v := v.(*UpdateSetRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1662,7 +1750,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DevicesListRequest); i {
+			switch v := v.(*AddNamespaceRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1674,7 +1762,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DevicesListResponse); i {
+			switch v := v.(*DevicesListRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1686,7 +1774,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateDeviceRequest); i {
+			switch v := v.(*DevicesListResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1698,7 +1786,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetsListResponse); i {
+			switch v := v.(*UpdateDeviceRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1710,7 +1798,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WorkloadToSetRequest); i {
+			switch v := v.(*SetsListResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1722,7 +1810,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ManifestListResponse); i {
+			switch v := v.(*WorkloadToSetRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1734,7 +1822,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddRepositoryRequest); i {
+			switch v := v.(*ManifestListResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1746,7 +1834,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddRepositoryResponse); i {
+			switch v := v.(*AddRepositoryRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1758,7 +1846,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RepositoryListResponse); i {
+			switch v := v.(*AddRepositoryResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1770,7 +1858,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NamespaceListResponse); i {
+			switch v := v.(*RepositoryListResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1782,7 +1870,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Repository); i {
+			switch v := v.(*NamespaceListResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1794,7 +1882,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Manifest); i {
+			switch v := v.(*Repository); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1806,7 +1894,7 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Selector); i {
+			switch v := v.(*Manifest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1818,6 +1906,18 @@ func file_admin_proto_init() {
 			}
 		}
 		file_admin_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Selector); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_admin_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Namespace); i {
 			case 0:
 				return &v.state
@@ -1832,14 +1932,15 @@ func file_admin_proto_init() {
 	}
 	file_admin_proto_msgTypes[1].OneofWrappers = []interface{}{}
 	file_admin_proto_msgTypes[2].OneofWrappers = []interface{}{}
-	file_admin_proto_msgTypes[4].OneofWrappers = []interface{}{}
+	file_admin_proto_msgTypes[3].OneofWrappers = []interface{}{}
+	file_admin_proto_msgTypes[5].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_admin_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -35,8 +35,14 @@ type AdminServiceClient interface {
 	GetSet(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Set, error)
 	// AddSet adds a set
 	AddSet(ctx context.Context, in *AddSetRequest, opts ...grpc.CallOption) (*common.Set, error)
+	// DeleteSet removes the set
+	DeleteSet(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Set, error)
+	// UpdateSet updates either namespace id or configuration id of the set
+	UpdateSet(ctx context.Context, in *UpdateSetRequest, opts ...grpc.CallOption) (*common.Set, error)
 	// AddNamespace creates a new namespace
 	AddNamespace(ctx context.Context, in *AddNamespaceRequest, opts ...grpc.CallOption) (*Namespace, error)
+	// DeleteNamespace removes the namespace
+	DeleteNamespace(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Namespace, error)
 	// GetNamespaces returns a list with namespaces
 	GetNamespaces(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*NamespaceListResponse, error)
 	// GetManifests return a list of manifests
@@ -111,9 +117,36 @@ func (c *adminServiceClient) AddSet(ctx context.Context, in *AddSetRequest, opts
 	return out, nil
 }
 
+func (c *adminServiceClient) DeleteSet(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Set, error) {
+	out := new(common.Set)
+	err := c.cc.Invoke(ctx, "/AdminService/DeleteSet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) UpdateSet(ctx context.Context, in *UpdateSetRequest, opts ...grpc.CallOption) (*common.Set, error) {
+	out := new(common.Set)
+	err := c.cc.Invoke(ctx, "/AdminService/UpdateSet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *adminServiceClient) AddNamespace(ctx context.Context, in *AddNamespaceRequest, opts ...grpc.CallOption) (*Namespace, error) {
 	out := new(Namespace)
 	err := c.cc.Invoke(ctx, "/AdminService/AddNamespace", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) DeleteNamespace(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Namespace, error) {
+	out := new(Namespace)
+	err := c.cc.Invoke(ctx, "/AdminService/DeleteNamespace", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -181,8 +214,14 @@ type AdminServiceServer interface {
 	GetSet(context.Context, *IdRequest) (*common.Set, error)
 	// AddSet adds a set
 	AddSet(context.Context, *AddSetRequest) (*common.Set, error)
+	// DeleteSet removes the set
+	DeleteSet(context.Context, *IdRequest) (*common.Set, error)
+	// UpdateSet updates either namespace id or configuration id of the set
+	UpdateSet(context.Context, *UpdateSetRequest) (*common.Set, error)
 	// AddNamespace creates a new namespace
 	AddNamespace(context.Context, *AddNamespaceRequest) (*Namespace, error)
+	// DeleteNamespace removes the namespace
+	DeleteNamespace(context.Context, *IdRequest) (*Namespace, error)
 	// GetNamespaces returns a list with namespaces
 	GetNamespaces(context.Context, *ListRequest) (*NamespaceListResponse, error)
 	// GetManifests return a list of manifests
@@ -218,8 +257,17 @@ func (UnimplementedAdminServiceServer) GetSet(context.Context, *IdRequest) (*com
 func (UnimplementedAdminServiceServer) AddSet(context.Context, *AddSetRequest) (*common.Set, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddSet not implemented")
 }
+func (UnimplementedAdminServiceServer) DeleteSet(context.Context, *IdRequest) (*common.Set, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSet not implemented")
+}
+func (UnimplementedAdminServiceServer) UpdateSet(context.Context, *UpdateSetRequest) (*common.Set, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateSet not implemented")
+}
 func (UnimplementedAdminServiceServer) AddNamespace(context.Context, *AddNamespaceRequest) (*Namespace, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddNamespace not implemented")
+}
+func (UnimplementedAdminServiceServer) DeleteNamespace(context.Context, *IdRequest) (*Namespace, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNamespace not implemented")
 }
 func (UnimplementedAdminServiceServer) GetNamespaces(context.Context, *ListRequest) (*NamespaceListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNamespaces not implemented")
@@ -357,6 +405,42 @@ func _AdminService_AddSet_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_DeleteSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).DeleteSet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AdminService/DeleteSet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).DeleteSet(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_UpdateSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateSetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).UpdateSet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AdminService/UpdateSet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).UpdateSet(ctx, req.(*UpdateSetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AdminService_AddNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddNamespaceRequest)
 	if err := dec(in); err != nil {
@@ -371,6 +455,24 @@ func _AdminService_AddNamespace_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServiceServer).AddNamespace(ctx, req.(*AddNamespaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_DeleteNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).DeleteNamespace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AdminService/DeleteNamespace",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).DeleteNamespace(ctx, req.(*IdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -497,8 +599,20 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AdminService_AddSet_Handler,
 		},
 		{
+			MethodName: "DeleteSet",
+			Handler:    _AdminService_DeleteSet_Handler,
+		},
+		{
+			MethodName: "UpdateSet",
+			Handler:    _AdminService_UpdateSet_Handler,
+		},
+		{
 			MethodName: "AddNamespace",
 			Handler:    _AdminService_AddNamespace_Handler,
+		},
+		{
+			MethodName: "DeleteNamespace",
+			Handler:    _AdminService_DeleteNamespace_Handler,
 		},
 		{
 			MethodName: "GetNamespaces",

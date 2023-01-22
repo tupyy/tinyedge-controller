@@ -9,6 +9,15 @@ import (
 	"github.com/tupyy/tinyedge-controller/client/cmd"
 )
 
+var (
+	namespaceID     string
+	repoUrl         string
+	repoName        string
+	name            string
+	configurationID string
+	isDefault       bool
+)
+
 // addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add",

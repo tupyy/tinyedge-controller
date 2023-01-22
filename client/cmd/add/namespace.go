@@ -9,12 +9,6 @@ import (
 	adminGrpc "github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
 )
 
-var (
-	name            string
-	configurationID string
-	isDefault       bool
-)
-
 var addNamespace = &cobra.Command{
 	Use:   "namespace",
 	Short: "namespace",

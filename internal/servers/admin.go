@@ -113,11 +113,11 @@ func (a *AdminServer) UpdateDevice(ctx context.Context, req *pb.UpdateDeviceRequ
 }
 
 func (a *AdminServer) AddSet(ctx context.Context, req *pb.AddSetRequest) (*common.Set, error) {
-	if req.SetName == "" || req.NamespaceId == "" {
+	if req.Name == "" || req.NamespaceId == "" {
 		return nil, status.Error(codes.InvalidArgument, "set name or namespace id is missing")
 	}
 	set := entity.Set{
-		Name:        req.SetName,
+		Name:        req.Name,
 		NamespaceID: req.NamespaceId,
 	}
 	if req.ConfigurationId != nil {
@@ -127,14 +127,17 @@ func (a *AdminServer) AddSet(ctx context.Context, req *pb.AddSetRequest) (*commo
 	}
 
 	err := a.deviceService.CreateSet(ctx, set)
-	if errService.IsResourceAlreadyExists(err) {
-		return nil, status.Errorf(codes.AlreadyExists, err.Error())
-	} else if errService.IsResourceNotFound(err) {
-		return nil, status.Errorf(codes.NotFound, err.Error())
-	} else if err != nil {
-		return nil, status.Error(codes.Internal, "internal error")
+	if err != nil {
+		switch err.(type) {
+		case errService.ResourceAlreadyExists:
+			return nil, status.Errorf(codes.AlreadyExists, err.Error())
+		case errService.ResourseNotFoundError:
+			return nil, status.Errorf(codes.NotFound, err.Error())
+		default:
+			return nil, status.Error(codes.Internal, "internal error")
+		}
 	}
-	pbSet := &common.Set{Name: req.SetName, Namespace: req.NamespaceId}
+	pbSet := &common.Set{Name: req.Name, Namespace: req.NamespaceId}
 	if req.ConfigurationId != nil {
 		pbSet.Configuration = *req.ConfigurationId
 	}
@@ -161,6 +164,27 @@ func (a *AdminServer) AddNamespace(ctx context.Context, req *pb.AddNamespaceRequ
 	}
 
 	return &pb.Namespace{Name: req.Name, Configuration: req.ConfigurationId, IsDefault: req.IsDefault}, nil
+}
+
+func (a *AdminServer) DeleteNamespace(ctx context.Context, req *pb.IdRequest) (*pb.Namespace, error) {
+	if req.Id == "" {
+		return nil, status.Error(codes.InvalidArgument, "namespace id is required")
+	}
+
+	namespace, err := a.deviceService.DeleteNamespace(ctx, req.Id)
+	if err != nil {
+		switch err.(type) {
+		case errService.ResourseNotFoundError:
+			return nil, status.Errorf(codes.NotFound, err.Error())
+		case errService.DeleteResourceError:
+			return nil, status.Errorf(codes.InvalidArgument, err.Error())
+		default:
+			zap.S().Errorf("unable to delete namespace %q: %v", req.Id, err)
+			return nil, status.Error(codes.Internal, "internal error")
+		}
+	}
+
+	return mappers.NamespaceToProto(namespace), nil
 }
 
 // GetDeviceSets returns a list of device sets.
@@ -194,6 +218,22 @@ func (a *AdminServer) GetSet(ctx context.Context, req *pb.IdRequest) (*common.Se
 	}
 
 	return mappers.SetToProto(set), nil
+}
+
+func (a *AdminServer) DeleteSet(ctx context.Context, in *pb.IdRequest) (*common.Set, error) {
+	set, err := a.deviceService.DeleteSet(ctx, in.Id)
+	if err != nil {
+		if errService.IsResourceNotFound(err) {
+			return nil, status.Errorf(codes.NotFound, err.Error())
+		}
+		zap.S().Errorf("unable to delete set %q: %v", in.Id, err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return mappers.SetToProto(set), nil
+}
+
+func (a *AdminServer) UpdateSet(ctx context.Context, in *pb.UpdateSetRequest) (*common.Set, error) {
+	return nil, nil
 }
 
 func (a *AdminServer) GetNamespaces(ctx context.Context, req *pb.ListRequest) (*pb.NamespaceListResponse, error) {

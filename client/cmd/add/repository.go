@@ -9,11 +9,6 @@ import (
 	adminGrpc "github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
 )
 
-var (
-	repoUrl  string
-	repoName string
-)
-
 var addRepository = &cobra.Command{
 	Use:   "repository",
 	Short: "repository",

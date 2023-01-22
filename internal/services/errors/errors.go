@@ -46,11 +46,15 @@ func IsResourceAlreadyExists(err error) bool {
 
 type ResourseNotFoundError struct {
 	ResourceType string
+	Reason       string
 	ResourceID   string
 	Err          error
 }
 
 func (r ResourseNotFoundError) Error() string {
+	if r.Reason != "" {
+		return r.Reason
+	}
 	return fmt.Sprintf("%s %q not found", r.ResourceType, r.ResourceID)
 }
 
@@ -61,13 +65,16 @@ type ResourceAlreadyExists struct {
 }
 
 func NewResourceNotFoundErrorWithErr(resourceType, resourceID string, err error) ResourseNotFoundError {
-	return ResourseNotFoundError{resourceType, resourceID, err}
+	return ResourseNotFoundError{ResourceType: resourceType, ResourceID: resourceID, Err: err}
 }
 
 func NewResourceNotFoundError(resourceType, resourceID string) ResourseNotFoundError {
-	return ResourseNotFoundError{resourceType, resourceID, fmt.Errorf("resource not found")}
+	return ResourseNotFoundError{ResourceType: resourceType, ResourceID: resourceID, Err: fmt.Errorf("resource not found")}
 }
 
+func NewResourceNotFoundErrorWithReason(reason string) ResourseNotFoundError {
+	return ResourseNotFoundError{Reason: reason, Err: fmt.Errorf("resource not found")}
+}
 func (r ResourceAlreadyExists) Error() string {
 	return fmt.Sprintf("%s %q already exists", r.ResourceType, r.ResourceID)
 }
@@ -90,4 +97,18 @@ func (p PosgresNotAvailableError) Error() string {
 
 func NewPostgresNotAvailableError(service string) PosgresNotAvailableError {
 	return PosgresNotAvailableError{fmt.Errorf("postgres not available in %q", service)}
+}
+
+type DeleteResourceError struct {
+	ResourceType string
+	ResourceID   string
+	Reason       string
+}
+
+func (d DeleteResourceError) Error() string {
+	return fmt.Sprintf("%s %q cannot be deleted: %s", d.ResourceType, d.ResourceID, d.Reason)
+}
+
+func NewDeleteResourceError(resourceType, resourceID, reason string) DeleteResourceError {
+	return DeleteResourceError{resourceType, resourceID, reason}
 }

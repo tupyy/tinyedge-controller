@@ -10,10 +10,6 @@ import (
 	"github.com/tupyy/tinyedge-controller/pkg/grpc/common"
 )
 
-var (
-	namespaceID string
-)
-
 var addSet = &cobra.Command{
 	Use:   "set",
 	Short: "set [name] [options]",
@@ -28,7 +24,7 @@ var addSet = &cobra.Command{
 
 		fn := func(ctx context.Context, client adminGrpc.AdminServiceClient) (*common.Set, error) {
 			req := &adminGrpc.AddSetRequest{
-				SetName:     args[0],
+				Name:        args[0],
 				NamespaceId: namespaceID,
 			}
 			if configurationID != "" {

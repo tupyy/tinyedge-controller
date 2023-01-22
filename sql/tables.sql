@@ -55,12 +55,12 @@ CREATE TABLE secrets_manifests (
 CREATE TABLE namespace (
     id TEXT PRIMARY KEY,
     is_default BOOLEAN DEFAULT false,
-    configuration_id TEXT NOT NULL REFERENCES configuration(id) ON DELETE CASCADE
+    configuration_id TEXT NOT NULL REFERENCES configuration(id) ON DELETE SET NULL
 );
 
 CREATE TABLE device_set (
     id TEXT PRIMARY KEY,
-    configuration_id TEXT REFERENCES configuration(id) ON DELETE CASCADE,
+    configuration_id TEXT REFERENCES configuration(id) ON DELETE SET NULL,
     namespace_id TEXT NOT NULL REFERENCES namespace(id) ON DELETE CASCADE
 );
 
@@ -71,8 +71,8 @@ CREATE TABLE device (
     enroled TEXT NOT NULL DEFAULT 'not_enroled',
     registered BOOLEAN NOT NULL DEFAULT false,
     certificate_sn TEXT,
-    namespace_id TEXT REFERENCES namespace(id) ON DELETE CASCADE,
-    device_set_id TEXT REFERENCES device_set(id) ON DELETE CASCADE,
+    namespace_id TEXT REFERENCES namespace(id) ON DELETE SET NULL,
+    device_set_id TEXT REFERENCES device_set(id) ON DELETE SET NULL,
     configuration_id TEXT REFERENCES configuration(id) ON DELETE SET NULL
 );
 
