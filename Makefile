@@ -19,6 +19,7 @@ DOCKER-COMPOSE ?= podman-compose
 
 OS = $(shell go env GOOS)
 ARCH = $(shell go env GOARCH)
+GO = go
 
 # Set quiet mode by default
 Q=@
@@ -52,6 +53,21 @@ s/error/$(COLOR_LEVEL_ERROR)error$(RESET_COLOR)/;    \
 s/fatal/level=$(COLOR_LEVEL_FATAL)fatal$(RESET_COLOR)/"
 endef
 
+MOQ ?= ${LOCAL_BIN_PATH}/moq
+moq:
+ifeq (, $(shell which ${LOCAL_BIN_PATH}/moq 2> /dev/null))
+	@{ \
+	set -e ;\
+	MOQ_TMP_DIR=$$(mktemp -d) ;\
+	cd $$MOQ_TMP_DIR ;\
+	$(GO) mod init tmp ;\
+	$(GO) get -d github.com/matryer/moq@v0.2.7 ;\
+	mkdir -p ${LOCAL_BIN_PATH} ;\
+	$(GO) build -o ${LOCAL_BIN_PATH}/moq github.com/matryer/moq ;\
+	rm -rf $$MOQ_TMP_DIR ;\
+	}
+endif
+
 ##@ General
 
 # The help target prints out all targets with their descriptions organized
@@ -69,7 +85,7 @@ help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 ##@ Development
-.PHONY: generate generate.models generate.proto
+.PHONY: generate generate.models generate.proto generate.mock
 generate: generate.proto
 
 DEST ?= .
@@ -84,6 +100,10 @@ GEN_CMD=$(TOOLS_DIR)/gen --sqltype=postgres \
 #help generate.models: generate models for the database
 generate.models:
 	sh -c '$(GEN_CMD) --connstr "$(BASE_CONNSTR)/tinyedge?sslmode=disable"  --model=pg --database tinyedge' 						# Generate models for the DB tables
+
+generate.mock:
+	$(GO) generate ./...
+	$(GO) mod vendor
 
 GO_IMAGE=golang:1.17.8-alpine3.14
 GOIMPORTS_IMAGE=golang.org/x/tools/cmd/goimports@latest

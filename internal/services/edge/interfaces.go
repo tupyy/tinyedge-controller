@@ -18,15 +18,18 @@ type DeviceWriter interface {
 	Update(ctx context.Context, device entity.Device) error
 }
 
+//go:generate moq -out device_rw_moq.go . DeviceReaderWriter
 type DeviceReaderWriter interface {
 	DeviceReader
 	DeviceWriter
 }
 
+//go:generate moq -out configuration_reader_moq.go . ConfigurationReader
 type ConfigurationReader interface {
 	GetDeviceConfiguration(ctx context.Context, id string) (entity.ConfigurationResponse, error)
 }
 
+//go:generate moq -out certficate_writer_moq.go . CertificateWriter
 type CertificateWriter interface {
 	SignCSR(ctx context.Context, csr []byte, cn string, ttl time.Duration) (entity.CertificateGroup, error)
 }

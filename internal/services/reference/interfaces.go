@@ -6,6 +6,7 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 )
 
+//go:generate moq -out device_reader_moq.go . DeviceReader
 type DeviceReader interface {
 	GetDevice(ctx context.Context, id string) (entity.Device, error)
 	GetNamespace(ctx context.Context, id string) (entity.Namespace, error)
@@ -30,11 +31,13 @@ type ReferenceWriter interface {
 	DeleteRelation(ctx context.Context, relation entity.ReferenceRelation) error
 }
 
+//go:generate moq -out reference_rw_moq.go . ReferenceReaderWriter
 type ReferenceReaderWriter interface {
 	ReferenceReader
 	ReferenceWriter
 }
 
+//go:generate moq -out git_reader_moq.go . GitReader
 type GitReader interface {
 	GetReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error)
 }
