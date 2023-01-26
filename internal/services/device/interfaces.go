@@ -29,6 +29,7 @@ type DeviceWriter interface {
 	UpdateNamespace(ctx context.Context, namespace entity.Namespace) error
 }
 
+//go:generate moq -out device_reader_moq.go . DeviceReaderWriter
 type DeviceReaderWriter interface {
 	DeviceReader
 	DeviceWriter
