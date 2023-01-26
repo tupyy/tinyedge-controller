@@ -23,12 +23,16 @@ func New(deviceReader DeviceReader, ref ReferenceReaderWriter, git GitReader) *S
 	}
 }
 
+func (w *Service) GetReference(ctx context.Context, id string) (entity.ManifestReference, error) {
+	return w.refReaderWriter.GetReference(ctx, id)
+}
+
 func (w *Service) GetReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
-	return w.refReaderWriter.GetRepositoryReferences(ctx, repo)
+	return w.refReaderWriter.GetReferences(ctx, repo)
 }
 
 func (w *Service) UpdateReferences(ctx context.Context, repo entity.Repository) error {
-	references, err := w.refReaderWriter.GetRepositoryReferences(ctx, repo)
+	references, err := w.refReaderWriter.GetReferences(ctx, repo)
 	if err != nil {
 		return fmt.Errorf("unable to read references of repo %q: %w", repo.Id, err)
 	}

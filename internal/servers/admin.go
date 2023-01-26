@@ -10,6 +10,7 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/services/device"
 	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
+	"github.com/tupyy/tinyedge-controller/internal/services/reference"
 	"github.com/tupyy/tinyedge-controller/internal/services/repository"
 	"github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
 	pb "github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
@@ -25,10 +26,11 @@ type AdminServer struct {
 	manifestService   *manifest.Service
 	deviceService     *device.Service
 	confService       *configuration.Service
+	referenceService  *reference.Service
 }
 
-func NewAdminServer(r *repository.Service, m *manifest.Service, d *device.Service, c *configuration.Service) *AdminServer {
-	return &AdminServer{repositoryService: r, manifestService: m, deviceService: d, confService: c}
+func NewAdminServer(r *repository.Service, m *manifest.Service, d *device.Service, c *configuration.Service, refService *reference.Service) *AdminServer {
+	return &AdminServer{repositoryService: r, manifestService: m, deviceService: d, confService: c, referenceService: refService}
 }
 
 func (a *AdminServer) GetDevices(ctx context.Context, req *pb.DevicesListRequest) (*pb.DevicesListResponse, error) {
@@ -328,7 +330,20 @@ func (a *AdminServer) GetManifests(ctx context.Context, req *pb.ListRequest) (*p
 
 // GetWorkload return a workload
 func (a *AdminServer) GetManifest(ctx context.Context, req *pb.IdRequest) (*pb.Manifest, error) {
-	manifest, err := a.manifestService.GetManifest(ctx, req.Id)
+	if req.Id == "" {
+		return nil, status.Error(codes.InvalidArgument, "id must be present")
+	}
+
+	// get the reference from req.Id
+	reference, err := a.referenceService.GetReference(ctx, req.Id)
+	if err != nil {
+		if errService.IsResourceNotFound(err) {
+			return nil, status.Errorf(codes.NotFound, err.Error())
+		}
+	}
+
+	// get the manifest
+	manifest, err := a.manifestService.GetManifest(ctx, reference)
 	if err != nil {
 		if errService.IsResourceNotFound(err) {
 			return nil, status.Errorf(codes.NotFound, err.Error())

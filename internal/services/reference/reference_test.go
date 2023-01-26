@@ -36,7 +36,7 @@ var _ = Describe("References", func() {
 				},
 			}
 			referenceReaderWriter = &reference.ReferenceReaderWriterMock{
-				GetReferencesFunc: func(ctx context.Context) ([]entity.ManifestReference, error) {
+				GetReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
 					return []entity.ManifestReference{}, nil
 				},
 			}

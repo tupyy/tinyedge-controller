@@ -37,11 +37,8 @@ var _ ReferenceReaderWriter = &ReferenceReaderWriterMock{}
 //			GetReferenceFunc: func(ctx context.Context, id string) (entity.ManifestReference, error) {
 //				panic("mock out the GetReference method")
 //			},
-//			GetReferencesFunc: func(ctx context.Context) ([]entity.ManifestReference, error) {
+//			GetReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
 //				panic("mock out the GetReferences method")
-//			},
-//			GetRepositoryReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
-//				panic("mock out the GetRepositoryReferences method")
 //			},
 //			GetSetReferencesFunc: func(ctx context.Context, setID string) ([]entity.ManifestReference, error) {
 //				panic("mock out the GetSetReferences method")
@@ -78,10 +75,7 @@ type ReferenceReaderWriterMock struct {
 	GetReferenceFunc func(ctx context.Context, id string) (entity.ManifestReference, error)
 
 	// GetReferencesFunc mocks the GetReferences method.
-	GetReferencesFunc func(ctx context.Context) ([]entity.ManifestReference, error)
-
-	// GetRepositoryReferencesFunc mocks the GetRepositoryReferences method.
-	GetRepositoryReferencesFunc func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error)
+	GetReferencesFunc func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error)
 
 	// GetSetReferencesFunc mocks the GetSetReferences method.
 	GetSetReferencesFunc func(ctx context.Context, setID string) ([]entity.ManifestReference, error)
@@ -140,11 +134,6 @@ type ReferenceReaderWriterMock struct {
 		GetReferences []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-		}
-		// GetRepositoryReferences holds details about calls to the GetRepositoryReferences method.
-		GetRepositoryReferences []struct {
-			// Ctx is the ctx argument value.
-			Ctx context.Context
 			// Repo is the repo argument value.
 			Repo entity.Repository
 		}
@@ -170,17 +159,16 @@ type ReferenceReaderWriterMock struct {
 			Ref entity.ManifestReference
 		}
 	}
-	lockCreateRelation          sync.RWMutex
-	lockDeleteReference         sync.RWMutex
-	lockDeleteRelation          sync.RWMutex
-	lockGetDeviceReferences     sync.RWMutex
-	lockGetNamespaceReferences  sync.RWMutex
-	lockGetReference            sync.RWMutex
-	lockGetReferences           sync.RWMutex
-	lockGetRepositoryReferences sync.RWMutex
-	lockGetSetReferences        sync.RWMutex
-	lockInsertReference         sync.RWMutex
-	lockUpdateReference         sync.RWMutex
+	lockCreateRelation         sync.RWMutex
+	lockDeleteReference        sync.RWMutex
+	lockDeleteRelation         sync.RWMutex
+	lockGetDeviceReferences    sync.RWMutex
+	lockGetNamespaceReferences sync.RWMutex
+	lockGetReference           sync.RWMutex
+	lockGetReferences          sync.RWMutex
+	lockGetSetReferences       sync.RWMutex
+	lockInsertReference        sync.RWMutex
+	lockUpdateReference        sync.RWMutex
 }
 
 // CreateRelation calls CreateRelationFunc.
@@ -400,41 +388,9 @@ func (mock *ReferenceReaderWriterMock) GetReferenceCalls() []struct {
 }
 
 // GetReferences calls GetReferencesFunc.
-func (mock *ReferenceReaderWriterMock) GetReferences(ctx context.Context) ([]entity.ManifestReference, error) {
+func (mock *ReferenceReaderWriterMock) GetReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
 	if mock.GetReferencesFunc == nil {
 		panic("ReferenceReaderWriterMock.GetReferencesFunc: method is nil but ReferenceReaderWriter.GetReferences was just called")
-	}
-	callInfo := struct {
-		Ctx context.Context
-	}{
-		Ctx: ctx,
-	}
-	mock.lockGetReferences.Lock()
-	mock.calls.GetReferences = append(mock.calls.GetReferences, callInfo)
-	mock.lockGetReferences.Unlock()
-	return mock.GetReferencesFunc(ctx)
-}
-
-// GetReferencesCalls gets all the calls that were made to GetReferences.
-// Check the length with:
-//
-//	len(mockedReferenceReaderWriter.GetReferencesCalls())
-func (mock *ReferenceReaderWriterMock) GetReferencesCalls() []struct {
-	Ctx context.Context
-} {
-	var calls []struct {
-		Ctx context.Context
-	}
-	mock.lockGetReferences.RLock()
-	calls = mock.calls.GetReferences
-	mock.lockGetReferences.RUnlock()
-	return calls
-}
-
-// GetRepositoryReferences calls GetRepositoryReferencesFunc.
-func (mock *ReferenceReaderWriterMock) GetRepositoryReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
-	if mock.GetRepositoryReferencesFunc == nil {
-		panic("ReferenceReaderWriterMock.GetRepositoryReferencesFunc: method is nil but ReferenceReaderWriter.GetRepositoryReferences was just called")
 	}
 	callInfo := struct {
 		Ctx  context.Context
@@ -443,17 +399,17 @@ func (mock *ReferenceReaderWriterMock) GetRepositoryReferences(ctx context.Conte
 		Ctx:  ctx,
 		Repo: repo,
 	}
-	mock.lockGetRepositoryReferences.Lock()
-	mock.calls.GetRepositoryReferences = append(mock.calls.GetRepositoryReferences, callInfo)
-	mock.lockGetRepositoryReferences.Unlock()
-	return mock.GetRepositoryReferencesFunc(ctx, repo)
+	mock.lockGetReferences.Lock()
+	mock.calls.GetReferences = append(mock.calls.GetReferences, callInfo)
+	mock.lockGetReferences.Unlock()
+	return mock.GetReferencesFunc(ctx, repo)
 }
 
-// GetRepositoryReferencesCalls gets all the calls that were made to GetRepositoryReferences.
+// GetReferencesCalls gets all the calls that were made to GetReferences.
 // Check the length with:
 //
-//	len(mockedReferenceReaderWriter.GetRepositoryReferencesCalls())
-func (mock *ReferenceReaderWriterMock) GetRepositoryReferencesCalls() []struct {
+//	len(mockedReferenceReaderWriter.GetReferencesCalls())
+func (mock *ReferenceReaderWriterMock) GetReferencesCalls() []struct {
 	Ctx  context.Context
 	Repo entity.Repository
 } {
@@ -461,9 +417,9 @@ func (mock *ReferenceReaderWriterMock) GetRepositoryReferencesCalls() []struct {
 		Ctx  context.Context
 		Repo entity.Repository
 	}
-	mock.lockGetRepositoryReferences.RLock()
-	calls = mock.calls.GetRepositoryReferences
-	mock.lockGetRepositoryReferences.RUnlock()
+	mock.lockGetReferences.RLock()
+	calls = mock.calls.GetReferences
+	mock.lockGetReferences.RUnlock()
 	return calls
 }
 

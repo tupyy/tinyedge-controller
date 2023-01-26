@@ -33,29 +33,6 @@ func NewReferenceRepository(client pgclient.Client) (*ReferenceRepository, error
 	return &ReferenceRepository{gormDB, client, client.GetCircuitBreaker()}, nil
 }
 
-func (m *ReferenceRepository) GetReferences(ctx context.Context) ([]entity.ManifestReference, error) {
-	if !m.circuitBreaker.IsAvailable() {
-		return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
-	}
-
-	manifests := []models.ManifestJoin{}
-
-	tx := newManifestQuery(ctx, m.db).Build()
-	if err := tx.Find(&manifests).Error; err != nil {
-		if m.checkNetworkError(err) {
-			return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
-		}
-		return []entity.ManifestReference{}, err
-	}
-
-	if len(manifests) == 0 {
-		return []entity.ManifestReference{}, nil
-	}
-
-	return mappers.ManifestModelsToEntities(manifests), nil
-
-}
-
 func (m *ReferenceRepository) GetReference(ctx context.Context, id string) (entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
 		return entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
@@ -78,7 +55,7 @@ func (m *ReferenceRepository) GetReference(ctx context.Context, id string) (enti
 	return mappers.ManifestModelToEntity(manifests), nil
 }
 
-func (m *ReferenceRepository) GetRepositoryReferences(ctx context.Context, r entity.Repository) ([]entity.ManifestReference, error) {
+func (m *ReferenceRepository) GetReferences(ctx context.Context, r entity.Repository) ([]entity.ManifestReference, error) {
 	if !m.circuitBreaker.IsAvailable() {
 		return []entity.ManifestReference{}, errService.NewPostgresNotAvailableError("reference repository")
 	}

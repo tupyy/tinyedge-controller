@@ -14,9 +14,8 @@ type DeviceReader interface {
 }
 
 type ReferenceReader interface {
-	GetReferences(ctx context.Context) ([]entity.ManifestReference, error)
 	GetReference(ctx context.Context, id string) (entity.ManifestReference, error)
-	GetRepositoryReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error)
+	GetReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error)
 	GetDeviceReferences(ctx context.Context, deviceID string) ([]entity.ManifestReference, error)
 	GetSetReferences(ctx context.Context, setID string) ([]entity.ManifestReference, error)
 	GetNamespaceReferences(ctx context.Context, setID string) ([]entity.ManifestReference, error)
