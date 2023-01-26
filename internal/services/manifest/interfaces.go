@@ -9,7 +9,6 @@ import (
 //go:generate moq -out reference_reader_moq.go . ReferenceReader
 type ReferenceReader interface {
 	GetRepositoryReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error)
-	GetReference(ctx context.Context, id string) (entity.ManifestReference, error)
 }
 
 //go:generate moq -out git_reader_moq.go . GitReader

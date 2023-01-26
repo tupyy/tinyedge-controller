@@ -9,7 +9,7 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/services/reference"
 )
 
-var _ = Describe("UpdateReferences", func() {
+var _ = Describe("References", func() {
 	var (
 		gitReader             *reference.GitReaderMock
 		deviceReaderWriter    *reference.DeviceReaderMock
@@ -17,8 +17,8 @@ var _ = Describe("UpdateReferences", func() {
 		service               *reference.Service
 	)
 
-	Context("UpdateOK", func() {
-		BeforeAll(func() {
+	Describe("Update", func() {
+		It("updates the reference with success", func() {
 			gitReader = &reference.GitReaderMock{
 				GetReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
 					return []entity.ManifestReference{}, nil
@@ -41,12 +41,8 @@ var _ = Describe("UpdateReferences", func() {
 				},
 			}
 			service = reference.New(deviceReaderWriter, referenceReaderWriter, gitReader)
-		})
-
-		It("updates the reference", func() {
 			err := service.UpdateReferences(context.TODO(), entity.Repository{})
 			Expect(err).To(BeNil())
 		})
 	})
-
 })

@@ -22,12 +22,7 @@ func New(refReader ReferenceReader, gitReader GitReader, secretReader SecretRead
 }
 
 // GetManifest returns the manifest from the git repository
-func (w *Service) GetManifest(ctx context.Context, id string) (entity.ManifestWork, error) {
-	ref, err := w.refReader.GetReference(ctx, id)
-	if err != nil {
-		return entity.ManifestWork{}, fmt.Errorf("unable to get manifest reference: %w", err)
-	}
-
+func (w *Service) GetManifest(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
 	manifest, err := w.gitReader.GetManifest(ctx, ref)
 	if err != nil {
 		return entity.ManifestWork{}, fmt.Errorf("unable to get manifest: %w", err)
@@ -58,7 +53,7 @@ func (w *Service) GetManifests(ctx context.Context, repo entity.Repository) ([]e
 	manifests := make([]entity.ManifestWork, 0, len(refs))
 	for _, ref := range refs {
 		r := ref
-		manifest, err := w.gitReader.GetManifest(ctx, ref)
+		manifest, err := w.GetManifest(ctx, ref)
 		if err != nil {
 			return []entity.ManifestWork{}, fmt.Errorf("unable to get manifest %q from repo %q: %w", ref.Path, repo.Id, err)
 		}

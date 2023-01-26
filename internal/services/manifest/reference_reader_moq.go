@@ -19,9 +19,6 @@ var _ ReferenceReader = &ReferenceReaderMock{}
 //
 //		// make and configure a mocked ReferenceReader
 //		mockedReferenceReader := &ReferenceReaderMock{
-//			GetReferenceFunc: func(ctx context.Context, id string) (entity.ManifestReference, error) {
-//				panic("mock out the GetReference method")
-//			},
 //			GetRepositoryReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
 //				panic("mock out the GetRepositoryReferences method")
 //			},
@@ -32,21 +29,11 @@ var _ ReferenceReader = &ReferenceReaderMock{}
 //
 //	}
 type ReferenceReaderMock struct {
-	// GetReferenceFunc mocks the GetReference method.
-	GetReferenceFunc func(ctx context.Context, id string) (entity.ManifestReference, error)
-
 	// GetRepositoryReferencesFunc mocks the GetRepositoryReferences method.
 	GetRepositoryReferencesFunc func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// GetReference holds details about calls to the GetReference method.
-		GetReference []struct {
-			// Ctx is the ctx argument value.
-			Ctx context.Context
-			// ID is the id argument value.
-			ID string
-		}
 		// GetRepositoryReferences holds details about calls to the GetRepositoryReferences method.
 		GetRepositoryReferences []struct {
 			// Ctx is the ctx argument value.
@@ -55,44 +42,7 @@ type ReferenceReaderMock struct {
 			Repo entity.Repository
 		}
 	}
-	lockGetReference            sync.RWMutex
 	lockGetRepositoryReferences sync.RWMutex
-}
-
-// GetReference calls GetReferenceFunc.
-func (mock *ReferenceReaderMock) GetReference(ctx context.Context, id string) (entity.ManifestReference, error) {
-	if mock.GetReferenceFunc == nil {
-		panic("ReferenceReaderMock.GetReferenceFunc: method is nil but ReferenceReader.GetReference was just called")
-	}
-	callInfo := struct {
-		Ctx context.Context
-		ID  string
-	}{
-		Ctx: ctx,
-		ID:  id,
-	}
-	mock.lockGetReference.Lock()
-	mock.calls.GetReference = append(mock.calls.GetReference, callInfo)
-	mock.lockGetReference.Unlock()
-	return mock.GetReferenceFunc(ctx, id)
-}
-
-// GetReferenceCalls gets all the calls that were made to GetReference.
-// Check the length with:
-//
-//	len(mockedReferenceReader.GetReferenceCalls())
-func (mock *ReferenceReaderMock) GetReferenceCalls() []struct {
-	Ctx context.Context
-	ID  string
-} {
-	var calls []struct {
-		Ctx context.Context
-		ID  string
-	}
-	mock.lockGetReference.RLock()
-	calls = mock.calls.GetReference
-	mock.lockGetReference.RUnlock()
-	return calls
 }
 
 // GetRepositoryReferences calls GetRepositoryReferencesFunc.
