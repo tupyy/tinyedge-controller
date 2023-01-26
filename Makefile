@@ -68,6 +68,12 @@ ifeq (, $(shell which ${LOCAL_BIN_PATH}/moq 2> /dev/null))
 	}
 endif
 
+GINKGO = $(shell pwd)/bin/ginkgo
+ginkgo: ## Download ginkgo locally if necessary.
+ifeq (, $(shell which ginkgo 2> /dev/null))
+	$(call go-install-tool,$(GINKGO),github.com/onsi/ginkgo/v2/ginkgo@v2.1.3)
+endif
+
 ##@ General
 
 # The help target prints out all targets with their descriptions organized
@@ -145,6 +151,8 @@ docker.push: ## Push docker image with the manager.
 	$(DOCKER) tag ${IMG}:${IMG_TAG} ${QUAY_REPO}/${IMG}:${IMG_TAG}
 	$(DOCKER) push ${IMG}:${IMG_TAG}
 
+test:
+	$(GINKGO) -focus=$(FOCUS) -v ./...
 ##@ Infra
 .PHONY: postgres.setup.clean postgres.setup.init postgres.setup.tables postgres.setup.migrations
 
