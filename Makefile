@@ -68,12 +68,6 @@ ifeq (, $(shell which ${LOCAL_BIN_PATH}/moq 2> /dev/null))
 	}
 endif
 
-GINKGO = $(shell pwd)/bin/ginkgo
-ginkgo: ## Download ginkgo locally if necessary.
-ifeq (, $(shell which ginkgo 2> /dev/null))
-	$(call go-install-tool,$(GINKGO),github.com/onsi/ginkgo/v2/ginkgo@v2.1.3)
-endif
-
 ##@ General
 
 # The help target prints out all targets with their descriptions organized
@@ -91,7 +85,7 @@ help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 ##@ Development
-.PHONY: generate generate.models generate.proto generate.mock
+.PHONY: generate generate.models generate.proto generate.mock 
 generate: generate.proto
 
 DEST ?= .
@@ -127,7 +121,7 @@ lint: ## Check if the go code is properly written, rules are in .golangci.yml
 
 
 ##@ Build
-.PHONY: build build.client run run.infra run.infra.stop docker.build docker.stop
+.PHONY: build build.client run run.infra run.infra.stop docker.build docker.stop test ginkgo
 
 build: ## Build binary.
 	go build -mod=vendor -o $(PWD)/bin/tinyedge-controller $(PWD)/main.go
@@ -151,7 +145,7 @@ docker.push: ## Push docker image with the manager.
 	$(DOCKER) tag ${IMG}:${IMG_TAG} ${QUAY_REPO}/${IMG}:${IMG_TAG}
 	$(DOCKER) push ${IMG}:${IMG_TAG}
 
-test:
+test: ginkgo
 	$(GINKGO) -focus=$(FOCUS) -v ./...
 ##@ Infra
 .PHONY: postgres.setup.clean postgres.setup.init postgres.setup.tables postgres.setup.migrations
@@ -215,6 +209,12 @@ vault.generate.server.certificates:
 ##@ Tools
 TOOLS_DIR=$(CURDIR)/tools/bin
 
+GINKGO = $(shell pwd)/bin/ginkgo
+ginkgo: ## Download ginkgo locally if necessary.
+ifeq (, $(shell which ginkgo 2> /dev/null))
+	$(call go-install-tool,$(GINKGO),github.com/onsi/ginkgo/v2/ginkgo@v2.1.3)
+endif
+
 .PHONY: tools.clean tools.get
 
 #help tools.clean: remove everything in the tools/bin directory
@@ -224,9 +224,6 @@ tools.clean:
 #help tools.get: retrieve all the tools specified in gex
 tools.get:
 	cd $(CURDIR)/tools && go generate tools.go
-
-##@ Generate posgres models
-
 
 # go-install-tool will 'go install' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
