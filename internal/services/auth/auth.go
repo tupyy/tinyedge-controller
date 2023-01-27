@@ -7,16 +7,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/tupyy/tinyedge-controller/internal/services/certificate"
 	"go.uber.org/zap"
 )
 
 type Service struct {
-	certManager  *certificate.Service
+	certManager  CertificateReader
 	deviceReader DeviceReader
 }
 
-func New(certManager *certificate.Service, deviceReader DeviceReader) *Service {
+func New(certManager CertificateReader, deviceReader DeviceReader) *Service {
 	return &Service{certManager, deviceReader}
 }
 
