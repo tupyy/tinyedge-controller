@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"strings"
-	"time"
 
 	v1 "k8s.io/api/core/v1"
 )
@@ -14,17 +13,6 @@ const (
 	// name of the manifest work
 	ManifestWorkFilename = "manifest_work.yaml"
 )
-
-// Repository holds the information about the git repository where the ManifestWork are to be found.
-type Repository struct {
-	Id             string
-	Url            string
-	Branch         string
-	LocalPath      string
-	CurrentHeadSha string
-	TargetHeadSha  string
-	PullPeriod     time.Duration
-}
 
 type ManifestReference struct {
 	Id string

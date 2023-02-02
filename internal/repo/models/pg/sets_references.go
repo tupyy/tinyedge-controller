@@ -27,7 +27,7 @@ Table: sets_references
 
 JSON Sample
 -------------------------------------
-{    "device_set_id": "BugfdllKJGpAkURiyPkHMITtT",    "manifest_reference_id": "hxHxKkFgiBpqxlhoOKNmTeeoS"}
+{    "device_set_id": "sonVLjfKecgGwNKtvlYQAPyht",    "manifest_reference_id": "WVdCgDBobUlgFMiWQmqNMcbsa"}
 
 
 

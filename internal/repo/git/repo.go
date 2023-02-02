@@ -15,6 +15,9 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	goyaml "github.com/go-yaml/yaml"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 	manifestv1 "github.com/tupyy/tinyedge-controller/internal/repo/models/manifest/v1"
@@ -59,11 +62,22 @@ func (g *GitRepo) Pull(ctx context.Context, r entity.Repository) error {
 	if err != nil {
 		return err
 	}
-	err = w.Pull(&git.PullOptions{
+
+	pullOptions := &git.PullOptions{
 		RemoteName:      "origin",
+		RemoteURL:       r.Url,
 		SingleBranch:    true,
 		InsecureSkipTLS: true,
-	})
+	}
+	if r.AuthType != entity.NoRepositoryAuthType {
+		authMethod, err := g.getCredentials(ctx, r.Credentials, r.CredentialsSecretPath)
+		if err != nil {
+			return err
+		}
+		pullOptions.Auth = authMethod
+	}
+
+	err = w.Pull(pullOptions)
 	if err != nil {
 		if errors.Is(err, git.NoErrAlreadyUpToDate) {
 			return nil
@@ -162,17 +176,27 @@ func (g *GitRepo) getManifest(ctx context.Context, filename, basePath string) (e
 
 }
 
-func (g *GitRepo) Clone(ctx context.Context, url, name string) (entity.Repository, error) {
-	zap.S().Infof("clone repo %q to local storage %q", url, g.localStorage)
-	clone, err := git.PlainClone(path.Join(g.localStorage, name), false, &git.CloneOptions{
-		URL:               url,
+func (g *GitRepo) Clone(ctx context.Context, repo entity.Repository) (entity.Repository, error) {
+	zap.S().Infof("clone repo %q to local storage %q", repo.Url, g.localStorage)
+
+	cloneOptions := &git.CloneOptions{
+		URL:               repo.Url,
 		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
-	})
+	}
+	if repo.AuthType != entity.NoRepositoryAuthType {
+		authMethod, err := g.getCredentials(ctx, repo.Credentials, repo.CredentialsSecretPath)
+		if err != nil {
+			return repo, err
+		}
+		cloneOptions.Auth = authMethod
+	}
+
+	clone, err := git.PlainClone(path.Join(g.localStorage, repo.Id), false, cloneOptions)
 	if err != nil {
 		if !errors.Is(err, git.ErrRepositoryAlreadyExists) {
 			return entity.Repository{}, err
 		}
-		r, err := git.PlainOpen(path.Join(g.localStorage, name))
+		r, err := git.PlainOpen(path.Join(g.localStorage, repo.Id))
 		if err != nil {
 			return entity.Repository{}, err
 		}
@@ -183,19 +207,16 @@ func (g *GitRepo) Clone(ctx context.Context, url, name string) (entity.Repositor
 	if err != nil {
 		return entity.Repository{}, err
 	}
-	newRepo := entity.Repository{
-		Id:        name,
-		Url:       url,
-		Branch:    mainBranch,
-		LocalPath: path.Join(g.localStorage, name),
-	}
-	headSha, err := g.GetHeadSha(ctx, newRepo)
+	repo.LocalPath = path.Join(g.localStorage, repo.Id)
+	repo.Branch = mainBranch
+
+	headSha, err := g.GetHeadSha(ctx, repo)
 	if err != nil {
-		return newRepo, err
+		return repo, err
 	}
-	newRepo.TargetHeadSha = headSha
-	zap.S().Debugw("successfully cloned repo", "remote", url, "local", newRepo.LocalPath)
-	return newRepo, nil
+	repo.TargetHeadSha = headSha
+	zap.S().Debugw("successfully cloned repo", "remote", repo.AuthType, "local", repo.LocalPath)
+	return repo, nil
 }
 
 // openRepository opens a repo from local storage.
@@ -448,4 +469,25 @@ func (g *GitRepo) createReference(manifest entity.ManifestWork, repo entity.Repo
 	}
 
 	return ref
+}
+
+func (g *GitRepo) getCredentials(ctx context.Context, fn entity.CredentialsFunc, secretPath string) (transport.AuthMethod, error) {
+	credetials, err := fn(ctx, secretPath)
+	if err != nil {
+		return nil, err
+	}
+
+	switch v := credetials.(type) {
+	case entity.SSHRepositoryAuth:
+		publicKeys, err := ssh.NewPublicKeys("git", v.PrivateKey, v.Password)
+		if err != nil {
+			return nil, fmt.Errorf("unable to create auth method: %w", err)
+		}
+		return publicKeys, nil
+	case entity.TokenRepositoryAuth:
+		return &http.TokenAuth{Token: v.Token}, nil
+	case entity.BasicRepositoryAuth:
+		return &http.BasicAuth{Username: v.Username, Password: v.Password}, nil
+	}
+	return nil, errors.New("unknown auth method")
 }

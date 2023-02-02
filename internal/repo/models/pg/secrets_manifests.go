@@ -27,7 +27,7 @@ Table: secrets_manifests
 
 JSON Sample
 -------------------------------------
-{    "secret_id": "rUsptmeeoDeIKIpPCnWPlTXIJ",    "manifest_reference_id": "GRCQohuGwHnnkxfVjYQmmIKMx"}
+{    "secret_id": "AWALRKdBhjmgqAqYMntEpLqVE",    "manifest_reference_id": "BYHrMLkjUtHDqcAgubyCxiHqa"}
 
 
 

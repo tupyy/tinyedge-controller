@@ -10,10 +10,11 @@ import (
 type Service struct {
 	gitReaderWriter  GitReaderWriter
 	repoReaderWriter RepositoryReaderWriter
+	secretReader     SecretReader
 }
 
-func NewRepositoryService(repoReaderWriter RepositoryReaderWriter, gitReaderWriter GitReaderWriter) *Service {
-	return &Service{gitReaderWriter: gitReaderWriter, repoReaderWriter: repoReaderWriter}
+func NewRepositoryService(repoReaderWriter RepositoryReaderWriter, gitReaderWriter GitReaderWriter, secretReader SecretReader) *Service {
+	return &Service{gitReaderWriter: gitReaderWriter, repoReaderWriter: repoReaderWriter, secretReader: secretReader}
 }
 
 func (r *Service) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
@@ -21,8 +22,15 @@ func (r *Service) GetRepositories(ctx context.Context) ([]entity.Repository, err
 	if err != nil {
 		return []entity.Repository{}, err
 	}
-	return repos, nil
 
+	// get credential func
+	for i := 0; i < len(repos); i++ {
+		repo := &repos[i]
+		if repo.AuthType != entity.NoRepositoryAuthType && repo.CredentialsSecretPath != "" {
+			repo.Credentials = r.secretReader.GetCredentialsFunc(ctx, repo.AuthType, repo.CredentialsSecretPath)
+		}
+	}
+	return repos, nil
 }
 
 func (r *Service) Open(ctx context.Context, repo entity.Repository) error {
@@ -36,8 +44,8 @@ func (r *Service) Open(ctx context.Context, repo entity.Repository) error {
 	return nil
 }
 
-func (r *Service) Clone(ctx context.Context, url, name string) (entity.Repository, error) {
-	return r.gitReaderWriter.Clone(ctx, url, name)
+func (r *Service) Clone(ctx context.Context, remoteRepository entity.Repository) (entity.Repository, error) {
+	return r.gitReaderWriter.Clone(ctx, remoteRepository)
 }
 
 func (w *Service) PullRepository(ctx context.Context, repo entity.Repository) (entity.Repository, error) {

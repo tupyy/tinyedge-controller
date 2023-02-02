@@ -165,6 +165,21 @@ func RepoEntityToModel(r entity.Repository) models.Repo {
 		m.TargetHeadSha = sql.NullString{Valid: true, String: r.TargetHeadSha}
 	}
 
+	if r.AuthType != entity.NoRepositoryAuthType {
+		switch r.AuthType {
+		case entity.SSHRepositoryAuthType:
+			m.AuthType = sql.NullString{Valid: true, String: "ssh"}
+		case entity.TokenRepositoryAuthType:
+			m.AuthType = sql.NullString{Valid: true, String: "token"}
+		case entity.BasicRepositoryAuthType:
+			m.AuthType = sql.NullString{Valid: true, String: "basic"}
+		}
+	}
+
+	if r.CredentialsSecretPath != "" {
+		m.AuthSecretPath = sql.NullString{Valid: true, String: r.CredentialsSecretPath}
+	}
+
 	return m
 }
 
@@ -173,6 +188,7 @@ func RepoModelToEntity(m models.Repo) entity.Repository {
 		Id:         m.ID,
 		Url:        m.URL,
 		PullPeriod: 20 * time.Second,
+		AuthType:   entity.NoRepositoryAuthType,
 	}
 
 	if m.CurrentHeadSha.Valid {
@@ -193,6 +209,23 @@ func RepoModelToEntity(m models.Repo) entity.Repository {
 
 	if m.TargetHeadSha.Valid {
 		e.TargetHeadSha = m.TargetHeadSha.String
+	}
+
+	if m.AuthSecretPath.Valid {
+		e.CredentialsSecretPath = m.AuthSecretPath.String
+	}
+
+	if m.AuthType.Valid {
+		switch m.AuthType.String {
+		case "ssh":
+			e.AuthType = entity.SSHRepositoryAuthType
+		case "token":
+			e.AuthType = entity.TokenRepositoryAuthType
+		case "basic":
+			e.AuthType = entity.BasicRepositoryAuthType
+		default:
+			e.AuthType = entity.NoRepositoryAuthType
+		}
 	}
 
 	return e

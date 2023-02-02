@@ -35,7 +35,7 @@ func (g *GitOpsWorker) Do(ctx context.Context) error {
 		if err != nil {
 			if errService.IsResourceNotFound(err) {
 				// clone it
-				clone, err := g.repositoryService.Clone(ctx, repo.Url, repo.Id)
+				clone, err := g.repositoryService.Clone(ctx, repo)
 				if err != nil {
 					zap.S().Errorw("unable to clone repository", "error", err, "repo_id", repo.Id, "repo_url", repo.Url)
 					continue

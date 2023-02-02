@@ -28,7 +28,7 @@ Table: configuration
 
 JSON Sample
 -------------------------------------
-{    "id": "cUHwCEoaZKiLQkPZCWlPGpVHD",    "heartbeat_period_seconds": 84,    "log_level": "IgJeBUuXgmtqbOBqxrIWsbWPv"}
+{    "id": "hmVokXfohCsBsVfCxKUpVYIye",    "heartbeat_period_seconds": 95,    "log_level": "pDXJaCinwDRlFAcOjqqshMPXe"}
 
 
 

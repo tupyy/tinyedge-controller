@@ -1,14 +1,5 @@
 BEGIN;
 
-DROP TABLE IF EXISTS "device";
-DROP TABLE IF EXISTS "configuration";
-DROP TABLE IF EXISTS "workload";
-DROP TABLE IF EXISTS "devices_workloads";
-DROP TABLE IF EXISTS "device_set";
-DROP TABLE IF EXISTS "devices_sets";
-DROP TABLE IF EXISTS "hardware";
-DROP TABLE IF EXISTS "network_interface";
-
 -- table configuration holds the configuration for the device's agent
 CREATE TABLE configuration (
     id TEXT PRIMARY KEY,
@@ -22,6 +13,8 @@ CREATE TABLE repo (
     url TEXT NOT NULL,
     branch TEXT, -- should be an enum allowing only "master" or "main"
     local_path TEXT,
+    auth_type varchar(20),
+    auth_secret_path varchar(20),
     current_head_sha TEXT,
     target_head_sha TEXT,
     pull_period_seconds SMALLINT DEFAULT 20,

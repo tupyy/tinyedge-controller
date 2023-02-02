@@ -27,7 +27,7 @@ Table: devices_references
 
 JSON Sample
 -------------------------------------
-{    "device_id": "aehoxlmHyYwSuJBgrXPXtWoDh",    "manifest_reference_id": "KDplQitRnIPEgcuvebgRTUSJR"}
+{    "device_id": "olgpnBsEPDKhxCrQVuauqyMMX",    "manifest_reference_id": "ORplCZxTgnnUqHJFWZRhJkkqN"}
 
 
 

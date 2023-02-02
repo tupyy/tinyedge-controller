@@ -25,14 +25,16 @@ Table: repo
 [ 1] url                                            TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 2] branch                                         TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 3] local_path                                     TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 4] current_head_sha                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 5] target_head_sha                                TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 6] pull_period_seconds                            INT2                 null: true   primary: false  isArray: false  auto: false  col: INT2            len: -1      default: [20]
+[ 4] auth_type                                      VARCHAR(20)          null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 20      default: []
+[ 5] auth_secret_path                               VARCHAR(20)          null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 20      default: []
+[ 6] current_head_sha                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 7] target_head_sha                                TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 8] pull_period_seconds                            INT2                 null: true   primary: false  isArray: false  auto: false  col: INT2            len: -1      default: [20]
 
 
 JSON Sample
 -------------------------------------
-{    "id": "QTeZXHeWJNGSnnIYulFOUroOL",    "url": "dVLSRUUhVuSAPRuJnMyvrBGVN",    "branch": "kPgSGstUCDGhcmCqxfmMsJbEU",    "local_path": "SIrpMfgIEbgTSlHeekGGqwrJs",    "current_head_sha": "CJkHJHkcAomgTXdeZIbiZAJja",    "target_head_sha": "OkJFfSVeVIEuNCojkYnmQGmLj",    "pull_period_seconds": 38}
+{    "id": "PonMpLbZKdlttXUMZxeIAihJA",    "url": "tVUFLDOsRSantjXoMyVAivBxO",    "branch": "rTeEyPYaueYVVDeLBNEAEJslP",    "local_path": "XkXNfqglWJCLIVaQJksqEEIaa",    "auth_type": "lSAKJgmADJCFhbeVXCFUTXIQo",    "auth_secret_path": "SwkkEKQbsSRRplUBLBAmnXmdi",    "current_head_sha": "yiqENuZpjONhhaFOgOQlYmgKi",    "target_head_sha": "lpIxjANxRWeNOCkXLbSZMoTWB",    "pull_period_seconds": 11}
 
 
 
@@ -48,11 +50,15 @@ type Repo struct {
 	Branch sql.NullString `gorm:"column:branch;type:TEXT;"`
 	//[ 3] local_path                                     TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	LocalPath sql.NullString `gorm:"column:local_path;type:TEXT;"`
-	//[ 4] current_head_sha                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	//[ 4] auth_type                                      VARCHAR(20)          null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 20      default: []
+	AuthType sql.NullString `gorm:"column:auth_type;type:VARCHAR;size:20;"`
+	//[ 5] auth_secret_path                               VARCHAR(20)          null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 20      default: []
+	AuthSecretPath sql.NullString `gorm:"column:auth_secret_path;type:VARCHAR;size:20;"`
+	//[ 6] current_head_sha                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	CurrentHeadSha sql.NullString `gorm:"column:current_head_sha;type:TEXT;"`
-	//[ 5] target_head_sha                                TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	//[ 7] target_head_sha                                TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	TargetHeadSha sql.NullString `gorm:"column:target_head_sha;type:TEXT;"`
-	//[ 6] pull_period_seconds                            INT2                 null: true   primary: false  isArray: false  auto: false  col: INT2            len: -1      default: [20]
+	//[ 8] pull_period_seconds                            INT2                 null: true   primary: false  isArray: false  auto: false  col: INT2            len: -1      default: [20]
 	PullPeriodSeconds sql.NullInt64 `gorm:"column:pull_period_seconds;type:INT2;default:20;"`
 }
 
@@ -146,6 +152,48 @@ var repoTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              4,
+			Name:               "auth_type",
+			Comment:            ``,
+			Notes:              ``,
+			Nullable:           true,
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(20)",
+			IsPrimaryKey:       false,
+			IsAutoIncrement:    false,
+			IsArray:            false,
+			ColumnType:         "VARCHAR",
+			ColumnLength:       20,
+			GoFieldName:        "AuthType",
+			GoFieldType:        "sql.NullString",
+			JSONFieldName:      "auth_type",
+			ProtobufFieldName:  "auth_type",
+			ProtobufType:       "string",
+			ProtobufPos:        5,
+		},
+
+		&ColumnInfo{
+			Index:              5,
+			Name:               "auth_secret_path",
+			Comment:            ``,
+			Notes:              ``,
+			Nullable:           true,
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(20)",
+			IsPrimaryKey:       false,
+			IsAutoIncrement:    false,
+			IsArray:            false,
+			ColumnType:         "VARCHAR",
+			ColumnLength:       20,
+			GoFieldName:        "AuthSecretPath",
+			GoFieldType:        "sql.NullString",
+			JSONFieldName:      "auth_secret_path",
+			ProtobufFieldName:  "auth_secret_path",
+			ProtobufType:       "string",
+			ProtobufPos:        6,
+		},
+
+		&ColumnInfo{
+			Index:              6,
 			Name:               "current_head_sha",
 			Comment:            ``,
 			Notes:              ``,
@@ -162,11 +210,11 @@ var repoTableInfo = &TableInfo{
 			JSONFieldName:      "current_head_sha",
 			ProtobufFieldName:  "current_head_sha",
 			ProtobufType:       "string",
-			ProtobufPos:        5,
+			ProtobufPos:        7,
 		},
 
 		&ColumnInfo{
-			Index:              5,
+			Index:              7,
 			Name:               "target_head_sha",
 			Comment:            ``,
 			Notes:              ``,
@@ -183,11 +231,11 @@ var repoTableInfo = &TableInfo{
 			JSONFieldName:      "target_head_sha",
 			ProtobufFieldName:  "target_head_sha",
 			ProtobufType:       "string",
-			ProtobufPos:        6,
+			ProtobufPos:        8,
 		},
 
 		&ColumnInfo{
-			Index:              6,
+			Index:              8,
 			Name:               "pull_period_seconds",
 			Comment:            ``,
 			Notes:              ``,
@@ -204,7 +252,7 @@ var repoTableInfo = &TableInfo{
 			JSONFieldName:      "pull_period_seconds",
 			ProtobufFieldName:  "pull_period_seconds",
 			ProtobufType:       "int32",
-			ProtobufPos:        7,
+			ProtobufPos:        9,
 		},
 	},
 }

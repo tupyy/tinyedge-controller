@@ -105,7 +105,7 @@ var runCmd = &cobra.Command{
 		configurationService := confService.New(deviceService, manifestService, refRepo, deviceRepo)
 		edgeService := edge.New(deviceRepo, configurationService, certService)
 		authService := auth.New(certService, deviceRepo)
-		repoService := repository.NewRepositoryService(repoRepo, gitRepo)
+		repoService := repository.NewRepositoryService(repoRepo, gitRepo, secretRepo)
 		referenceService := reference.New(deviceRepo, refRepo, gitRepo)
 
 		scheduler := workers.New(5 * time.Second)

@@ -29,10 +29,14 @@ type GitReader interface {
 }
 
 type GitWriter interface {
-	Clone(ctx context.Context, url, name string) (entity.Repository, error)
+	Clone(ctx context.Context, remoteRepo entity.Repository) (entity.Repository, error)
 }
 
 type GitReaderWriter interface {
 	GitReader
 	GitWriter
+}
+
+type SecretReader interface {
+	GetCredentialsFunc(ctx context.Context, authType entity.RepositoryAuthType, secretPath string) entity.CredentialsFunc
 }
