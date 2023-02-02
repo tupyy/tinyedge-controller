@@ -11,13 +11,15 @@ type Service struct {
 	manifestReader ManifestReader
 	deviceReader   DeviceReader
 	confReader     ConfigurationReader
+	refReader      ReferenceReader
 }
 
-func New(deviceReader DeviceReader, manifestReader ManifestReader, confReader ConfigurationReader) *Service {
+func New(deviceReader DeviceReader, manifestReader ManifestReader, referenceReader ReferenceReader, confReader ConfigurationReader) *Service {
 	return &Service{
 		manifestReader: manifestReader,
 		deviceReader:   deviceReader,
 		confReader:     confReader,
+		refReader:      referenceReader,
 	}
 }
 
@@ -89,7 +91,12 @@ func (c *Service) getManifests(ctx context.Context, device entity.Device) ([]ent
 	getManifests := func(ctx context.Context, ids []string) ([]entity.ManifestWork, error) {
 		manifests := make([]entity.ManifestWork, 0, len(device.ManifestIDS))
 		for _, id := range ids {
-			manifest, err := c.manifestReader.GetManifest(ctx, id)
+			ref, err := c.refReader.GetReference(ctx, id)
+			if err != nil {
+				zap.S().Errorf("unable to get manifest reference %q: %w", id, err)
+				continue
+			}
+			manifest, err := c.manifestReader.GetManifest(ctx, ref)
 			if err != nil {
 				zap.S().Errorf("unable to get manifest", "error", err)
 				continue

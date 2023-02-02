@@ -44,7 +44,7 @@ func (w *Service) GetManifest(ctx context.Context, ref entity.ManifestReference)
 
 // GetManifests return all the manifest from the whole git repository.
 func (w *Service) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.ManifestWork, error) {
-	refs, err := w.refReader.GetRepositoryReferences(ctx, repo)
+	refs, err := w.refReader.GetReferences(ctx, repo)
 	if err != nil {
 		return []entity.ManifestWork{}, err
 	}

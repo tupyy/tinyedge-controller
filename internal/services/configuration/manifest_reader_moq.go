@@ -19,7 +19,7 @@ var _ ManifestReader = &ManifestReaderMock{}
 //
 //		// make and configure a mocked ManifestReader
 //		mockedManifestReader := &ManifestReaderMock{
-//			GetManifestFunc: func(ctx context.Context, id string) (entity.ManifestWork, error) {
+//			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
 //				panic("mock out the GetManifest method")
 //			},
 //		}
@@ -30,7 +30,7 @@ var _ ManifestReader = &ManifestReaderMock{}
 //	}
 type ManifestReaderMock struct {
 	// GetManifestFunc mocks the GetManifest method.
-	GetManifestFunc func(ctx context.Context, id string) (entity.ManifestWork, error)
+	GetManifestFunc func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -38,29 +38,29 @@ type ManifestReaderMock struct {
 		GetManifest []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// ID is the id argument value.
-			ID string
+			// Ref is the ref argument value.
+			Ref entity.ManifestReference
 		}
 	}
 	lockGetManifest sync.RWMutex
 }
 
 // GetManifest calls GetManifestFunc.
-func (mock *ManifestReaderMock) GetManifest(ctx context.Context, id string) (entity.ManifestWork, error) {
+func (mock *ManifestReaderMock) GetManifest(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
 	if mock.GetManifestFunc == nil {
 		panic("ManifestReaderMock.GetManifestFunc: method is nil but ManifestReader.GetManifest was just called")
 	}
 	callInfo := struct {
 		Ctx context.Context
-		ID  string
+		Ref entity.ManifestReference
 	}{
 		Ctx: ctx,
-		ID:  id,
+		Ref: ref,
 	}
 	mock.lockGetManifest.Lock()
 	mock.calls.GetManifest = append(mock.calls.GetManifest, callInfo)
 	mock.lockGetManifest.Unlock()
-	return mock.GetManifestFunc(ctx, id)
+	return mock.GetManifestFunc(ctx, ref)
 }
 
 // GetManifestCalls gets all the calls that were made to GetManifest.
@@ -69,11 +69,11 @@ func (mock *ManifestReaderMock) GetManifest(ctx context.Context, id string) (ent
 //	len(mockedManifestReader.GetManifestCalls())
 func (mock *ManifestReaderMock) GetManifestCalls() []struct {
 	Ctx context.Context
-	ID  string
+	Ref entity.ManifestReference
 } {
 	var calls []struct {
 		Ctx context.Context
-		ID  string
+		Ref entity.ManifestReference
 	}
 	mock.lockGetManifest.RLock()
 	calls = mock.calls.GetManifest

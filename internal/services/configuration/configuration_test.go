@@ -23,14 +23,19 @@ var _ = Describe("ConfigurationResponse", func() {
 			},
 		}
 		manifestReader := &configuration.ManifestReaderMock{
-			GetManifestFunc: func(ctx context.Context, id string) (entity.ManifestWork, error) {
+			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
 				return entity.ManifestWork{
 					Id: "manifest_for_toto",
 				}, nil
 			},
 		}
+		referenceReader := &configuration.ReferenceReaderMock{
+			GetReferenceFunc: func(ctx context.Context, id string) (entity.ManifestReference, error) {
+				return entity.ManifestReference{}, nil
+			},
+		}
 
-		confService := configuration.New(deviceReader, manifestReader, nil)
+		confService := configuration.New(deviceReader, manifestReader, referenceReader, nil)
 		confResponse, err := confService.GetDeviceConfiguration(context.TODO(), "toto")
 		Expect(err).To(BeNil())
 		Expect(confResponse.Configuration.ID).To(Equal("conf_for_toto"))
@@ -52,14 +57,19 @@ var _ = Describe("ConfigurationResponse", func() {
 			},
 		}
 		manifestReader := &configuration.ManifestReaderMock{
-			GetManifestFunc: func(ctx context.Context, id string) (entity.ManifestWork, error) {
+			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
 				return entity.ManifestWork{
 					Id: "manifest_for_toto",
 				}, nil
 			},
 		}
+		referenceReader := &configuration.ReferenceReaderMock{
+			GetReferenceFunc: func(ctx context.Context, id string) (entity.ManifestReference, error) {
+				return entity.ManifestReference{}, nil
+			},
+		}
 
-		confService := configuration.New(deviceReader, manifestReader, nil)
+		confService := configuration.New(deviceReader, manifestReader, referenceReader, nil)
 		confResponse, err := confService.GetDeviceConfiguration(context.TODO(), "toto")
 		Expect(err).To(BeNil())
 		Expect(confResponse.Configuration.ID).To(Equal("conf_for_toto"))
@@ -80,14 +90,19 @@ var _ = Describe("ConfigurationResponse", func() {
 			},
 		}
 		manifestReader := &configuration.ManifestReaderMock{
-			GetManifestFunc: func(ctx context.Context, id string) (entity.ManifestWork, error) {
+			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
 				return entity.ManifestWork{
 					Id: "manifest_for_toto",
 				}, nil
 			},
 		}
+		referenceReader := &configuration.ReferenceReaderMock{
+			GetReferenceFunc: func(ctx context.Context, id string) (entity.ManifestReference, error) {
+				return entity.ManifestReference{}, nil
+			},
+		}
 
-		confService := configuration.New(deviceReader, manifestReader, nil)
+		confService := configuration.New(deviceReader, manifestReader, referenceReader, nil)
 		confResponse, err := confService.GetDeviceConfiguration(context.TODO(), "toto")
 		Expect(err).To(BeNil())
 		Expect(confResponse.Configuration.ID).To(Equal("conf_for_toto"))
@@ -112,14 +127,19 @@ var _ = Describe("ConfigurationResponse", func() {
 			},
 		}
 		manifestReader := &configuration.ManifestReaderMock{
-			GetManifestFunc: func(ctx context.Context, id string) (entity.ManifestWork, error) {
+			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
 				return entity.ManifestWork{
-					Id: id,
+					Id: ref.Id,
 				}, nil
 			},
 		}
+		referenceReader := &configuration.ReferenceReaderMock{
+			GetReferenceFunc: func(ctx context.Context, id string) (entity.ManifestReference, error) {
+				return entity.ManifestReference{}, nil
+			},
+		}
 
-		confService := configuration.New(deviceReader, manifestReader, nil)
+		confService := configuration.New(deviceReader, manifestReader, referenceReader, nil)
 		confResponse, err := confService.GetDeviceConfiguration(context.TODO(), "toto")
 		Expect(err).To(BeNil())
 		Expect(confResponse.Configuration.ID).To(Equal("conf_for_toto"))

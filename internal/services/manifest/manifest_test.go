@@ -93,7 +93,7 @@ var _ = Describe("Manifest", func() {
 
 	It("read all manifests from repo", func() {
 		refReader := &manifest.ReferenceReaderMock{
-			GetRepositoryReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
+			GetReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
 				return []entity.ManifestReference{
 					{
 						Id: "ref1",

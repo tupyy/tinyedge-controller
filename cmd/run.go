@@ -102,7 +102,7 @@ var runCmd = &cobra.Command{
 		certService := certificate.New(certRepo)
 		manifestService := manifest.New(refRepo, gitRepo, secretRepo)
 		deviceService := device.New(deviceRepo)
-		configurationService := confService.New(deviceService, manifestService, deviceRepo)
+		configurationService := confService.New(deviceService, manifestService, refRepo, deviceRepo)
 		edgeService := edge.New(deviceRepo, configurationService, certService)
 		authService := auth.New(certService, deviceRepo)
 		repoService := repository.NewRepositoryService(repoRepo, gitRepo)
@@ -134,7 +134,7 @@ var runCmd = &cobra.Command{
 		go grpcEdgeServer.Serve(lis)
 
 		grpcAdminServer := createAdminServer(logger)
-		adminServer := servers.NewAdminServer(repoService, manifestService, deviceService, configurationService)
+		adminServer := servers.NewAdminServer(repoService, manifestService, deviceService, configurationService, referenceService)
 		admin.RegisterAdminServiceServer(grpcAdminServer, adminServer)
 		grpcAdminServer.Serve(connAdmin)
 	},
