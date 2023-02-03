@@ -14,7 +14,7 @@ IMG_TAG ?= latest
 PROTOC ?= /home/cosmin/Downloads/protoc/bin/protoc
 
 # Docker command to use, can be podman
-DOCKER ?= docker
+DOCKER ?= podman
 DOCKER-COMPOSE ?= podman-compose 
 
 OS = $(shell go env GOOS)
@@ -132,11 +132,11 @@ build.client: ## Build the client
 run: ## Run the controller from your host.
 	bin/tinyedge-controller run | $(COLORIZE)
 
-run.infra: ## Run the docker compose for the infrastructure
-	PROMETHEUS_CONFIG_FILER=$(CURDIR)/resources/monitoring/prometheus.yaml $(DOCKER-COMPOSE) -f $(CURDIR)/build/docker-compose.yaml up -d
+run.infra:
+	podman play kube $(CURDIR)/build/kube.yaml
 
-run.infra.stop: ## Stop the infra
-	$(DOCKER-COMPOSE) -f $(CURDIR)/build/docker-compose.yaml down
+run.infra.stop:
+	podman kube down $(CURDIR)/build/kube.yaml
 
 docker.build: ## Build docker image with the manager.
 	$(DOCKER) build -f build/Dockerfile -t ${IMG}:${IMG_TAG} .
@@ -144,6 +144,9 @@ docker.build: ## Build docker image with the manager.
 docker.push: ## Push docker image with the manager.
 	$(DOCKER) tag ${IMG}:${IMG_TAG} ${QUAY_REPO}/${IMG}:${IMG_TAG}
 	$(DOCKER) push ${IMG}:${IMG_TAG}
+
+podman.build.vault:
+	$(DOCKER) build -t vault -f build/vault/Dockerfile
 
 test: ginkgo
 	$(GINKGO) -focus=$(FOCUS) -v ./...

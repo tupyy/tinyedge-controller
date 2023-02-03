@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+data:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: postgres
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tinyedge
+  labels:
+    app: tinyedge
+spec:
+  containers:
+    - image: postgres:14
+      name: postgres 
+      ports:
+        - containerPort: 5432
+          hostPort: 5433
+      env:
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: config
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: config
+              key: POSTGRES_DB
+      securityContext:
+        capabilities:
+          drop:
+            - CAP_MKNOD
+            - CAP_NET_RAW
+            - CAP_AUDIT_WRITE
+      volumeMounts:
+        - name: postgres-tinyedge-pvc
+          mountPath: /var/lib/postgresql/data
+    - name: vault
+      image: localhost/vault
+      env:
+        - name: API_KEY_FIELD
+          value: api-key-field
+        - name: VAULT_DEV_ROOT_TOKEN_ID
+          value: root
+        - name: APPROLE_ROLE_ID
+          value: app-role-id
+        - name: API_KEY_PATH
+          value: kv-v2/api-key
+      securityContext:
+        capabilities:
+          add:
+            - IPC_LOCK
+          drop:
+            - CAP_MKNOD
+            - CAP_NET_RAW
+            - CAP_AUDIT_WRITE
+      ports:
+        - containerPort: 8200
+          hostPort: 8200
+  volumes:
+    - name: postgres-tinyedge-pvc
+      persistentVolumeClaim:
+        claimName: build_postgres-tinyedge

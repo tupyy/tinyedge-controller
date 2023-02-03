@@ -6,6 +6,7 @@ RUN apk add --no-cache bash jq sed
 
 # Add our preformatted policies
 COPY dev-policy.hcl                   /vault/config/dev-policy.hcl
+COPY config.hcl                       /vault/config/config.hcl
 
 COPY entrypoint.sh                    /vault/entrypoint.sh
 
