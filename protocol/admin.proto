@@ -132,6 +132,8 @@ message ManifestListResponse {
 message AddRepositoryRequest {
     string url = 1;
     string name = 2;
+    string auth_method = 3;
+    string auth_secret_path = 4;
 }
 
 message AddRepositoryResponse {
