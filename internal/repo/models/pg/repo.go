@@ -34,7 +34,7 @@ Table: repo
 
 JSON Sample
 -------------------------------------
-{    "id": "PonMpLbZKdlttXUMZxeIAihJA",    "url": "tVUFLDOsRSantjXoMyVAivBxO",    "branch": "rTeEyPYaueYVVDeLBNEAEJslP",    "local_path": "XkXNfqglWJCLIVaQJksqEEIaa",    "auth_type": "lSAKJgmADJCFhbeVXCFUTXIQo",    "auth_secret_path": "SwkkEKQbsSRRplUBLBAmnXmdi",    "current_head_sha": "yiqENuZpjONhhaFOgOQlYmgKi",    "target_head_sha": "lpIxjANxRWeNOCkXLbSZMoTWB",    "pull_period_seconds": 11}
+{    "id": "gqfkChXVKRahjaWHmQGwmDZAN",    "url": "eZsbhoVClDesboOEXNTOHbkFJ",    "branch": "QGXRPqcjsTfchbNUmVAwEggSO",    "local_path": "hLxiOoFGbbOoqGjLgxHjCtNON",    "auth_type": "DmnIRRGKgdyVpUruTlpsKIgHE",    "auth_secret_path": "XaFcJAprWJNAKcpaVCPRBQMAc",    "current_head_sha": "XpdkRCyJaQRInQFjLEQUWaaYV",    "target_head_sha": "AGUckJPJTycOrUHJfdvjHStgY",    "pull_period_seconds": 57}
 
 
 

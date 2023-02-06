@@ -16,6 +16,8 @@ const (
 
 type ManifestReference struct {
 	Id string
+	// name of the manifest
+	Name string
 	// Valid is true if the content of the manifest is valid
 	Valid bool
 	// Hash of the manifest content

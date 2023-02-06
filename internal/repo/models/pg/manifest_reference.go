@@ -22,15 +22,16 @@ DB Table Details
 
 Table: manifest_reference
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] repo_id                                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 2] valid                                          BOOL                 null: false  primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: []
-[ 3] hash                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 4] path_manifest_reference                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 1] name                                           VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 2] repo_id                                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 3] valid                                          BOOL                 null: false  primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: []
+[ 4] hash                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 5] path_manifest_reference                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "tYIXwpNPEjqnKBlssQYTAUpom",    "repo_id": "ZFHXfSVyZVjsUAIEJKLiijkry",    "valid": false,    "hash": "uKVhYKScbCMurkFGfOxCwiYGm",    "path_manifest_reference": "hVkUVvaWCesNcfwNQwQsnnMFo"}
+{    "id": "EwPxfNOQvPlNMVPFqFUXcgBor",    "name": "hkBnhpnvJVoDeitERxiKejJRD",    "repo_id": "HqysyrJmpnQvmQuMPcIjZGbyo",    "valid": true,    "hash": "FBQubyjxVbVEJuUHkwaoPASnO",    "path_manifest_reference": "wkcKBYYYvOkpcRwoMlxBFPIoy"}
 
 
 
@@ -40,13 +41,15 @@ JSON Sample
 type ManifestReference struct {
 	//[ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
-	//[ 1] repo_id                                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	//[ 1] name                                           VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	Name string `gorm:"column:name;type:VARCHAR;size:255;"`
+	//[ 2] repo_id                                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	RepoID string `gorm:"column:repo_id;type:TEXT;"`
-	//[ 2] valid                                          BOOL                 null: false  primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: []
+	//[ 3] valid                                          BOOL                 null: false  primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: []
 	Valid bool `gorm:"column:valid;type:BOOL;"`
-	//[ 3] hash                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	//[ 4] hash                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	Hash string `gorm:"column:hash;type:TEXT;"`
-	//[ 4] path_manifest_reference                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	//[ 5] path_manifest_reference                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	PathManifestReference string `gorm:"column:path_manifest_reference;type:TEXT;"`
 }
 
@@ -77,6 +80,27 @@ var manifest_referenceTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
+			Name:               "name",
+			Comment:            ``,
+			Notes:              ``,
+			Nullable:           false,
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
+			IsPrimaryKey:       false,
+			IsAutoIncrement:    false,
+			IsArray:            false,
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
+			GoFieldName:        "Name",
+			GoFieldType:        "string",
+			JSONFieldName:      "name",
+			ProtobufFieldName:  "name",
+			ProtobufType:       "string",
+			ProtobufPos:        2,
+		},
+
+		&ColumnInfo{
+			Index:              2,
 			Name:               "repo_id",
 			Comment:            ``,
 			Notes:              ``,
@@ -93,11 +117,11 @@ var manifest_referenceTableInfo = &TableInfo{
 			JSONFieldName:      "repo_id",
 			ProtobufFieldName:  "repo_id",
 			ProtobufType:       "string",
-			ProtobufPos:        2,
+			ProtobufPos:        3,
 		},
 
 		&ColumnInfo{
-			Index:              2,
+			Index:              3,
 			Name:               "valid",
 			Comment:            ``,
 			Notes:              ``,
@@ -114,11 +138,11 @@ var manifest_referenceTableInfo = &TableInfo{
 			JSONFieldName:      "valid",
 			ProtobufFieldName:  "valid",
 			ProtobufType:       "bool",
-			ProtobufPos:        3,
+			ProtobufPos:        4,
 		},
 
 		&ColumnInfo{
-			Index:              3,
+			Index:              4,
 			Name:               "hash",
 			Comment:            ``,
 			Notes:              ``,
@@ -135,11 +159,11 @@ var manifest_referenceTableInfo = &TableInfo{
 			JSONFieldName:      "hash",
 			ProtobufFieldName:  "hash",
 			ProtobufType:       "string",
-			ProtobufPos:        4,
+			ProtobufPos:        5,
 		},
 
 		&ColumnInfo{
-			Index:              4,
+			Index:              5,
 			Name:               "path_manifest_reference",
 			Comment:            ``,
 			Notes:              ``,
@@ -156,7 +180,7 @@ var manifest_referenceTableInfo = &TableInfo{
 			JSONFieldName:      "path_manifest_reference",
 			ProtobufFieldName:  "path_manifest_reference",
 			ProtobufType:       "string",
-			ProtobufPos:        5,
+			ProtobufPos:        6,
 		},
 	},
 }

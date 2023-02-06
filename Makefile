@@ -132,11 +132,12 @@ build.client: ## Build the client
 run: ## Run the controller from your host.
 	bin/tinyedge-controller run | $(COLORIZE)
 
-run.infra:
+run.infra: podman.build.vault
 	podman play kube $(CURDIR)/build/kube.yaml
 
 run.infra.stop:
 	podman kube down $(CURDIR)/build/kube.yaml
+	podman image rm vault:latest
 
 docker.build: ## Build docker image with the manager.
 	$(DOCKER) build -f build/Dockerfile -t ${IMG}:${IMG_TAG} .

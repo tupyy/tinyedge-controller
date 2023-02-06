@@ -26,6 +26,7 @@ func ManifestModelToEntity(mm []models.ManifestJoin) entity.ManifestReference {
 	m := mm[0]
 	e := entity.ManifestReference{
 		Id:           m.ID,
+		Name:         m.Name,
 		Valid:        m.Valid,
 		Hash:         m.Hash,
 		Path:         m.PathManifestReference,
@@ -83,6 +84,7 @@ func ManifestModelsToEntities(mm []models.ManifestJoin) []entity.ManifestReferen
 			manifest = entity.ManifestReference{
 				Id:    m.ID,
 				Valid: m.Valid,
+				Name:  m.Name,
 				Hash:  m.Hash,
 				Path:  m.PathManifestReference,
 				Repo: entity.Repository{
@@ -138,6 +140,7 @@ func ManifestEntityToModel(e entity.ManifestReference) models.ManifestReference 
 		RepoID:                e.Repo.Id,
 		Valid:                 e.Valid,
 		Hash:                  e.Hash,
+		Name:                  e.Name,
 	}
 	return m
 }
