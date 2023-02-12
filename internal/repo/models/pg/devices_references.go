@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/guregu/null"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 var (
@@ -21,13 +21,13 @@ DB Table Details
 
 
 Table: devices_references
-[ 0] device_id                                      TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] manifest_reference_id                          TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 0] device_id                                      VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 1] reference_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "device_id": "gwHNXGVLnoGghhACAELCPuuxO",    "manifest_reference_id": "PAJZdywiXbSIlkQjNjZfvCkAG"}
+{    "device_id": "QNxKpEcxKXYaskLFJYdMurNLH",    "reference_id": "MFNraYnoWjmOcHfOXILjSAZCT"}
 
 
 
@@ -35,10 +35,10 @@ JSON Sample
 
 // DevicesReferences struct is a row record of the devices_references table in the tinyedge database
 type DevicesReferences struct {
-	//[ 0] device_id                                      TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	DeviceID string `gorm:"primary_key;column:device_id;type:TEXT;"`
-	//[ 1] manifest_reference_id                          TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	ManifestReferenceID string `gorm:"primary_key;column:manifest_reference_id;type:TEXT;"`
+	//[ 0] device_id                                      VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	DeviceID string `gorm:"primary_key;column:device_id;type:VARCHAR;size:255;"`
+	//[ 1] reference_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ReferenceID string `gorm:"primary_key;column:reference_id;type:VARCHAR;size:255;"`
 }
 
 var devices_referencesTableInfo = &TableInfo{
@@ -51,13 +51,13 @@ var devices_referencesTableInfo = &TableInfo{
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       true,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
 			GoFieldName:        "DeviceID",
 			GoFieldType:        "string",
 			JSONFieldName:      "device_id",
@@ -68,21 +68,21 @@ var devices_referencesTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "manifest_reference_id",
+			Name:               "reference_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       true,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
-			GoFieldName:        "ManifestReferenceID",
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
+			GoFieldName:        "ReferenceID",
 			GoFieldType:        "string",
-			JSONFieldName:      "manifest_reference_id",
-			ProtobufFieldName:  "manifest_reference_id",
+			JSONFieldName:      "reference_id",
+			ProtobufFieldName:  "reference_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},

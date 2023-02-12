@@ -21,13 +21,13 @@ DB Table Details
 
 
 Table: secrets_manifests
-[ 0] secret_id                                      TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] manifest_reference_id                          TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 0] secret_id                                      VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 1] reference_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "secret_id": "edOKDadcCyoQhTihkjSPMBuus",    "manifest_reference_id": "CulBwkfLihtwDrvcKhAUFppXt"}
+{    "secret_id": "rAcaTRnyLitwkikKToVeLhINX",    "reference_id": "FmkdKVsHgqsBYfqpGbuwSYLXH"}
 
 
 
@@ -35,10 +35,10 @@ JSON Sample
 
 // SecretsManifests struct is a row record of the secrets_manifests table in the tinyedge database
 type SecretsManifests struct {
-	//[ 0] secret_id                                      TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	SecretID string `gorm:"primary_key;column:secret_id;type:TEXT;"`
-	//[ 1] manifest_reference_id                          TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	ManifestReferenceID string `gorm:"primary_key;column:manifest_reference_id;type:TEXT;"`
+	//[ 0] secret_id                                      VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	SecretID string `gorm:"primary_key;column:secret_id;type:VARCHAR;size:255;"`
+	//[ 1] reference_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ReferenceID string `gorm:"primary_key;column:reference_id;type:VARCHAR;size:255;"`
 }
 
 var secrets_manifestsTableInfo = &TableInfo{
@@ -51,13 +51,13 @@ var secrets_manifestsTableInfo = &TableInfo{
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       true,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
 			GoFieldName:        "SecretID",
 			GoFieldType:        "string",
 			JSONFieldName:      "secret_id",
@@ -68,21 +68,21 @@ var secrets_manifestsTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "manifest_reference_id",
+			Name:               "reference_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       true,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
-			GoFieldName:        "ManifestReferenceID",
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
+			GoFieldName:        "ReferenceID",
 			GoFieldType:        "string",
-			JSONFieldName:      "manifest_reference_id",
-			ProtobufFieldName:  "manifest_reference_id",
+			JSONFieldName:      "reference_id",
+			ProtobufFieldName:  "reference_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},

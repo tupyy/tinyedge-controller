@@ -21,7 +21,7 @@ DB Table Details
 
 
 Table: repo
-[ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 0] id                                             VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 [ 1] url                                            TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 2] branch                                         TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 3] local_path                                     TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
@@ -34,7 +34,7 @@ Table: repo
 
 JSON Sample
 -------------------------------------
-{    "id": "gqfkChXVKRahjaWHmQGwmDZAN",    "url": "eZsbhoVClDesboOEXNTOHbkFJ",    "branch": "QGXRPqcjsTfchbNUmVAwEggSO",    "local_path": "hLxiOoFGbbOoqGjLgxHjCtNON",    "auth_type": "DmnIRRGKgdyVpUruTlpsKIgHE",    "auth_secret_path": "XaFcJAprWJNAKcpaVCPRBQMAc",    "current_head_sha": "XpdkRCyJaQRInQFjLEQUWaaYV",    "target_head_sha": "AGUckJPJTycOrUHJfdvjHStgY",    "pull_period_seconds": 57}
+{    "id": "KuMgvagZlLCfPDcrtiEuPBOoF",    "url": "EjKPMvSEldZkBwpcDYoAxcxIv",    "branch": "fUuVieOUycmQQwwMVuaHrUIbK",    "local_path": "UxGhJnWNcdNZoFgymnyjoYipD",    "auth_type": "brtAHfZgkRWfOqLQXiEbxUUSp",    "auth_secret_path": "EDrHxIXmbBRqwlxcVyHlBMAhW",    "current_head_sha": "DVDUlxlrUEvbIaYJHRyaNedqH",    "target_head_sha": "GvhjgCiVULQNmsTPMRGjSJxvC",    "pull_period_seconds": 67}
 
 
 
@@ -42,8 +42,8 @@ JSON Sample
 
 // Repo struct is a row record of the repo table in the tinyedge database
 type Repo struct {
-	//[ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	ID string `gorm:"primary_key;column:id;type:TEXT;"`
+	//[ 0] id                                             VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ID string `gorm:"primary_key;column:id;type:VARCHAR;size:255;"`
 	//[ 1] url                                            TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	URL string `gorm:"column:url;type:TEXT;"`
 	//[ 2] branch                                         TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
@@ -72,13 +72,13 @@ var repoTableInfo = &TableInfo{
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       true,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
 			GoFieldName:        "ID",
 			GoFieldType:        "string",
 			JSONFieldName:      "id",

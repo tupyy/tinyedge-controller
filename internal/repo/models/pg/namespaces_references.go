@@ -21,13 +21,13 @@ DB Table Details
 
 
 Table: namespaces_references
-[ 0] namespace_id                                   TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] manifest_reference_id                          TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 0] namespace_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 1] reference_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "namespace_id": "PiMmafSFYZQBeHZJPbRLAWaVR",    "manifest_reference_id": "WYYlNyvtLmCnveHhhOveIGsbn"}
+{    "namespace_id": "gemkArGMYekXGDEsZAAnjQyuM",    "reference_id": "tAKKLPLhhskIjvIfxyxFFBUDC"}
 
 
 
@@ -35,10 +35,10 @@ JSON Sample
 
 // NamespacesReferences struct is a row record of the namespaces_references table in the tinyedge database
 type NamespacesReferences struct {
-	//[ 0] namespace_id                                   TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	NamespaceID string `gorm:"primary_key;column:namespace_id;type:TEXT;"`
-	//[ 1] manifest_reference_id                          TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	ManifestReferenceID string `gorm:"primary_key;column:manifest_reference_id;type:TEXT;"`
+	//[ 0] namespace_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	NamespaceID string `gorm:"primary_key;column:namespace_id;type:VARCHAR;size:255;"`
+	//[ 1] reference_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ReferenceID string `gorm:"primary_key;column:reference_id;type:VARCHAR;size:255;"`
 }
 
 var namespaces_referencesTableInfo = &TableInfo{
@@ -51,13 +51,13 @@ var namespaces_referencesTableInfo = &TableInfo{
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       true,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
 			GoFieldName:        "NamespaceID",
 			GoFieldType:        "string",
 			JSONFieldName:      "namespace_id",
@@ -68,21 +68,21 @@ var namespaces_referencesTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "manifest_reference_id",
+			Name:               "reference_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       true,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
-			GoFieldName:        "ManifestReferenceID",
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
+			GoFieldName:        "ReferenceID",
 			GoFieldType:        "string",
-			JSONFieldName:      "manifest_reference_id",
-			ProtobufFieldName:  "manifest_reference_id",
+			JSONFieldName:      "reference_id",
+			ProtobufFieldName:  "reference_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},

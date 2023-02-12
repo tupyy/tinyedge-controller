@@ -27,14 +27,14 @@ Table: device
 [ 3] enroled                                        TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: [not_enroled]
 [ 4] registered                                     BOOL                 null: false  primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: [false]
 [ 5] certificate_sn                                 TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 6] namespace_id                                   TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 7] device_set_id                                  TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 8] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 6] namespace_id                                   VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 7] device_set_id                                  VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 8] reference_id                                   VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "ALhBgKfqaAQwTARJcCKfCuEZc",    "enroled_at": "2115-09-25T22:27:45.999715911+02:00",    "registered_at": "2091-02-10T01:52:15.323120651+01:00",    "enroled": "rUILlVjXYDbROMJPGOhlhXFGF",    "registered": false,    "certificate_sn": "jycYFUQurufjtTXbhcjplFLhc",    "namespace_id": "RxReYbVtovJWolRpZSqebEFDj",    "device_set_id": "LaEKlEgqHkbmaORVEjhIjwrJL",    "configuration_id": "wuTlVUdMsirJUoMiWytlObZEI"}
+{    "id": "NglsniXOkWWhFPurvfABGYDSm",    "enroled_at": "2099-07-10T11:27:19.877934324+02:00",    "registered_at": "2102-05-28T15:47:40.848394983+02:00",    "enroled": "wVnntSQDTNBGMIiTeQIRZrbTU",    "registered": false,    "certificate_sn": "GHTDnHbBEOPCTmdTjnLbTqjTR",    "namespace_id": "nlBtYLkvCuhFuNUIpXTIsRjkR",    "device_set_id": "KhgJVnZqpbsgXXKXVjCJmpVCf",    "reference_id": "OuELtJCdgOJcKfhFMxjTeODJX"}
 
 
 
@@ -54,12 +54,12 @@ type Device struct {
 	Registered bool `gorm:"column:registered;type:BOOL;default:false;"`
 	//[ 5] certificate_sn                                 TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	CertificateSn sql.NullString `gorm:"column:certificate_sn;type:TEXT;"`
-	//[ 6] namespace_id                                   TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	NamespaceID sql.NullString `gorm:"column:namespace_id;type:TEXT;"`
-	//[ 7] device_set_id                                  TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	DeviceSetID sql.NullString `gorm:"column:device_set_id;type:TEXT;"`
-	//[ 8] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	ConfigurationID sql.NullString `gorm:"column:configuration_id;type:TEXT;"`
+	//[ 6] namespace_id                                   VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	NamespaceID string `gorm:"column:namespace_id;type:VARCHAR;size:255;"`
+	//[ 7] device_set_id                                  VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	DeviceSetID sql.NullString `gorm:"column:device_set_id;type:VARCHAR;size:255;"`
+	//[ 8] reference_id                                   VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ReferenceID sql.NullString `gorm:"column:reference_id;type:VARCHAR;size:255;"`
 }
 
 var deviceTableInfo = &TableInfo{
@@ -197,16 +197,16 @@ var deviceTableInfo = &TableInfo{
 			Name:               "namespace_id",
 			Comment:            ``,
 			Notes:              ``,
-			Nullable:           true,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			Nullable:           false,
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       false,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
 			GoFieldName:        "NamespaceID",
-			GoFieldType:        "sql.NullString",
+			GoFieldType:        "string",
 			JSONFieldName:      "namespace_id",
 			ProtobufFieldName:  "namespace_id",
 			ProtobufType:       "string",
@@ -219,13 +219,13 @@ var deviceTableInfo = &TableInfo{
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           true,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       false,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
 			GoFieldName:        "DeviceSetID",
 			GoFieldType:        "sql.NullString",
 			JSONFieldName:      "device_set_id",
@@ -236,21 +236,21 @@ var deviceTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              8,
-			Name:               "configuration_id",
+			Name:               "reference_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           true,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       false,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
-			GoFieldName:        "ConfigurationID",
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
+			GoFieldName:        "ReferenceID",
 			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "configuration_id",
-			ProtobufFieldName:  "configuration_id",
+			JSONFieldName:      "reference_id",
+			ProtobufFieldName:  "reference_id",
 			ProtobufType:       "string",
 			ProtobufPos:        9,
 		},

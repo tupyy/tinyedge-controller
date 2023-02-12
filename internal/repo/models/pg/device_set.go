@@ -22,13 +22,13 @@ DB Table Details
 
 Table: device_set
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 2] namespace_id                                   TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 1] reference_id                                   VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 2] namespace_id                                   VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "fBcCsdeXcTUhRgapVXwCOfQPc",    "configuration_id": "ixknbDhfiGKlBuNXkFFgHKnZl",    "namespace_id": "gVlNVbEJUHEygtlwhvueaFBhw"}
+{    "id": "LpVwlimIQRxYkmqkVWMSjMvhb",    "reference_id": "yiqrJdvcErufZRPKmtHAcMMWr",    "namespace_id": "MEKNZUXJhpyRZHEyxusVUWWTb"}
 
 
 
@@ -38,10 +38,10 @@ JSON Sample
 type DeviceSet struct {
 	//[ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
-	//[ 1] configuration_id                               TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	ConfigurationID sql.NullString `gorm:"column:configuration_id;type:TEXT;"`
-	//[ 2] namespace_id                                   TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	NamespaceID string `gorm:"column:namespace_id;type:TEXT;"`
+	//[ 1] reference_id                                   VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ReferenceID sql.NullString `gorm:"column:reference_id;type:VARCHAR;size:255;"`
+	//[ 2] namespace_id                                   VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	NamespaceID string `gorm:"column:namespace_id;type:VARCHAR;size:255;"`
 }
 
 var device_setTableInfo = &TableInfo{
@@ -71,21 +71,21 @@ var device_setTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "configuration_id",
+			Name:               "reference_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           true,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       false,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
-			GoFieldName:        "ConfigurationID",
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
+			GoFieldName:        "ReferenceID",
 			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "configuration_id",
-			ProtobufFieldName:  "configuration_id",
+			JSONFieldName:      "reference_id",
+			ProtobufFieldName:  "reference_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},
@@ -96,13 +96,13 @@ var device_setTableInfo = &TableInfo{
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       false,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
 			GoFieldName:        "NamespaceID",
 			GoFieldType:        "string",
 			JSONFieldName:      "namespace_id",

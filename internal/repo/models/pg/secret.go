@@ -21,15 +21,15 @@ DB Table Details
 
 
 Table: secret
-[ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] path                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 0] id                                             VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 1] path                                           VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 [ 2] current_hash                                   TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 3] target_hash                                    TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "oAxVNLONKhGyQVJNUvLofBgcT",    "path": "NhPQBBEpJAexicTLKmgxSObeN",    "current_hash": "AbIimyTZSQfiFkNTfifcZvNFd",    "target_hash": "bLXKuiJaUCyqFTUuwjmIHkaZh"}
+{    "id": "NVewBsQjriWHrkdUtTJvcCVHu",    "path": "lPGiVhSdjmSlkHQpulCWHSLUv",    "current_hash": "mccyhxCmMQCPjwYrKrIKUvLrM",    "target_hash": "VeXRriVsQCNcCtQHHwLmoQevV"}
 
 
 
@@ -37,10 +37,10 @@ JSON Sample
 
 // Secret struct is a row record of the secret table in the tinyedge database
 type Secret struct {
-	//[ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-	ID string `gorm:"primary_key;column:id;type:TEXT;"`
-	//[ 1] path                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	Path string `gorm:"column:path;type:TEXT;"`
+	//[ 0] id                                             VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ID string `gorm:"primary_key;column:id;type:VARCHAR;size:255;"`
+	//[ 1] path                                           VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	Path string `gorm:"column:path;type:VARCHAR;size:255;"`
 	//[ 2] current_hash                                   TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	CurrentHash string `gorm:"column:current_hash;type:TEXT;"`
 	//[ 3] target_hash                                    TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
@@ -57,13 +57,13 @@ var secretTableInfo = &TableInfo{
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       true,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
 			GoFieldName:        "ID",
 			GoFieldType:        "string",
 			JSONFieldName:      "id",
@@ -78,13 +78,13 @@ var secretTableInfo = &TableInfo{
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
+			DatabaseTypeName:   "VARCHAR",
+			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       false,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
+			ColumnType:         "VARCHAR",
+			ColumnLength:       255,
 			GoFieldName:        "Path",
 			GoFieldType:        "string",
 			JSONFieldName:      "path",

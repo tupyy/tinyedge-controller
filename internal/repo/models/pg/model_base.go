@@ -30,13 +30,12 @@ var (
 func init() {
 	tables = make(map[string]*TableInfo)
 
-	tables["configuration"] = configurationTableInfo
 	tables["device"] = deviceTableInfo
 	tables["device_set"] = device_setTableInfo
 	tables["devices_references"] = devices_referencesTableInfo
-	tables["manifest_reference"] = manifest_referenceTableInfo
 	tables["namespace"] = namespaceTableInfo
 	tables["namespaces_references"] = namespaces_referencesTableInfo
+	tables["reference"] = referenceTableInfo
 	tables["repo"] = repoTableInfo
 	tables["secret"] = secretTableInfo
 	tables["secrets_manifests"] = secrets_manifestsTableInfo
