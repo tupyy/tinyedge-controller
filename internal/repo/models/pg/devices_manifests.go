@@ -20,29 +20,29 @@ DB Table Details
 -------------------------------------
 
 
-Table: devices_references
+Table: devices_manifests
 [ 0] device_id                                      VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-[ 1] workload_reference_id                          VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 1] workload_manifest_id                           VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "device_id": "YnoasIvTqynbmxDQXxkOQppEH",    "workload_reference_id": "BvvZrlUUlaojraeVNCbCtckOX"}
+{    "device_id": "MMwKfZVaYInEDvhfJqSQCpRTk",    "workload_manifest_id": "kjasQpGYYVkeFPLpGgkQGSvCQ"}
 
 
 
 */
 
-// DevicesReferences struct is a row record of the devices_references table in the tinyedge database
-type DevicesReferences struct {
+// DevicesManifests struct is a row record of the devices_manifests table in the tinyedge database
+type DevicesManifests struct {
 	//[ 0] device_id                                      VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 	DeviceID string `gorm:"primary_key;column:device_id;type:VARCHAR;size:255;"`
-	//[ 1] workload_reference_id                          VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-	WorkloadReferenceID string `gorm:"primary_key;column:workload_reference_id;type:VARCHAR;size:255;"`
+	//[ 1] workload_manifest_id                           VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	WorkloadManifestID string `gorm:"primary_key;column:workload_manifest_id;type:VARCHAR;size:255;"`
 }
 
-var devices_referencesTableInfo = &TableInfo{
-	Name: "devices_references",
+var devices_manifestsTableInfo = &TableInfo{
+	Name: "devices_manifests",
 	Columns: []*ColumnInfo{
 
 		&ColumnInfo{
@@ -68,7 +68,7 @@ var devices_referencesTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "workload_reference_id",
+			Name:               "workload_manifest_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
@@ -79,10 +79,10 @@ var devices_referencesTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "VARCHAR",
 			ColumnLength:       255,
-			GoFieldName:        "WorkloadReferenceID",
+			GoFieldName:        "WorkloadManifestID",
 			GoFieldType:        "string",
-			JSONFieldName:      "workload_reference_id",
-			ProtobufFieldName:  "workload_reference_id",
+			JSONFieldName:      "workload_manifest_id",
+			ProtobufFieldName:  "workload_manifest_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},
@@ -90,25 +90,25 @@ var devices_referencesTableInfo = &TableInfo{
 }
 
 // TableName sets the insert table name for this struct type
-func (d *DevicesReferences) TableName() string {
-	return "devices_references"
+func (d *DevicesManifests) TableName() string {
+	return "devices_manifests"
 }
 
 // BeforeSave invoked before saving, return an error if field is not populated.
-func (d *DevicesReferences) BeforeSave() error {
+func (d *DevicesManifests) BeforeSave() error {
 	return nil
 }
 
 // Prepare invoked before saving, can be used to populate fields etc.
-func (d *DevicesReferences) Prepare() {
+func (d *DevicesManifests) Prepare() {
 }
 
 // Validate invoked before performing action, return an error if field is not populated.
-func (d *DevicesReferences) Validate(action Action) error {
+func (d *DevicesManifests) Validate(action Action) error {
 	return nil
 }
 
 // TableInfo return table meta data
-func (d *DevicesReferences) TableInfo() *TableInfo {
-	return devices_referencesTableInfo
+func (d *DevicesManifests) TableInfo() *TableInfo {
+	return devices_manifestsTableInfo
 }

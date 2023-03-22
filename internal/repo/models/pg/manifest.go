@@ -20,26 +20,24 @@ DB Table Details
 -------------------------------------
 
 
-Table: reference
+Table: manifest
 [ 0] id                                             VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 [ 1] ref_type                                       USER_DEFINED         null: false  primary: false  isArray: false  auto: false  col: USER_DEFINED    len: -1      default: []
 [ 2] name                                           VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 [ 3] repo_id                                        VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-[ 4] valid                                          BOOL                 null: false  primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: []
-[ 5] hash                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 6] path_reference                                 TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 4] path                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "QXOEKiLCRbnKEgPWxBLCAcZBH",    "ref_type": "mwSIFrtgFpSasPwSsxKDaLYws",    "name": "fgvyiySDIBXgoZiMdRrWhXofs",    "repo_id": "iJRvDHMOAaBuuVAwiYsfhheqW",    "valid": false,    "hash": "FuEPrVkikVWXMDLlunEiufbOp",    "path_reference": "VeuCxKbfQGtCesxlWGvdDdfKM"}
+{    "id": "jGLvEhThtjBOHuVUNTbIdecgg",    "ref_type": "skZmQjAfHxsbVqqGpZxHWyyGe",    "name": "iknvyoXBDnojUEcLvbbkIfVvD",    "repo_id": "JXeVyJuTsWUZqBitprtaXqswJ",    "path": "aoTkuxhvtYwjApQDbDWqrNPjU"}
 
 
 
 */
 
-// Reference struct is a row record of the reference table in the tinyedge database
-type Reference struct {
+// Manifest struct is a row record of the manifest table in the tinyedge database
+type Manifest struct {
 	//[ 0] id                                             VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 	ID string `gorm:"primary_key;column:id;type:VARCHAR;size:255;"`
 	//[ 1] ref_type                                       USER_DEFINED         null: false  primary: false  isArray: false  auto: false  col: USER_DEFINED    len: -1      default: []
@@ -48,16 +46,12 @@ type Reference struct {
 	Name string `gorm:"column:name;type:VARCHAR;size:255;"`
 	//[ 3] repo_id                                        VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 	RepoID string `gorm:"column:repo_id;type:VARCHAR;size:255;"`
-	//[ 4] valid                                          BOOL                 null: false  primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: []
-	Valid bool `gorm:"column:valid;type:BOOL;"`
-	//[ 5] hash                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	Hash string `gorm:"column:hash;type:TEXT;"`
-	//[ 6] path_reference                                 TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
-	PathReference string `gorm:"column:path_reference;type:TEXT;"`
+	//[ 4] path                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	Path string `gorm:"column:path;type:TEXT;"`
 }
 
-var referenceTableInfo = &TableInfo{
-	Name: "reference",
+var manifestTableInfo = &TableInfo{
+	Name: "manifest",
 	Columns: []*ColumnInfo{
 
 		&ColumnInfo{
@@ -146,89 +140,47 @@ var referenceTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              4,
-			Name:               "valid",
+			Name:               "path",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
-			DatabaseTypeName:   "BOOL",
-			DatabaseTypePretty: "BOOL",
+			DatabaseTypeName:   "TEXT",
+			DatabaseTypePretty: "TEXT",
 			IsPrimaryKey:       false,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "BOOL",
+			ColumnType:         "TEXT",
 			ColumnLength:       -1,
-			GoFieldName:        "Valid",
-			GoFieldType:        "bool",
-			JSONFieldName:      "valid",
-			ProtobufFieldName:  "valid",
-			ProtobufType:       "bool",
+			GoFieldName:        "Path",
+			GoFieldType:        "string",
+			JSONFieldName:      "path",
+			ProtobufFieldName:  "path",
+			ProtobufType:       "string",
 			ProtobufPos:        5,
-		},
-
-		&ColumnInfo{
-			Index:              5,
-			Name:               "hash",
-			Comment:            ``,
-			Notes:              ``,
-			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
-			IsPrimaryKey:       false,
-			IsAutoIncrement:    false,
-			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
-			GoFieldName:        "Hash",
-			GoFieldType:        "string",
-			JSONFieldName:      "hash",
-			ProtobufFieldName:  "hash",
-			ProtobufType:       "string",
-			ProtobufPos:        6,
-		},
-
-		&ColumnInfo{
-			Index:              6,
-			Name:               "path_reference",
-			Comment:            ``,
-			Notes:              ``,
-			Nullable:           false,
-			DatabaseTypeName:   "TEXT",
-			DatabaseTypePretty: "TEXT",
-			IsPrimaryKey:       false,
-			IsAutoIncrement:    false,
-			IsArray:            false,
-			ColumnType:         "TEXT",
-			ColumnLength:       -1,
-			GoFieldName:        "PathReference",
-			GoFieldType:        "string",
-			JSONFieldName:      "path_reference",
-			ProtobufFieldName:  "path_reference",
-			ProtobufType:       "string",
-			ProtobufPos:        7,
 		},
 	},
 }
 
 // TableName sets the insert table name for this struct type
-func (r *Reference) TableName() string {
-	return "reference"
+func (m *Manifest) TableName() string {
+	return "manifest"
 }
 
 // BeforeSave invoked before saving, return an error if field is not populated.
-func (r *Reference) BeforeSave() error {
+func (m *Manifest) BeforeSave() error {
 	return nil
 }
 
 // Prepare invoked before saving, can be used to populate fields etc.
-func (r *Reference) Prepare() {
+func (m *Manifest) Prepare() {
 }
 
 // Validate invoked before performing action, return an error if field is not populated.
-func (r *Reference) Validate(action Action) error {
+func (m *Manifest) Validate(action Action) error {
 	return nil
 }
 
 // TableInfo return table meta data
-func (r *Reference) TableInfo() *TableInfo {
-	return referenceTableInfo
+func (m *Manifest) TableInfo() *TableInfo {
+	return manifestTableInfo
 }

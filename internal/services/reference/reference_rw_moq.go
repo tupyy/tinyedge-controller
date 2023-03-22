@@ -60,31 +60,31 @@ type ReferenceReaderWriterMock struct {
 	CreateRelationFunc func(ctx context.Context, relation entity.ReferenceRelation) error
 
 	// DeleteReferenceFunc mocks the DeleteReference method.
-	DeleteReferenceFunc func(ctx context.Context, ref entity.ManifestReference) error
+	DeleteReferenceFunc func(ctx context.Context, ref entity.Reference) error
 
 	// DeleteRelationFunc mocks the DeleteRelation method.
 	DeleteRelationFunc func(ctx context.Context, relation entity.ReferenceRelation) error
 
 	// GetDeviceReferencesFunc mocks the GetDeviceReferences method.
-	GetDeviceReferencesFunc func(ctx context.Context, deviceID string) ([]entity.ManifestReference, error)
+	GetDeviceReferencesFunc func(ctx context.Context, deviceID string) ([]entity.Reference, error)
 
 	// GetNamespaceReferencesFunc mocks the GetNamespaceReferences method.
-	GetNamespaceReferencesFunc func(ctx context.Context, setID string) ([]entity.ManifestReference, error)
+	GetNamespaceReferencesFunc func(ctx context.Context, setID string) ([]entity.Reference, error)
 
 	// GetReferenceFunc mocks the GetReference method.
-	GetReferenceFunc func(ctx context.Context, id string) (entity.ManifestReference, error)
+	GetReferenceFunc func(ctx context.Context, id string) (entity.Reference, error)
 
 	// GetReferencesFunc mocks the GetReferences method.
-	GetReferencesFunc func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error)
+	GetReferencesFunc func(ctx context.Context, repo entity.Repository) ([]entity.Reference, error)
 
 	// GetSetReferencesFunc mocks the GetSetReferences method.
-	GetSetReferencesFunc func(ctx context.Context, setID string) ([]entity.ManifestReference, error)
+	GetSetReferencesFunc func(ctx context.Context, setID string) ([]entity.Reference, error)
 
 	// InsertReferenceFunc mocks the InsertReference method.
-	InsertReferenceFunc func(ctx context.Context, ref entity.ManifestReference) error
+	InsertReferenceFunc func(ctx context.Context, ref entity.Reference) error
 
 	// UpdateReferenceFunc mocks the UpdateReference method.
-	UpdateReferenceFunc func(ctx context.Context, ref entity.ManifestReference) error
+	UpdateReferenceFunc func(ctx context.Context, ref entity.Reference) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -100,7 +100,7 @@ type ReferenceReaderWriterMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Ref is the ref argument value.
-			Ref entity.ManifestReference
+			Ref entity.Reference
 		}
 		// DeleteRelation holds details about calls to the DeleteRelation method.
 		DeleteRelation []struct {
@@ -149,14 +149,14 @@ type ReferenceReaderWriterMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Ref is the ref argument value.
-			Ref entity.ManifestReference
+			Ref entity.Reference
 		}
 		// UpdateReference holds details about calls to the UpdateReference method.
 		UpdateReference []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Ref is the ref argument value.
-			Ref entity.ManifestReference
+			Ref entity.Reference
 		}
 	}
 	lockCreateRelation         sync.RWMutex
@@ -208,13 +208,13 @@ func (mock *ReferenceReaderWriterMock) CreateRelationCalls() []struct {
 }
 
 // DeleteReference calls DeleteReferenceFunc.
-func (mock *ReferenceReaderWriterMock) DeleteReference(ctx context.Context, ref entity.ManifestReference) error {
+func (mock *ReferenceReaderWriterMock) DeleteReference(ctx context.Context, ref entity.Reference) error {
 	if mock.DeleteReferenceFunc == nil {
 		panic("ReferenceReaderWriterMock.DeleteReferenceFunc: method is nil but ReferenceReaderWriter.DeleteReference was just called")
 	}
 	callInfo := struct {
 		Ctx context.Context
-		Ref entity.ManifestReference
+		Ref entity.Reference
 	}{
 		Ctx: ctx,
 		Ref: ref,
@@ -231,11 +231,11 @@ func (mock *ReferenceReaderWriterMock) DeleteReference(ctx context.Context, ref 
 //	len(mockedReferenceReaderWriter.DeleteReferenceCalls())
 func (mock *ReferenceReaderWriterMock) DeleteReferenceCalls() []struct {
 	Ctx context.Context
-	Ref entity.ManifestReference
+	Ref entity.Reference
 } {
 	var calls []struct {
 		Ctx context.Context
-		Ref entity.ManifestReference
+		Ref entity.Reference
 	}
 	mock.lockDeleteReference.RLock()
 	calls = mock.calls.DeleteReference
@@ -280,7 +280,7 @@ func (mock *ReferenceReaderWriterMock) DeleteRelationCalls() []struct {
 }
 
 // GetDeviceReferences calls GetDeviceReferencesFunc.
-func (mock *ReferenceReaderWriterMock) GetDeviceReferences(ctx context.Context, deviceID string) ([]entity.ManifestReference, error) {
+func (mock *ReferenceReaderWriterMock) GetDeviceReferences(ctx context.Context, deviceID string) ([]entity.Reference, error) {
 	if mock.GetDeviceReferencesFunc == nil {
 		panic("ReferenceReaderWriterMock.GetDeviceReferencesFunc: method is nil but ReferenceReaderWriter.GetDeviceReferences was just called")
 	}
@@ -316,7 +316,7 @@ func (mock *ReferenceReaderWriterMock) GetDeviceReferencesCalls() []struct {
 }
 
 // GetNamespaceReferences calls GetNamespaceReferencesFunc.
-func (mock *ReferenceReaderWriterMock) GetNamespaceReferences(ctx context.Context, setID string) ([]entity.ManifestReference, error) {
+func (mock *ReferenceReaderWriterMock) GetNamespaceReferences(ctx context.Context, setID string) ([]entity.Reference, error) {
 	if mock.GetNamespaceReferencesFunc == nil {
 		panic("ReferenceReaderWriterMock.GetNamespaceReferencesFunc: method is nil but ReferenceReaderWriter.GetNamespaceReferences was just called")
 	}
@@ -352,7 +352,7 @@ func (mock *ReferenceReaderWriterMock) GetNamespaceReferencesCalls() []struct {
 }
 
 // GetReference calls GetReferenceFunc.
-func (mock *ReferenceReaderWriterMock) GetReference(ctx context.Context, id string) (entity.ManifestReference, error) {
+func (mock *ReferenceReaderWriterMock) GetReference(ctx context.Context, id string) (entity.Reference, error) {
 	if mock.GetReferenceFunc == nil {
 		panic("ReferenceReaderWriterMock.GetReferenceFunc: method is nil but ReferenceReaderWriter.GetReference was just called")
 	}
@@ -388,7 +388,7 @@ func (mock *ReferenceReaderWriterMock) GetReferenceCalls() []struct {
 }
 
 // GetReferences calls GetReferencesFunc.
-func (mock *ReferenceReaderWriterMock) GetReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
+func (mock *ReferenceReaderWriterMock) GetReferences(ctx context.Context, repo entity.Repository) ([]entity.Reference, error) {
 	if mock.GetReferencesFunc == nil {
 		panic("ReferenceReaderWriterMock.GetReferencesFunc: method is nil but ReferenceReaderWriter.GetReferences was just called")
 	}
@@ -424,7 +424,7 @@ func (mock *ReferenceReaderWriterMock) GetReferencesCalls() []struct {
 }
 
 // GetSetReferences calls GetSetReferencesFunc.
-func (mock *ReferenceReaderWriterMock) GetSetReferences(ctx context.Context, setID string) ([]entity.ManifestReference, error) {
+func (mock *ReferenceReaderWriterMock) GetSetReferences(ctx context.Context, setID string) ([]entity.Reference, error) {
 	if mock.GetSetReferencesFunc == nil {
 		panic("ReferenceReaderWriterMock.GetSetReferencesFunc: method is nil but ReferenceReaderWriter.GetSetReferences was just called")
 	}
@@ -460,13 +460,13 @@ func (mock *ReferenceReaderWriterMock) GetSetReferencesCalls() []struct {
 }
 
 // InsertReference calls InsertReferenceFunc.
-func (mock *ReferenceReaderWriterMock) InsertReference(ctx context.Context, ref entity.ManifestReference) error {
+func (mock *ReferenceReaderWriterMock) InsertReference(ctx context.Context, ref entity.Reference) error {
 	if mock.InsertReferenceFunc == nil {
 		panic("ReferenceReaderWriterMock.InsertReferenceFunc: method is nil but ReferenceReaderWriter.InsertReference was just called")
 	}
 	callInfo := struct {
 		Ctx context.Context
-		Ref entity.ManifestReference
+		Ref entity.Reference
 	}{
 		Ctx: ctx,
 		Ref: ref,
@@ -483,11 +483,11 @@ func (mock *ReferenceReaderWriterMock) InsertReference(ctx context.Context, ref 
 //	len(mockedReferenceReaderWriter.InsertReferenceCalls())
 func (mock *ReferenceReaderWriterMock) InsertReferenceCalls() []struct {
 	Ctx context.Context
-	Ref entity.ManifestReference
+	Ref entity.Reference
 } {
 	var calls []struct {
 		Ctx context.Context
-		Ref entity.ManifestReference
+		Ref entity.Reference
 	}
 	mock.lockInsertReference.RLock()
 	calls = mock.calls.InsertReference
@@ -496,13 +496,13 @@ func (mock *ReferenceReaderWriterMock) InsertReferenceCalls() []struct {
 }
 
 // UpdateReference calls UpdateReferenceFunc.
-func (mock *ReferenceReaderWriterMock) UpdateReference(ctx context.Context, ref entity.ManifestReference) error {
+func (mock *ReferenceReaderWriterMock) UpdateReference(ctx context.Context, ref entity.Reference) error {
 	if mock.UpdateReferenceFunc == nil {
 		panic("ReferenceReaderWriterMock.UpdateReferenceFunc: method is nil but ReferenceReaderWriter.UpdateReference was just called")
 	}
 	callInfo := struct {
 		Ctx context.Context
-		Ref entity.ManifestReference
+		Ref entity.Reference
 	}{
 		Ctx: ctx,
 		Ref: ref,
@@ -519,11 +519,11 @@ func (mock *ReferenceReaderWriterMock) UpdateReference(ctx context.Context, ref 
 //	len(mockedReferenceReaderWriter.UpdateReferenceCalls())
 func (mock *ReferenceReaderWriterMock) UpdateReferenceCalls() []struct {
 	Ctx context.Context
-	Ref entity.ManifestReference
+	Ref entity.Reference
 } {
 	var calls []struct {
 		Ctx context.Context
-		Ref entity.ManifestReference
+		Ref entity.Reference
 	}
 	mock.lockUpdateReference.RLock()
 	calls = mock.calls.UpdateReference

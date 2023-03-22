@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func ManifestToProto(m entity.ManifestWork) *admin.Manifest {
+func ManifestToProto(m entity.WorkloadManifest) *admin.Manifest {
 	manifest := &admin.Manifest{
 		Id:          m.Id,
 		Version:     m.Version,

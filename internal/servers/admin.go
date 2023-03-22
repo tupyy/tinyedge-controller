@@ -301,7 +301,7 @@ func (a *AdminServer) GetManifests(ctx context.Context, req *pb.ListRequest) (*p
 	if err != nil {
 		return nil, err
 	}
-	manifests := make([]entity.ManifestWork, 0, 20)
+	manifests := make([]entity.WorkloadManifest, 0, 20)
 	for _, r := range repos {
 		m, err := a.manifestService.GetManifests(ctx, r)
 		if err != nil {

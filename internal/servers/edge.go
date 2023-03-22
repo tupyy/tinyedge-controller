@@ -28,7 +28,7 @@ func (e *EdgeServer) Enrol(ctx context.Context, req *pb.EnrolRequest) (*pb.Enrol
 	if err != nil {
 		zap.S().Errorw("unable to enrol device", "error", err, "device_id", req.DeviceId)
 		return &pb.EnrolResponse{
-			EnrolmentStatus: common.EnrolmentStatus_REFUSED,
+			EnrolmentStatus: pb.EnrolmentStatus_REFUSED,
 		}, status.Error(codes.Internal, "internal error")
 	}
 

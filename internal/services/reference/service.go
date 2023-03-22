@@ -23,11 +23,11 @@ func New(deviceReader DeviceReader, ref ReferenceReaderWriter, git GitReader) *S
 	}
 }
 
-func (w *Service) GetReference(ctx context.Context, id string) (entity.ManifestReference, error) {
+func (w *Service) GetReference(ctx context.Context, id string) (entity.Reference, error) {
 	return w.refReaderWriter.GetReference(ctx, id)
 }
 
-func (w *Service) GetReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
+func (w *Service) GetReferences(ctx context.Context, repo entity.Repository) ([]entity.Reference, error) {
 	return w.refReaderWriter.GetReferences(ctx, repo)
 }
 
@@ -42,11 +42,11 @@ func (w *Service) UpdateReferences(ctx context.Context, repo entity.Repository) 
 		return fmt.Errorf("unable to read manifest from repo %q: %w", repo.Id, err)
 	}
 
-	created := substract(manifests, references, func(item entity.ManifestReference) string { return item.Id })
-	deleted := substract(references, manifests, func(item entity.ManifestReference) string { return item.Id })
+	created := substract(manifests, references, func(item entity.Reference) string { return item.Id })
+	deleted := substract(references, manifests, func(item entity.Reference) string { return item.Id })
 	updated := intersect(manifests, references,
-		func(item entity.ManifestReference) string { return item.Id },
-		func(manifest entity.ManifestReference, ref entity.ManifestReference) bool {
+		func(item entity.Reference) string { return item.Id },
+		func(manifest entity.Reference, ref entity.Reference) bool {
 			return ref.Hash != manifest.Hash
 		},
 	)
@@ -78,7 +78,7 @@ func (w *Service) UpdateReferences(ctx context.Context, repo entity.Repository) 
 	return nil
 }
 
-func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReference) error {
+func (w *Service) UpdateRelations(ctx context.Context, m entity.Reference) error {
 	// get the old manifest
 	oldManifest, err := w.refReaderWriter.GetReference(ctx, m.Id)
 	if err != nil {
@@ -210,7 +210,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.ManifestReferenc
 	return nil
 }
 
-func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) error {
+func (w *Service) CreateRelations(ctx context.Context, m entity.WorkloadManifest) error {
 	for _, s := range m.Selectors {
 		var r entity.ReferenceRelation
 		switch s.Type {
@@ -258,7 +258,7 @@ func (w *Service) CreateRelations(ctx context.Context, m entity.ManifestWork) er
 	return nil
 }
 
-func (w *Service) deleteManifests(ctx context.Context, manifests []entity.ManifestReference) {
+func (w *Service) deleteManifests(ctx context.Context, manifests []entity.Reference) {
 	for _, m := range manifests {
 		if err := w.refReaderWriter.DeleteReference(ctx, m); err != nil {
 			zap.S().Error("unable to delete manifest", "error", err, "manifest_id", m.Id, "manifest_repo", m.Repo.LocalPath)
@@ -267,7 +267,7 @@ func (w *Service) deleteManifests(ctx context.Context, manifests []entity.Manife
 	}
 }
 
-func (w *Service) updateManifests(ctx context.Context, manifests []entity.ManifestReference) {
+func (w *Service) updateManifests(ctx context.Context, manifests []entity.Reference) {
 	for _, m := range manifests {
 		if err := w.refReaderWriter.UpdateReference(ctx, m); err != nil {
 			zap.S().Errorw("unable to update manifest", "error", err, "manifest_id", m.Id, "manifest_repo", m.Repo.LocalPath)
@@ -276,8 +276,8 @@ func (w *Service) updateManifests(ctx context.Context, manifests []entity.Manife
 	}
 }
 
-func (w *Service) createReference(manifest entity.ManifestWork, repo entity.Repository) entity.ManifestReference {
-	ref := entity.ManifestReference{
+func (w *Service) createReference(manifest entity.WorkloadManifest, repo entity.Repository) entity.Reference {
+	ref := entity.Reference{
 		Id:           manifest.Id,
 		Hash:         manifest.Hash,
 		Path:         manifest.Path,

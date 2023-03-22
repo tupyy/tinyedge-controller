@@ -87,9 +87,9 @@ func (c *Service) getConfiguration(ctx context.Context, device entity.Device) (e
 	return namespace.Configuration, nil
 }
 
-func (c *Service) getManifests(ctx context.Context, device entity.Device) ([]entity.ManifestWork, error) {
-	getManifests := func(ctx context.Context, ids []string) ([]entity.ManifestWork, error) {
-		manifests := make([]entity.ManifestWork, 0, len(device.ManifestIDS))
+func (c *Service) getManifests(ctx context.Context, device entity.Device) ([]entity.WorkloadManifest, error) {
+	getManifests := func(ctx context.Context, ids []string) ([]entity.WorkloadManifest, error) {
+		manifests := make([]entity.WorkloadManifest, 0, len(device.ManifestIDS))
 		for _, id := range ids {
 			ref, err := c.refReader.GetReference(ctx, id)
 			if err != nil {
@@ -113,7 +113,7 @@ func (c *Service) getManifests(ctx context.Context, device entity.Device) ([]ent
 	if device.SetID != nil {
 		sets, err := c.deviceReader.GetSet(ctx, *device.SetID)
 		if err != nil {
-			return []entity.ManifestWork{}, err
+			return []entity.WorkloadManifest{}, err
 		}
 		if len(sets.ManifestIDS) > 0 {
 			return getManifests(ctx, sets.ManifestIDS)
@@ -122,7 +122,7 @@ func (c *Service) getManifests(ctx context.Context, device entity.Device) ([]ent
 
 	namespace, err := c.deviceReader.GetNamespace(ctx, device.NamespaceID)
 	if err != nil {
-		return []entity.ManifestWork{}, err
+		return []entity.WorkloadManifest{}, err
 	}
 	return getManifests(ctx, namespace.ManifestIDS)
 }

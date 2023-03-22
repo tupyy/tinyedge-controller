@@ -30,7 +30,7 @@ var _ ReferenceReader = &ReferenceReaderMock{}
 //	}
 type ReferenceReaderMock struct {
 	// GetReferenceFunc mocks the GetReference method.
-	GetReferenceFunc func(ctx context.Context, id string) (entity.ManifestReference, error)
+	GetReferenceFunc func(ctx context.Context, id string) (entity.Reference, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -46,7 +46,7 @@ type ReferenceReaderMock struct {
 }
 
 // GetReference calls GetReferenceFunc.
-func (mock *ReferenceReaderMock) GetReference(ctx context.Context, id string) (entity.ManifestReference, error) {
+func (mock *ReferenceReaderMock) GetReference(ctx context.Context, id string) (entity.Reference, error) {
 	if mock.GetReferenceFunc == nil {
 		panic("ReferenceReaderMock.GetReferenceFunc: method is nil but ReferenceReader.GetReference was just called")
 	}

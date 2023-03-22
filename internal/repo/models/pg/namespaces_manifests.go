@@ -20,29 +20,29 @@ DB Table Details
 -------------------------------------
 
 
-Table: namespaces_references
+Table: namespaces_manifests
 [ 0] namespace_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-[ 1] workload_reference_id                          VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 1] workload_manifest_id                           VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "namespace_id": "hNdIiAajaGjLMTOfZEboEQXGM",    "workload_reference_id": "CLNelapGpCAwZaNdGXWnOHLff"}
+{    "namespace_id": "bHmtLSHllAPptMynDuwSrYjKh",    "workload_manifest_id": "NHJwmPbghVBjhpDPxqsJkxEZu"}
 
 
 
 */
 
-// NamespacesReferences struct is a row record of the namespaces_references table in the tinyedge database
-type NamespacesReferences struct {
+// NamespacesManifests struct is a row record of the namespaces_manifests table in the tinyedge database
+type NamespacesManifests struct {
 	//[ 0] namespace_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 	NamespaceID string `gorm:"primary_key;column:namespace_id;type:VARCHAR;size:255;"`
-	//[ 1] workload_reference_id                          VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-	WorkloadReferenceID string `gorm:"primary_key;column:workload_reference_id;type:VARCHAR;size:255;"`
+	//[ 1] workload_manifest_id                           VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	WorkloadManifestID string `gorm:"primary_key;column:workload_manifest_id;type:VARCHAR;size:255;"`
 }
 
-var namespaces_referencesTableInfo = &TableInfo{
-	Name: "namespaces_references",
+var namespaces_manifestsTableInfo = &TableInfo{
+	Name: "namespaces_manifests",
 	Columns: []*ColumnInfo{
 
 		&ColumnInfo{
@@ -68,7 +68,7 @@ var namespaces_referencesTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "workload_reference_id",
+			Name:               "workload_manifest_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
@@ -79,10 +79,10 @@ var namespaces_referencesTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "VARCHAR",
 			ColumnLength:       255,
-			GoFieldName:        "WorkloadReferenceID",
+			GoFieldName:        "WorkloadManifestID",
 			GoFieldType:        "string",
-			JSONFieldName:      "workload_reference_id",
-			ProtobufFieldName:  "workload_reference_id",
+			JSONFieldName:      "workload_manifest_id",
+			ProtobufFieldName:  "workload_manifest_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},
@@ -90,25 +90,25 @@ var namespaces_referencesTableInfo = &TableInfo{
 }
 
 // TableName sets the insert table name for this struct type
-func (n *NamespacesReferences) TableName() string {
-	return "namespaces_references"
+func (n *NamespacesManifests) TableName() string {
+	return "namespaces_manifests"
 }
 
 // BeforeSave invoked before saving, return an error if field is not populated.
-func (n *NamespacesReferences) BeforeSave() error {
+func (n *NamespacesManifests) BeforeSave() error {
 	return nil
 }
 
 // Prepare invoked before saving, can be used to populate fields etc.
-func (n *NamespacesReferences) Prepare() {
+func (n *NamespacesManifests) Prepare() {
 }
 
 // Validate invoked before performing action, return an error if field is not populated.
-func (n *NamespacesReferences) Validate(action Action) error {
+func (n *NamespacesManifests) Validate(action Action) error {
 	return nil
 }
 
 // TableInfo return table meta data
-func (n *NamespacesReferences) TableInfo() *TableInfo {
-	return namespaces_referencesTableInfo
+func (n *NamespacesManifests) TableInfo() *TableInfo {
+	return namespaces_manifestsTableInfo
 }

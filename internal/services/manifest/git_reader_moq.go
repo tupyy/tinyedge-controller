@@ -30,7 +30,7 @@ var _ GitReader = &GitReaderMock{}
 //	}
 type GitReaderMock struct {
 	// GetManifestFunc mocks the GetManifest method.
-	GetManifestFunc func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error)
+	GetManifestFunc func(ctx context.Context, ref entity.Reference) (entity.WorkloadManifest, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -39,20 +39,20 @@ type GitReaderMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Ref is the ref argument value.
-			Ref entity.ManifestReference
+			Ref entity.Reference
 		}
 	}
 	lockGetManifest sync.RWMutex
 }
 
 // GetManifest calls GetManifestFunc.
-func (mock *GitReaderMock) GetManifest(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
+func (mock *GitReaderMock) GetManifest(ctx context.Context, ref entity.Reference) (entity.WorkloadManifest, error) {
 	if mock.GetManifestFunc == nil {
 		panic("GitReaderMock.GetManifestFunc: method is nil but GitReader.GetManifest was just called")
 	}
 	callInfo := struct {
 		Ctx context.Context
-		Ref entity.ManifestReference
+		Ref entity.Reference
 	}{
 		Ctx: ctx,
 		Ref: ref,
@@ -69,11 +69,11 @@ func (mock *GitReaderMock) GetManifest(ctx context.Context, ref entity.ManifestR
 //	len(mockedGitReader.GetManifestCalls())
 func (mock *GitReaderMock) GetManifestCalls() []struct {
 	Ctx context.Context
-	Ref entity.ManifestReference
+	Ref entity.Reference
 } {
 	var calls []struct {
 		Ctx context.Context
-		Ref entity.ManifestReference
+		Ref entity.Reference
 	}
 	mock.lockGetManifest.RLock()
 	calls = mock.calls.GetManifest

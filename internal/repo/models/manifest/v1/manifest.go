@@ -2,6 +2,7 @@ package v1
 
 type Manifest struct {
 	Version     string     `yaml:"version"`
+	Kind        string     `yaml:"kind" validate:"required"`
 	Name        string     `yaml:"name"`
 	Description string     `yaml:"description"`
 	Selector    Selector   `yaml:"selectors"`

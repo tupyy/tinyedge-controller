@@ -13,8 +13,8 @@ import (
 var _ = Describe("Manifest", func() {
 	It("retrieve manifest", func() {
 		gitReader := &manifest.GitReaderMock{
-			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
-				return entity.ManifestWork{
+			GetManifestFunc: func(ctx context.Context, ref entity.Reference) (entity.WorkloadManifest, error) {
+				return entity.WorkloadManifest{
 					Id: ref.Id,
 					Secrets: []entity.Secret{
 						{
@@ -38,7 +38,7 @@ var _ = Describe("Manifest", func() {
 		}
 
 		service := manifest.New(nil, gitReader, secretReader)
-		manifest, err := service.GetManifest(context.TODO(), entity.ManifestReference{Id: "reference"})
+		manifest, err := service.GetManifest(context.TODO(), entity.Reference{Id: "reference"})
 		Expect(err).To(BeNil())
 
 		// should call GetSecret
@@ -52,8 +52,8 @@ var _ = Describe("Manifest", func() {
 
 	It("retrieve manifest returns error on missing secret", func() {
 		gitReader := &manifest.GitReaderMock{
-			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
-				return entity.ManifestWork{
+			GetManifestFunc: func(ctx context.Context, ref entity.Reference) (entity.WorkloadManifest, error) {
+				return entity.WorkloadManifest{
 					Id: ref.Id,
 					Secrets: []entity.Secret{
 						{
@@ -72,20 +72,20 @@ var _ = Describe("Manifest", func() {
 		}
 
 		service := manifest.New(nil, gitReader, secretReader)
-		_, err := service.GetManifest(context.TODO(), entity.ManifestReference{Id: "reference"})
+		_, err := service.GetManifest(context.TODO(), entity.Reference{Id: "reference"})
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(ContainSubstring("unable to read secret"))
 	})
 
 	It("retrieve manifest returns error on missing manifest", func() {
 		gitReader := &manifest.GitReaderMock{
-			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
-				return entity.ManifestWork{}, errors.New("unable to get manifest")
+			GetManifestFunc: func(ctx context.Context, ref entity.Reference) (entity.WorkloadManifest, error) {
+				return entity.WorkloadManifest{}, errors.New("unable to get manifest")
 			},
 		}
 
 		service := manifest.New(nil, gitReader, nil)
-		_, err := service.GetManifest(context.TODO(), entity.ManifestReference{Id: "ref"})
+		_, err := service.GetManifest(context.TODO(), entity.Reference{Id: "ref"})
 		Expect(err).NotTo(BeNil())
 		Expect(err.Error()).To(ContainSubstring("unable to get manifest"))
 		Expect(len(gitReader.GetManifestCalls())).To(Equal(1))
@@ -93,8 +93,8 @@ var _ = Describe("Manifest", func() {
 
 	It("read all manifests from repo", func() {
 		refReader := &manifest.ReferenceReaderMock{
-			GetReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
-				return []entity.ManifestReference{
+			GetReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Reference, error) {
+				return []entity.Reference{
 					{
 						Id: "ref1",
 					},
@@ -105,8 +105,8 @@ var _ = Describe("Manifest", func() {
 			},
 		}
 		gitReader := &manifest.GitReaderMock{
-			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
-				return entity.ManifestWork{
+			GetManifestFunc: func(ctx context.Context, ref entity.Reference) (entity.WorkloadManifest, error) {
+				return entity.WorkloadManifest{
 					Id: ref.Id,
 					Secrets: []entity.Secret{
 						{

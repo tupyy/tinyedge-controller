@@ -27,8 +27,6 @@ message RegistrationRequest {
     string device_id = 1;
     // certificate sign request
     string certificate_request = 2;
-    // hardware info
-    optional HardwareInfo hardware = 3;
 }
 
 // A RegistrationResponse message contains the result of a registration request.
@@ -40,8 +38,13 @@ message RegistrationResponse {
 message EnrolRequest {
     // device id
     string device_id = 1;
-    // hardware info
-    HardwareInfo hardware = 2;
+}
+
+enum EnrolmentStatus {
+    PENDING = 0;
+    ENROLED = 1;
+    REFUSED = 2;
+    NOT_ENROLED = 3;
 }
 
 message EnrolResponse {
@@ -57,6 +60,18 @@ message ConfigurationResponse {
     string hash = 1;
     Configuration configuration = 2;
     repeated Workload workloads = 3;
-    repeated Secret secrets = 4;
+}
 
+enum WorkloadKind {
+    POD = 0;
+    QUADLET = 1;
+    UNSPECIFIED = 2;
+}
+
+message Workload {
+    string id = 1;
+    string name = 2;
+    string hash = 3;
+    WorkloadKind kind = 4;
+    bytes data = 7; 
 }

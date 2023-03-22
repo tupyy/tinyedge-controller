@@ -23,12 +23,12 @@ DB Table Details
 Table: namespace
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 1] is_default                                     BOOL                 null: true   primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: [false]
-[ 2] reference_id                                   VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 2] configuration_manifest_id                      VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "OPeXPFUfKtwLuhsxcQpbUevRH",    "is_default": true,    "reference_id": "PWpymDpmDXcWlqvuAwQRJBQri"}
+{    "id": "CVZfBUpjAoQQDUJCvTJrnbttk",    "is_default": false,    "configuration_manifest_id": "yfcnoAuXYtBWALKKFJKSHXTFp"}
 
 
 
@@ -40,8 +40,8 @@ type Namespace struct {
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
 	//[ 1] is_default                                     BOOL                 null: true   primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: [false]
 	IsDefault sql.NullBool `gorm:"column:is_default;type:BOOL;default:false;"`
-	//[ 2] reference_id                                   VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-	ReferenceID sql.NullString `gorm:"column:reference_id;type:VARCHAR;size:255;"`
+	//[ 2] configuration_manifest_id                      VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ConfigurationManifestID string `gorm:"column:configuration_manifest_id;type:VARCHAR;size:255;"`
 }
 
 var namespaceTableInfo = &TableInfo{
@@ -92,10 +92,10 @@ var namespaceTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              2,
-			Name:               "reference_id",
+			Name:               "configuration_manifest_id",
 			Comment:            ``,
 			Notes:              ``,
-			Nullable:           true,
+			Nullable:           false,
 			DatabaseTypeName:   "VARCHAR",
 			DatabaseTypePretty: "VARCHAR(255)",
 			IsPrimaryKey:       false,
@@ -103,10 +103,10 @@ var namespaceTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "VARCHAR",
 			ColumnLength:       255,
-			GoFieldName:        "ReferenceID",
-			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "reference_id",
-			ProtobufFieldName:  "reference_id",
+			GoFieldName:        "ConfigurationManifestID",
+			GoFieldType:        "string",
+			JSONFieldName:      "configuration_manifest_id",
+			ProtobufFieldName:  "configuration_manifest_id",
 			ProtobufType:       "string",
 			ProtobufPos:        3,
 		},

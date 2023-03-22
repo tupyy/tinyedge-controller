@@ -20,29 +20,29 @@ DB Table Details
 -------------------------------------
 
 
-Table: secrets_manifests
+Table: secrets_references
 [ 0] secret_id                                      VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-[ 1] manifest_id                                    VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 1] reference_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "secret_id": "JPDhvswYQOVaoyYkAxDUFrOOv",    "manifest_id": "GBTVWQDpXojWwmCuUVWxyZRym"}
+{    "secret_id": "yHjMsXxaHqMrBwNIeieunFUeQ",    "reference_id": "SkRgwPjmFYRaVNkeepxlOZJGI"}
 
 
 
 */
 
-// SecretsManifests struct is a row record of the secrets_manifests table in the tinyedge database
-type SecretsManifests struct {
+// SecretsReferences struct is a row record of the secrets_references table in the tinyedge database
+type SecretsReferences struct {
 	//[ 0] secret_id                                      VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 	SecretID string `gorm:"primary_key;column:secret_id;type:VARCHAR;size:255;"`
-	//[ 1] manifest_id                                    VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-	ManifestID string `gorm:"primary_key;column:manifest_id;type:VARCHAR;size:255;"`
+	//[ 1] reference_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ReferenceID string `gorm:"primary_key;column:reference_id;type:VARCHAR;size:255;"`
 }
 
-var secrets_manifestsTableInfo = &TableInfo{
-	Name: "secrets_manifests",
+var secrets_referencesTableInfo = &TableInfo{
+	Name: "secrets_references",
 	Columns: []*ColumnInfo{
 
 		&ColumnInfo{
@@ -68,7 +68,7 @@ var secrets_manifestsTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "manifest_id",
+			Name:               "reference_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
@@ -79,10 +79,10 @@ var secrets_manifestsTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "VARCHAR",
 			ColumnLength:       255,
-			GoFieldName:        "ManifestID",
+			GoFieldName:        "ReferenceID",
 			GoFieldType:        "string",
-			JSONFieldName:      "manifest_id",
-			ProtobufFieldName:  "manifest_id",
+			JSONFieldName:      "reference_id",
+			ProtobufFieldName:  "reference_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},
@@ -90,25 +90,25 @@ var secrets_manifestsTableInfo = &TableInfo{
 }
 
 // TableName sets the insert table name for this struct type
-func (s *SecretsManifests) TableName() string {
-	return "secrets_manifests"
+func (s *SecretsReferences) TableName() string {
+	return "secrets_references"
 }
 
 // BeforeSave invoked before saving, return an error if field is not populated.
-func (s *SecretsManifests) BeforeSave() error {
+func (s *SecretsReferences) BeforeSave() error {
 	return nil
 }
 
 // Prepare invoked before saving, can be used to populate fields etc.
-func (s *SecretsManifests) Prepare() {
+func (s *SecretsReferences) Prepare() {
 }
 
 // Validate invoked before performing action, return an error if field is not populated.
-func (s *SecretsManifests) Validate(action Action) error {
+func (s *SecretsReferences) Validate(action Action) error {
 	return nil
 }
 
 // TableInfo return table meta data
-func (s *SecretsManifests) TableInfo() *TableInfo {
-	return secrets_manifestsTableInfo
+func (s *SecretsReferences) TableInfo() *TableInfo {
+	return secrets_referencesTableInfo
 }

@@ -28,8 +28,8 @@ type NamespaceJoin struct {
 	ConfigurationLogLevel               sql.NullString `gorm:"column:configuration_log_level;type:TEXT;default:info;"`
 }
 
-type ManifestJoin struct {
-	ManifestReference
+type ReferenceJoin struct {
+	Reference
 	DeviceId               string         `gorm:"column_name:device_id;type:TEXT"`
 	SetId                  string         `gorm:"column_name:set_id;type:TEXT"`
 	NamespaceId            string         `gorm:"column_name:namespace_id;type:TEXT"`

@@ -20,8 +20,8 @@ var _ = Describe("References", func() {
 	Describe("Update", func() {
 		It("updates the reference with success", func() {
 			gitReader = &reference.GitReaderMock{
-				GetReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
-					return []entity.ManifestReference{}, nil
+				GetReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Reference, error) {
+					return []entity.Reference{}, nil
 				},
 			}
 			deviceReaderWriter = &reference.DeviceReaderMock{
@@ -36,8 +36,8 @@ var _ = Describe("References", func() {
 				},
 			}
 			referenceReaderWriter = &reference.ReferenceReaderWriterMock{
-				GetReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
-					return []entity.ManifestReference{}, nil
+				GetReferencesFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Reference, error) {
+					return []entity.Reference{}, nil
 				},
 			}
 			service = reference.New(deviceReaderWriter, referenceReaderWriter, gitReader)

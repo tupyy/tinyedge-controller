@@ -30,7 +30,7 @@ var _ GitReader = &GitReaderMock{}
 //	}
 type GitReaderMock struct {
 	// GetReferencesFunc mocks the GetReferences method.
-	GetReferencesFunc func(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error)
+	GetReferencesFunc func(ctx context.Context, repo entity.Repository) ([]entity.Reference, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -46,7 +46,7 @@ type GitReaderMock struct {
 }
 
 // GetReferences calls GetReferencesFunc.
-func (mock *GitReaderMock) GetReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
+func (mock *GitReaderMock) GetReferences(ctx context.Context, repo entity.Repository) ([]entity.Reference, error) {
 	if mock.GetReferencesFunc == nil {
 		panic("GitReaderMock.GetReferencesFunc: method is nil but GitReader.GetReferences was just called")
 	}

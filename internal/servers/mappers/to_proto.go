@@ -11,8 +11,8 @@ import (
 func MapConfigurationToProto(conf entity.ConfigurationResponse) *edgepb.ConfigurationResponse {
 	response := &edgepb.ConfigurationResponse{
 		Hash:      conf.Hash,
-		Workloads: make([]*common.Workload, 0, len(conf.Workloads)),
-		Secrets:   make([]*common.Secret, 0, len(conf.Secrets)),
+		Workloads: make([]*edgepb.Workload, 0, len(conf.Workloads)),
+		Secrets:   make([]*edgepb.Secret, 0, len(conf.Secrets)),
 	}
 	for _, w := range conf.Workloads {
 		response.Workloads = append(response.Workloads, MapWorkloadToProto(w))
@@ -26,7 +26,7 @@ func MapConfigurationToProto(conf entity.ConfigurationResponse) *edgepb.Configur
 	return response
 }
 
-func MapWorkloadToProto(w entity.Workload) *common.Workload {
+func MapWorkloadToProto(w entity.Workload) *edgepb.Workload {
 	configmaps := make([]string, 0, len(w.Configmaps))
 	for _, c := range w.Configmaps {
 		data, err := yaml.Marshal(c)

@@ -20,29 +20,29 @@ DB Table Details
 -------------------------------------
 
 
-Table: sets_references
+Table: sets_manifests
 [ 0] device_set_id                                  VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-[ 1] workload_reference_id                          VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 1] workload_manifest_id                           VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "device_set_id": "tFVETTFPCctMLjqIophfhUWLJ",    "workload_reference_id": "ekNHsDfFLYZmsadGyZVQcoDvk"}
+{    "device_set_id": "OvQflvsYYLmPcPVQjywrTWjdW",    "workload_manifest_id": "AYmrYGRxpDKpFTXuBrjnBuGSc"}
 
 
 
 */
 
-// SetsReferences struct is a row record of the sets_references table in the tinyedge database
-type SetsReferences struct {
+// SetsManifests struct is a row record of the sets_manifests table in the tinyedge database
+type SetsManifests struct {
 	//[ 0] device_set_id                                  VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 	DeviceSetID string `gorm:"primary_key;column:device_set_id;type:VARCHAR;size:255;"`
-	//[ 1] workload_reference_id                          VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-	WorkloadReferenceID string `gorm:"primary_key;column:workload_reference_id;type:VARCHAR;size:255;"`
+	//[ 1] workload_manifest_id                           VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	WorkloadManifestID string `gorm:"primary_key;column:workload_manifest_id;type:VARCHAR;size:255;"`
 }
 
-var sets_referencesTableInfo = &TableInfo{
-	Name: "sets_references",
+var sets_manifestsTableInfo = &TableInfo{
+	Name: "sets_manifests",
 	Columns: []*ColumnInfo{
 
 		&ColumnInfo{
@@ -68,7 +68,7 @@ var sets_referencesTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "workload_reference_id",
+			Name:               "workload_manifest_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
@@ -79,10 +79,10 @@ var sets_referencesTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "VARCHAR",
 			ColumnLength:       255,
-			GoFieldName:        "WorkloadReferenceID",
+			GoFieldName:        "WorkloadManifestID",
 			GoFieldType:        "string",
-			JSONFieldName:      "workload_reference_id",
-			ProtobufFieldName:  "workload_reference_id",
+			JSONFieldName:      "workload_manifest_id",
+			ProtobufFieldName:  "workload_manifest_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},
@@ -90,25 +90,25 @@ var sets_referencesTableInfo = &TableInfo{
 }
 
 // TableName sets the insert table name for this struct type
-func (s *SetsReferences) TableName() string {
-	return "sets_references"
+func (s *SetsManifests) TableName() string {
+	return "sets_manifests"
 }
 
 // BeforeSave invoked before saving, return an error if field is not populated.
-func (s *SetsReferences) BeforeSave() error {
+func (s *SetsManifests) BeforeSave() error {
 	return nil
 }
 
 // Prepare invoked before saving, can be used to populate fields etc.
-func (s *SetsReferences) Prepare() {
+func (s *SetsManifests) Prepare() {
 }
 
 // Validate invoked before performing action, return an error if field is not populated.
-func (s *SetsReferences) Validate(action Action) error {
+func (s *SetsManifests) Validate(action Action) error {
 	return nil
 }
 
 // TableInfo return table meta data
-func (s *SetsReferences) TableInfo() *TableInfo {
-	return sets_referencesTableInfo
+func (s *SetsManifests) TableInfo() *TableInfo {
+	return sets_manifestsTableInfo
 }

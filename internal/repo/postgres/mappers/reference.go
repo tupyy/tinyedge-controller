@@ -22,17 +22,18 @@ func (u uniqueIds) add(id string, prefix string) {
 	u[_id] = struct{}{}
 }
 
-func ManifestModelToEntity(mm []models.ManifestJoin) entity.ManifestReference {
+func ReferenceModelToEntity(mm []models.ReferenceJoin) entity.Reference {
 	m := mm[0]
-	e := entity.ManifestReference{
+	e := entity.Reference{
 		Id:           m.ID,
 		Name:         m.Name,
 		Valid:        m.Valid,
 		Hash:         m.Hash,
-		Path:         m.PathManifestReference,
+		Path:         m.PathReference,
 		DeviceIDs:    make([]string, 0, len(mm)),
 		SetIDs:       make([]string, 0, len(mm)),
 		NamespaceIDs: make([]string, 0, len(mm)),
+		Kind:         parseKind(m.RefType),
 		Repo: entity.Repository{
 			Id:  m.Repo_ID,
 			Url: m.Repo_URL,
@@ -74,19 +75,20 @@ func ManifestModelToEntity(mm []models.ManifestJoin) entity.ManifestReference {
 	return e
 }
 
-func ManifestModelsToEntities(mm []models.ManifestJoin) []entity.ManifestReference {
-	entities := make(map[string]entity.ManifestReference)
+func ReferenceModelsToEntities(mm []models.ReferenceJoin) []entity.Reference {
+	entities := make(map[string]entity.Reference)
 	// makes sure that we add only once the id of the devices, sets or namespaces
 	idMap := make(uniqueIds)
 	for _, m := range mm {
 		manifest, ok := entities[m.ID]
 		if !ok {
-			manifest = entity.ManifestReference{
+			manifest = entity.Reference{
 				Id:    m.ID,
 				Valid: m.Valid,
 				Name:  m.Name,
 				Hash:  m.Hash,
-				Path:  m.PathManifestReference,
+				Kind:  parseKind(m.RefType),
+				Path:  m.PathReference,
 				Repo: entity.Repository{
 					Id:  m.Repo_ID,
 					Url: m.Repo_URL,
@@ -126,21 +128,20 @@ func ManifestModelsToEntities(mm []models.ManifestJoin) []entity.ManifestReferen
 		entities[m.ID] = manifest
 	}
 
-	ee := make([]entity.ManifestReference, 0, len(entities))
+	ee := make([]entity.Reference, 0, len(entities))
 	for _, v := range entities {
 		ee = append(ee, v)
 	}
 	return ee
 }
 
-func ManifestEntityToModel(e entity.ManifestReference) models.ManifestReference {
-	m := models.ManifestReference{
-		ID:                    e.Id,
-		PathManifestReference: e.Path,
-		RepoID:                e.Repo.Id,
-		Valid:                 e.Valid,
-		Hash:                  e.Hash,
-		Name:                  e.Name,
+func ReferenceEntityToModel(e entity.Manifest) models.Reference {
+	m := models.Reference{
+		ID:            e.GetID(),
+		PathReference: e.GetPath(),
+		RepoID:        e.GetRepository().Id,
+		Name:          e.GetName(),
+		RefType:       e.GetKind(),
 	}
 	return m
 }
@@ -232,4 +233,18 @@ func RepoModelToEntity(m models.Repo) entity.Repository {
 	}
 
 	return e
+}
+
+func getKind(e entity.Reference) string {
+	if e.Kind == entity.ConfigurationReferenceKind {
+		return "configuration"
+	}
+	return "workload"
+}
+
+func parseKind(refType string) entity.ReferenceKind {
+	if refType == "configuration" {
+		return entity.ConfigurationReferenceKind
+	}
+	return entity.WorkloadReferenceKind
 }

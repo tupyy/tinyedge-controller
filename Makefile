@@ -11,7 +11,7 @@ IMG ?= tinyedge-controller
 IMG_TAG ?= latest
 
 # Path to protoc compiler
-PROTOC ?= /home/cosmin/Downloads/protoc/bin/protoc
+PROTOC ?= $(PWD)/bin/protoc
 
 # Docker command to use, can be podman
 DOCKER ?= podman

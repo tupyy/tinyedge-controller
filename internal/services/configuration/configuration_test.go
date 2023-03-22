@@ -23,15 +23,15 @@ var _ = Describe("ConfigurationResponse", func() {
 			},
 		}
 		manifestReader := &configuration.ManifestReaderMock{
-			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
-				return entity.ManifestWork{
+			GetManifestFunc: func(ctx context.Context, ref entity.Reference) (entity.WorkloadManifest, error) {
+				return entity.WorkloadManifest{
 					Id: "manifest_for_toto",
 				}, nil
 			},
 		}
 		referenceReader := &configuration.ReferenceReaderMock{
-			GetReferenceFunc: func(ctx context.Context, id string) (entity.ManifestReference, error) {
-				return entity.ManifestReference{}, nil
+			GetReferenceFunc: func(ctx context.Context, id string) (entity.Reference, error) {
+				return entity.Reference{}, nil
 			},
 		}
 
@@ -57,15 +57,15 @@ var _ = Describe("ConfigurationResponse", func() {
 			},
 		}
 		manifestReader := &configuration.ManifestReaderMock{
-			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
-				return entity.ManifestWork{
+			GetManifestFunc: func(ctx context.Context, ref entity.Reference) (entity.WorkloadManifest, error) {
+				return entity.WorkloadManifest{
 					Id: "manifest_for_toto",
 				}, nil
 			},
 		}
 		referenceReader := &configuration.ReferenceReaderMock{
-			GetReferenceFunc: func(ctx context.Context, id string) (entity.ManifestReference, error) {
-				return entity.ManifestReference{}, nil
+			GetReferenceFunc: func(ctx context.Context, id string) (entity.Reference, error) {
+				return entity.Reference{}, nil
 			},
 		}
 
@@ -90,15 +90,15 @@ var _ = Describe("ConfigurationResponse", func() {
 			},
 		}
 		manifestReader := &configuration.ManifestReaderMock{
-			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
-				return entity.ManifestWork{
+			GetManifestFunc: func(ctx context.Context, ref entity.Reference) (entity.WorkloadManifest, error) {
+				return entity.WorkloadManifest{
 					Id: "manifest_for_toto",
 				}, nil
 			},
 		}
 		referenceReader := &configuration.ReferenceReaderMock{
-			GetReferenceFunc: func(ctx context.Context, id string) (entity.ManifestReference, error) {
-				return entity.ManifestReference{}, nil
+			GetReferenceFunc: func(ctx context.Context, id string) (entity.Reference, error) {
+				return entity.Reference{}, nil
 			},
 		}
 
@@ -127,15 +127,15 @@ var _ = Describe("ConfigurationResponse", func() {
 			},
 		}
 		manifestReader := &configuration.ManifestReaderMock{
-			GetManifestFunc: func(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
-				return entity.ManifestWork{
+			GetManifestFunc: func(ctx context.Context, ref entity.Reference) (entity.WorkloadManifest, error) {
+				return entity.WorkloadManifest{
 					Id: ref.Id,
 				}, nil
 			},
 		}
 		referenceReader := &configuration.ReferenceReaderMock{
-			GetReferenceFunc: func(ctx context.Context, id string) (entity.ManifestReference, error) {
-				return entity.ManifestReference{}, nil
+			GetReferenceFunc: func(ctx context.Context, id string) (entity.Reference, error) {
+				return entity.Reference{}, nil
 			},
 		}
 

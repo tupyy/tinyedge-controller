@@ -11,7 +11,7 @@ import (
 func DeviceEntityToModel(device entity.Device) models.Device {
 	m := models.Device{
 		ID:          device.ID,
-		NamespaceID: sql.NullString{Valid: true, String: device.NamespaceID},
+		NamespaceID: device.NamespaceID,
 		Registered:  device.Registred,
 		Enroled:     device.EnrolStatus.String(),
 		EnroledAt:   device.EnroledAt,
@@ -30,7 +30,7 @@ func DeviceEntityToModel(device entity.Device) models.Device {
 	}
 
 	if device.Configuration != nil {
-		m.ConfigurationID = sql.NullString{Valid: true, String: device.Configuration.ID}
+		m.ConfigurationReferenceID = sql.NullString{Valid: true, String: device.Configuration.ID}
 	}
 
 	if device.SetID != nil {
@@ -43,7 +43,7 @@ func DeviceEntityToModel(device entity.Device) models.Device {
 func DeviceToEntity(joins []models.DeviceJoin) entity.Device {
 	e := entity.Device{
 		ID:          joins[0].ID,
-		NamespaceID: joins[0].NamespaceID.String,
+		NamespaceID: joins[0].NamespaceID,
 		Registred:   joins[0].Registered,
 		EnrolStatus: entity.EnroledStatus.FromString(joins[0].Enroled),
 		ManifestIDS: make([]string, 0, len(joins)),
@@ -146,9 +146,9 @@ func SetToEntity(s []models.SetJoin) entity.Set {
 	set.ManifestIDS = manifests
 	set.DeviceIDs = ids
 
-	if s[0].DeviceSet.ConfigurationID.Valid {
+	if s[0].DeviceSet.ConfigurationReferenceID.Valid {
 		set.Configuration = &entity.Configuration{
-			ID:              s[0].DeviceSet.ConfigurationID.String,
+			ID:              s[0].DeviceSet.ConfigurationReferenceID.String,
 			HeartbeatPeriod: time.Duration(s[0].ConfigurationHeartbeatPeriodSeconds.Int64 * int64(time.Second)),
 			LogLevel:        s[0].ConfigurationLogLevel.String,
 		}
@@ -163,16 +163,16 @@ func SetToModel(set entity.Set) models.DeviceSet {
 		NamespaceID: set.NamespaceID,
 	}
 	if set.Configuration != nil {
-		model.ConfigurationID = sql.NullString{Valid: true, String: set.Configuration.ID}
+		model.ConfigurationReferenceID = sql.NullString{Valid: true, String: set.Configuration.ID}
 	}
 	return model
 }
 
 func NamespaceToModel(namespace entity.Namespace) models.Namespace {
 	return models.Namespace{
-		ID:              namespace.Name,
-		IsDefault:       sql.NullBool{Valid: true, Bool: namespace.IsDefault},
-		ConfigurationID: namespace.Configuration.ID,
+		ID:                       namespace.Name,
+		IsDefault:                sql.NullBool{Valid: true, Bool: namespace.IsDefault},
+		ConfigurationReferenceID: namespace.Configuration.ID,
 	}
 }
 

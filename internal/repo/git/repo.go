@@ -1,30 +1,19 @@
 package git
 
 import (
-	"bytes"
 	"context"
-	"crypto/sha256"
 	"errors"
 	"fmt"
-	"io"
-	"io/fs"
-	"os"
 	"path"
-	"path/filepath"
-	"strings"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
-	goyaml "github.com/go-yaml/yaml"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	manifestv1 "github.com/tupyy/tinyedge-controller/internal/repo/models/manifest/v1"
 	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"go.uber.org/zap"
-	v1 "k8s.io/api/core/v1"
-	k8syaml "sigs.k8s.io/yaml"
 )
 
 type GitRepo struct {
@@ -111,69 +100,16 @@ func (g *GitRepo) GetHeadSha(ctx context.Context, r entity.Repository) (string, 
 	return ref.Hash().String(), err
 }
 
-// GetReferences returns a list of references from all manifest works found in the git repository
-func (g *GitRepo) GetReferences(ctx context.Context, repo entity.Repository) ([]entity.ManifestReference, error) {
-	manifests, err := g.GetManifests(ctx, repo)
-	if err != nil {
-		return []entity.ManifestReference{}, fmt.Errorf("unable to get reference for repo %q: %w", repo.Id, err)
-	}
-
-	refs := make([]entity.ManifestReference, 0, len(manifests))
-	for _, manifest := range manifests {
-		refs = append(refs, g.createReference(manifest, repo))
-	}
-
-	return refs, nil
-}
-
-// GetManifestWorks returns all the manifest work found in the repo.
-// Only the valid manifest works are returned
-func (g *GitRepo) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.ManifestWork, error) {
-	manifestFiles, err := g.findManifestFiles(ctx, repo.LocalPath)
-	if err != nil {
-		return nil, err
-	}
-
-	manifests := make([]entity.ManifestWork, 0, len(manifestFiles))
-	for _, m := range manifestFiles {
-		manifest, err := g.getManifest(ctx, m, repo.LocalPath)
-		if err != nil {
-			zap.S().Errorf("unable to get manifest file", "error", err, "filepath", m, "repo_id", repo.Id)
-			continue
-		}
-		manifests = append(manifests, manifest)
-	}
-
-	return manifests, nil
-}
-
 // GetManifest return the manifest referred by ref
-func (g *GitRepo) GetManifest(ctx context.Context, ref entity.ManifestReference) (entity.ManifestWork, error) {
-	return g.getManifest(ctx, ref.Path, ref.Repo.LocalPath)
+func (g *GitRepo) GetManifest(ctx context.Context, repo entity.Repository, filepath string) (entity.Manifest, error) {
+	reader := &manifestReader{repo: repo}
+	return reader.GetManifest(ctx, filepath)
 }
 
-func (g *GitRepo) getManifest(ctx context.Context, filename, basePath string) (entity.ManifestWork, error) {
-	computeHash := func(b []byte) string {
-		hash := sha256.New()
-		hash.Write(b)
-		return fmt.Sprintf("%x", hash.Sum(nil))
-	}
-
-	content, err := os.ReadFile(filename)
-	if err != nil {
-		return entity.ManifestWork{}, fmt.Errorf("unable to read manifest file %q: %w", filename, err)
-	}
-	manifest, err := g.parse(content, filename, basePath)
-	if err != nil {
-		return entity.ManifestWork{}, fmt.Errorf("unable to parse manifest work %q: %w", filename, err)
-	}
-
-	manifest.Hash = computeHash(content)
-	manifest.Id = computeHash(bytes.NewBufferString(filename).Bytes())
-	manifest.Path = filename
-
-	return manifest, nil
-
+// GetManifests returns all the manifest of a repo.
+func (g *GitRepo) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+	reader := &manifestReader{repo: repo}
+	return reader.GetManifests(ctx)
 }
 
 func (g *GitRepo) Clone(ctx context.Context, repo entity.Repository) (entity.Repository, error) {
@@ -229,202 +165,6 @@ func (g *GitRepo) openRepository(ctx context.Context, r entity.Repository) (*git
 	return repo, nil
 }
 
-// parse parses the manifest file and verify that all the resources defined are valid k8s manifestv1.
-// Returns false if one resource is not a valid ConfigMap or Pod.
-func (g *GitRepo) parse(content []byte, filename, basePath string) (entity.ManifestWork, error) {
-	var manifest manifestv1.Manifest
-
-	if err := goyaml.Unmarshal(content, &manifest); err != nil {
-		return entity.ManifestWork{}, err
-	}
-
-	e := entity.ManifestWork{
-		Version:     manifest.Version,
-		Description: manifest.Description,
-		Name:        manifest.Name,
-		Selectors:   make([]entity.Selector, 0),
-		Secrets:     make([]entity.Secret, 0, len(manifest.Secrets)),
-		Valid:       true,
-	}
-
-	for i := 0; true; i++ {
-		keepGoing := false
-		if i < len(manifest.Selector.Namespaces) {
-			e.Selectors = append(e.Selectors, entity.Selector{
-				Type:  entity.NamespaceSelector,
-				Value: manifest.Selector.Namespaces[i],
-			})
-			keepGoing = true
-		}
-		if i < len(manifest.Selector.Sets) {
-			e.Selectors = append(e.Selectors, entity.Selector{
-				Type:  entity.SetSelector,
-				Value: manifest.Selector.Sets[i],
-			})
-			keepGoing = true
-		}
-		if i < len(manifest.Selector.Devices) {
-			e.Selectors = append(e.Selectors, entity.Selector{
-				Type:  entity.DeviceSelector,
-				Value: manifest.Selector.Devices[i],
-			})
-			keepGoing = true
-		}
-		if !keepGoing {
-			break
-		}
-	}
-
-	for _, s := range manifest.Secrets {
-		e.Secrets = append(e.Secrets, entity.Secret{
-			Path: s.Path,
-			Id:   s.Name,
-			Key:  s.Key,
-		})
-	}
-
-	for _, r := range manifest.Resources {
-		configmaps, pods, err := g.parseResource(r.Ref, basePath)
-		if err != nil {
-			e.Valid = false
-			return e, err
-		}
-		e.ConfigMaps = append(e.ConfigMaps, configmaps...)
-		e.Pods = append(e.Pods, pods...)
-	}
-
-	return e, nil
-}
-
-// findManifestFiles returns the list of all manifestworks files found in the repo
-func (g *GitRepo) findManifestFiles(ctx context.Context, path string) ([]string, error) {
-	searchFn := func(ctx context.Context, root string, output chan string, errCh chan error, doneCh chan struct{}, filename string) {
-		err := filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() && info.Name() == ".git" {
-				return filepath.SkipDir
-			}
-			if !info.IsDir() && info.Name() == filename {
-				output <- path
-			}
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
-			}
-			return nil
-		})
-		if err != nil {
-			errCh <- err
-		}
-		doneCh <- struct{}{}
-	}
-
-	result := make(chan string)
-	errCh := make(chan error)
-	doneCh := make(chan struct{})
-	searchCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	go searchFn(searchCtx, path, result, errCh, doneCh, entity.ManifestWorkFilename)
-	manifestWorks := make([]string, 0)
-
-	keep := true
-	for keep {
-		select {
-		case manifestWorkFile := <-result:
-			manifestWorks = append(manifestWorks, manifestWorkFile)
-		case err := <-errCh:
-			zap.S().Errorf("error during manifest work file search in %q: %q", path, err)
-		case <-doneCh:
-			keep = false
-		}
-	}
-
-	return manifestWorks, nil
-}
-
-func (g *GitRepo) parseResource(filename string, basePath string) ([]v1.ConfigMap, []v1.Pod, error) {
-	filepath := path.Join(basePath, filename)
-	content, err := os.ReadFile(filepath)
-	if err != nil {
-		return []v1.ConfigMap{}, []v1.Pod{}, fmt.Errorf("unable to read resource file %q: %w", filepath, err)
-	}
-
-	parts, err := g.splitYAML(content)
-	if err != nil {
-		return []v1.ConfigMap{}, []v1.Pod{}, fmt.Errorf("unable to decode resource file %q: %w", filepath, err)
-	}
-
-	configMaps := make([]v1.ConfigMap, 0, len(parts))
-	pods := make([]v1.Pod, 0, len(parts))
-
-	allowedKinds := "ConfigMap|Pods"
-	for _, part := range parts {
-		kind, err := g.getKind(part)
-		if err != nil {
-			return configMaps, pods, fmt.Errorf("unable to get \"kind\" from yaml with error %q", err)
-		}
-		if kind == "" || !strings.Contains(allowedKinds, kind) {
-			zap.S().Warnf("kind %q not allowed in manifest work and it will be ignored", kind)
-			continue
-		}
-		switch kind {
-		case "ConfigMap":
-			var c v1.ConfigMap
-			err := k8syaml.Unmarshal(part, &c)
-			if err != nil {
-				return configMaps, pods, fmt.Errorf("unable to unmarshal part %q: %v", string(part), err)
-			}
-			configMaps = append(configMaps, c)
-		case "Pod":
-			var p v1.Pod
-			err := k8syaml.Unmarshal(part, &p)
-			if err != nil {
-				return configMaps, pods, fmt.Errorf("unable to unmarshal part %q: %v", string(part), err)
-			}
-			pods = append(pods, p)
-		}
-	}
-
-	return configMaps, pods, nil
-}
-
-func (g *GitRepo) splitYAML(resources []byte) ([][]byte, error) {
-	dec := goyaml.NewDecoder(bytes.NewReader(resources))
-
-	var res [][]byte
-	for {
-		var value interface{}
-		err := dec.Decode(&value)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-		valueBytes, err := goyaml.Marshal(value)
-		if err != nil {
-			return nil, err
-		}
-		res = append(res, valueBytes)
-	}
-	return res, nil
-}
-
-func (g *GitRepo) getKind(content []byte) (string, error) {
-	type anonymousStruct struct {
-		Kind string `yaml:"kind"`
-	}
-	var a anonymousStruct
-	if err := goyaml.Unmarshal(content, &a); err != nil {
-		return "", fmt.Errorf("unknown struct: %s", err)
-	}
-	return a.Kind, nil
-}
-
 func (g *GitRepo) getMainBranch(r *git.Repository) (string, error) {
 	// check if main branch is "main" or "master"
 	w, err := r.Worktree()
@@ -443,32 +183,6 @@ func (g *GitRepo) getMainBranch(r *git.Repository) (string, error) {
 		return "master", nil
 	}
 	return "", fmt.Errorf("no branch named \"main\" or \"master\" in repo")
-}
-
-func (g *GitRepo) createReference(manifest entity.ManifestWork, repo entity.Repository) entity.ManifestReference {
-	ref := entity.ManifestReference{
-		Id:           manifest.Id,
-		Hash:         manifest.Hash,
-		Path:         manifest.Path,
-		Valid:        manifest.Valid,
-		Repo:         repo,
-		DeviceIDs:    make([]string, 0, len(manifest.Selectors)),
-		SetIDs:       make([]string, 0, len(manifest.Selectors)),
-		NamespaceIDs: make([]string, 0, len(manifest.Selectors)),
-	}
-
-	for _, s := range manifest.Selectors {
-		switch s.Type {
-		case entity.NamespaceSelector:
-			ref.NamespaceIDs = append(ref.NamespaceIDs, s.Value)
-		case entity.SetSelector:
-			ref.SetIDs = append(ref.SetIDs, s.Value)
-		case entity.DeviceSelector:
-			ref.DeviceIDs = append(ref.DeviceIDs, s.Value)
-		}
-	}
-
-	return ref
 }
 
 func (g *GitRepo) getCredentials(ctx context.Context, fn entity.CredentialsFunc, secretPath string) (transport.AuthMethod, error) {
