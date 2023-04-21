@@ -2,45 +2,68 @@ package entity
 
 import "time"
 
-const (
-	// name of the manifest work
-	ManifestWorkFilename = "manifest_work.yaml"
-)
+type ManifestKind int
+
+func (m ManifestKind) String() string {
+	switch m {
+	case WorkloadManifestKind:
+		return "workload"
+	case ConfigurationManifestKind:
+		return "configuration"
+	default:
+		return "unknown"
+	}
+}
 
 const (
-	WorkloadManifestKind      = "workload"
-	ConfigurationManifestKind = "configuration"
+	WorkloadManifestKind = iota
+	ConfigurationManifestKind
 )
 
 type Manifest interface {
 	GetID() string
 	GetVersion() string
-	GetName() string
-	GetKind() string
+	GetKind() ManifestKind
 	GetPath() string
 	GetRepository() Repository
 }
 
 type TypeMeta struct {
 	// kind to the manifest
-	Kind string
+	Kind ManifestKind
 	// Version
 	Version string
 }
 
+func (t TypeMeta) GetKind() ManifestKind {
+	return t.Kind
+}
+
+func (t TypeMeta) GetVersion() string {
+	return t.Version
+}
+
 type ObjectMeta struct {
-	// Name - name of the manifest
-	Name string
-	// Labels
-	Labels map[string]string
 	// Id - id of the manifest which is the hash of the filepath
 	Id string
+	// Labels
+	Labels map[string]string
+}
+
+func (o ObjectMeta) GetID() string {
+	return o.Id
+}
+
+func (o ObjectMeta) GetLabels() map[string]string {
+	return o.Labels
 }
 
 // Workload holds the workload definition.
 type Workload struct {
 	TypeMeta
 	ObjectMeta
+	// repository
+	Repository Repository
 	// path of the manifest file in the local repo
 	Path string
 	// Description - description of the manifest
@@ -53,24 +76,12 @@ type Workload struct {
 	Resources []string
 	// Selectors list of selectors
 	Selectors []Selector
-	// repository
-	Repository Repository
-}
-
-func (w Workload) GetName() string {
-	return w.ObjectMeta.Name
-}
-
-func (w Workload) GetKind() string {
-	return w.TypeMeta.Kind
-}
-
-func (w Workload) GetID() string {
-	return w.ObjectMeta.Id
-}
-
-func (w Workload) GetVersion() string {
-	return w.TypeMeta.Version
+	// Devices holds the list of devices' ids which use this manifest
+	Devices []string
+	// Namespaces hold the list of namespace ids which use this manifest
+	Namespaces []string
+	// Sets holds the list of sets ids which use this manifest
+	Sets []string
 }
 
 func (w Workload) GetPath() string {
@@ -93,6 +104,10 @@ type Secret struct {
 type Configuration struct {
 	TypeMeta
 	ObjectMeta
+	// repository
+	Repository Repository
+	// path of the manifest file in the local repo
+	Path string
 	// list of profiles
 	Profiles []Profile
 	// HeartbeatPeriod set the heartbeat period of the device
@@ -103,20 +118,12 @@ type Configuration struct {
 	Selectors []Selector
 }
 
-func (c Configuration) GetName() string {
-	return c.ObjectMeta.Name
+func (c Configuration) GetPath() string {
+	return c.Path
 }
 
-func (c Configuration) GetKind() string {
-	return c.TypeMeta.Kind
-}
-
-func (c Configuration) GetID() string {
-	return c.ObjectMeta.Id
-}
-
-func (c Configuration) GetVersion() string {
-	return c.TypeMeta.Version
+func (c Configuration) GetRepository() Repository {
+	return c.Repository
 }
 
 /* DeviceProfile specify all the conditions of a profile:

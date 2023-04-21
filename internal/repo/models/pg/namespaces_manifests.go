@@ -22,12 +22,12 @@ DB Table Details
 
 Table: namespaces_manifests
 [ 0] namespace_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-[ 1] workload_manifest_id                           VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 1] manifest_id                                    VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "namespace_id": "bHmtLSHllAPptMynDuwSrYjKh",    "workload_manifest_id": "NHJwmPbghVBjhpDPxqsJkxEZu"}
+{    "namespace_id": "FnJxCkrSmvtMRZlavJScnSkln",    "manifest_id": "VgBSmbtAHMWwkKvSYPTDDQYDe"}
 
 
 
@@ -37,8 +37,8 @@ JSON Sample
 type NamespacesManifests struct {
 	//[ 0] namespace_id                                   VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 	NamespaceID string `gorm:"primary_key;column:namespace_id;type:VARCHAR;size:255;"`
-	//[ 1] workload_manifest_id                           VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-	WorkloadManifestID string `gorm:"primary_key;column:workload_manifest_id;type:VARCHAR;size:255;"`
+	//[ 1] manifest_id                                    VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ManifestID string `gorm:"primary_key;column:manifest_id;type:VARCHAR;size:255;"`
 }
 
 var namespaces_manifestsTableInfo = &TableInfo{
@@ -68,7 +68,7 @@ var namespaces_manifestsTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "workload_manifest_id",
+			Name:               "manifest_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
@@ -79,10 +79,10 @@ var namespaces_manifestsTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "VARCHAR",
 			ColumnLength:       255,
-			GoFieldName:        "WorkloadManifestID",
+			GoFieldName:        "ManifestID",
 			GoFieldType:        "string",
-			JSONFieldName:      "workload_manifest_id",
-			ProtobufFieldName:  "workload_manifest_id",
+			JSONFieldName:      "manifest_id",
+			ProtobufFieldName:  "manifest_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},

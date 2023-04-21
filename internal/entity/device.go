@@ -59,8 +59,8 @@ type Device struct {
 	SetID *string
 	// Configuration of the device
 	Configuration *Configuration
-	// List of workload's reference attached to this device
-	References []Manifest
+	// List of workloads attached to this device
+	Workloads []Manifest
 }
 
 type Set struct {
@@ -69,9 +69,9 @@ type Set struct {
 	Configuration *Configuration
 	NamespaceID   string
 	// List of the id of devices in the group
-	DeviceIDs []string
+	Devices []string
 	// List of workload's reference attached to this set
-	References []Manifest
+	Workloads []Manifest
 }
 
 type Namespace struct {
@@ -79,9 +79,9 @@ type Namespace struct {
 	IsDefault     bool
 	Configuration Configuration
 	// List of sets belonging to his namespace
-	SetIDs []string
+	Sets []string
 	// List of devices belonging to this namespace
-	DeviceIDs []string
+	Devices []string
 	// List of workload's reference attached to this namespace
-	References []Manifest
+	Workloads []Manifest
 }

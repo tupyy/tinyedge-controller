@@ -13,30 +13,30 @@ type DeviceReader interface {
 	GetSet(ctx context.Context, id string) (entity.Set, error)
 }
 
-type ReferenceReader interface {
-	GetReference(ctx context.Context, id string) (entity.Reference, error)
-	GetReferences(ctx context.Context, repo entity.Repository) ([]entity.Reference, error)
-	GetDeviceReferences(ctx context.Context, deviceID string) ([]entity.Reference, error)
-	GetSetReferences(ctx context.Context, setID string) ([]entity.Reference, error)
-	GetNamespaceReferences(ctx context.Context, setID string) ([]entity.Reference, error)
+type ManifestReader interface {
+	GetManifest(ctx context.Context, id string) (entity.Manifest, error)
+	GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error)
+	GetDeviceManifests(ctx context.Context, deviceID string) ([]entity.Manifest, error)
+	GetSetManifests(ctx context.Context, setID string) ([]entity.Manifest, error)
+	GetNamespaceManifests(ctx context.Context, setID string) ([]entity.Manifest, error)
 }
 
-type ReferenceWriter interface {
-	InsertReference(ctx context.Context, ref entity.Reference) error
-	UpdateReference(ctx context.Context, ref entity.Reference) error
-	DeleteReference(ctx context.Context, ref entity.Reference) error
+type ManifestWriter interface {
+	InsertManifest(ctx context.Context, manifest entity.Manifest) error
+	UpdateManifest(ctx context.Context, manifest entity.Manifest) error
+	DeleteManifest(ctx context.Context, manifest entity.Manifest) error
 
-	CreateRelation(ctx context.Context, relation entity.ReferenceRelation) error
-	DeleteRelation(ctx context.Context, relation entity.ReferenceRelation) error
+	CreateRelation(ctx context.Context, relation entity.Relation) error
+	DeleteRelation(ctx context.Context, relation entity.Relation) error
 }
 
 //go:generate moq -out reference_rw_moq.go . ReferenceReaderWriter
-type ReferenceReaderWriter interface {
-	ReferenceReader
-	ReferenceWriter
+type ManifestReaderWriter interface {
+	ManifestReader
+	ManifestWriter
 }
 
 //go:generate moq -out git_reader_moq.go . GitReader
 type GitReader interface {
-	GetReferences(ctx context.Context, repo entity.Repository) ([]entity.Reference, error)
+	GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error)
 }

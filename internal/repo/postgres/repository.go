@@ -2,12 +2,14 @@ package postgres
 
 import (
 	"context"
+	"errors"
 
 	pgclient "github.com/tupyy/tinyedge-controller/internal/clients/pg"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
+	"github.com/tupyy/tinyedge-controller/internal/repo/models/mappers"
 	models "github.com/tupyy/tinyedge-controller/internal/repo/models/pg"
-	"github.com/tupyy/tinyedge-controller/internal/repo/postgres/mappers"
 	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -17,20 +19,40 @@ type Repository struct {
 	circuitBreaker pgclient.CircuitBreaker
 }
 
-func NewRepository(client pgclient.Client) (*ReferenceRepository, error) {
+func NewRepository(client pgclient.Client) (*Repository, error) {
 	config := gorm.Config{
 		SkipDefaultTransaction: true, // No need transaction for those use cases.
 	}
 
 	gormDB, err := client.Open(config)
 	if err != nil {
-		return &ReferenceRepository{}, err
+		return &Repository{}, err
 	}
 
-	return &ReferenceRepository{gormDB, client, client.GetCircuitBreaker()}, nil
+	return &Repository{gormDB, client, client.GetCircuitBreaker()}, nil
 }
 
-func (m *ReferenceRepository) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
+func (m *Repository) GetRepository(ctx context.Context, id string) (entity.Repository, error) {
+	if !m.circuitBreaker.IsAvailable() {
+		return entity.Repository{}, errService.NewPostgresNotAvailableError("repository")
+	}
+
+	repo := models.Repo{}
+
+	if err := m.getDb(ctx).Where("id = ?", id).First(&repo).Error; err != nil {
+		if m.checkNetworkError(err) {
+			return entity.Repository{}, errService.NewPostgresNotAvailableError("repository")
+		}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return entity.Repository{}, errService.NewResourceNotFoundError("repository", id)
+		}
+		return entity.Repository{}, err
+	}
+
+	return mappers.RepoModelToEntity(repo), nil
+}
+
+func (m *Repository) GetRepositories(ctx context.Context) ([]entity.Repository, error) {
 	if !m.circuitBreaker.IsAvailable() {
 		return []entity.Repository{}, errService.NewPostgresNotAvailableError("repository")
 	}
@@ -56,7 +78,7 @@ func (m *ReferenceRepository) GetRepositories(ctx context.Context) ([]entity.Rep
 	return entities, nil
 }
 
-func (m *ReferenceRepository) InsertRepository(ctx context.Context, r entity.Repository) error {
+func (m *Repository) InsertRepository(ctx context.Context, r entity.Repository) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return errService.NewPostgresNotAvailableError("repository")
 	}
@@ -72,7 +94,7 @@ func (m *ReferenceRepository) InsertRepository(ctx context.Context, r entity.Rep
 	return nil
 }
 
-func (m *ReferenceRepository) UpdateRepository(ctx context.Context, r entity.Repository) error {
+func (m *Repository) UpdateRepository(ctx context.Context, r entity.Repository) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return errService.NewPostgresNotAvailableError("repository")
 	}
@@ -87,4 +109,16 @@ func (m *ReferenceRepository) UpdateRepository(ctx context.Context, r entity.Rep
 	}
 
 	return nil
+}
+
+func (d *Repository) checkNetworkError(err error) (isOpen bool) {
+	isOpen = d.circuitBreaker.BreakOnNetworkError(err)
+	if isOpen {
+		zap.S().Warn("circuit breaker is now open")
+	}
+	return
+}
+
+func (d *Repository) getDb(ctx context.Context) *gorm.DB {
+	return d.db.Session(&gorm.Session{SkipHooks: true}).WithContext(ctx)
 }

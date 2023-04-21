@@ -11,7 +11,7 @@ import (
 
 // Ensure, that ReferenceReaderWriterMock does implement ReferenceReaderWriter.
 // If this is not the case, regenerate this file with moq.
-var _ ReferenceReaderWriter = &ReferenceReaderWriterMock{}
+var _ ManifestReaderWriter = &ReferenceReaderWriterMock{}
 
 // ReferenceReaderWriterMock is a mock implementation of ReferenceReaderWriter.
 //
@@ -57,13 +57,13 @@ var _ ReferenceReaderWriter = &ReferenceReaderWriterMock{}
 //	}
 type ReferenceReaderWriterMock struct {
 	// CreateRelationFunc mocks the CreateRelation method.
-	CreateRelationFunc func(ctx context.Context, relation entity.ReferenceRelation) error
+	CreateRelationFunc func(ctx context.Context, relation entity.Relation) error
 
 	// DeleteReferenceFunc mocks the DeleteReference method.
 	DeleteReferenceFunc func(ctx context.Context, ref entity.Reference) error
 
 	// DeleteRelationFunc mocks the DeleteRelation method.
-	DeleteRelationFunc func(ctx context.Context, relation entity.ReferenceRelation) error
+	DeleteRelationFunc func(ctx context.Context, relation entity.Relation) error
 
 	// GetDeviceReferencesFunc mocks the GetDeviceReferences method.
 	GetDeviceReferencesFunc func(ctx context.Context, deviceID string) ([]entity.Reference, error)
@@ -93,7 +93,7 @@ type ReferenceReaderWriterMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Relation is the relation argument value.
-			Relation entity.ReferenceRelation
+			Relation entity.Relation
 		}
 		// DeleteReference holds details about calls to the DeleteReference method.
 		DeleteReference []struct {
@@ -107,7 +107,7 @@ type ReferenceReaderWriterMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Relation is the relation argument value.
-			Relation entity.ReferenceRelation
+			Relation entity.Relation
 		}
 		// GetDeviceReferences holds details about calls to the GetDeviceReferences method.
 		GetDeviceReferences []struct {
@@ -172,13 +172,13 @@ type ReferenceReaderWriterMock struct {
 }
 
 // CreateRelation calls CreateRelationFunc.
-func (mock *ReferenceReaderWriterMock) CreateRelation(ctx context.Context, relation entity.ReferenceRelation) error {
+func (mock *ReferenceReaderWriterMock) CreateRelation(ctx context.Context, relation entity.Relation) error {
 	if mock.CreateRelationFunc == nil {
 		panic("ReferenceReaderWriterMock.CreateRelationFunc: method is nil but ReferenceReaderWriter.CreateRelation was just called")
 	}
 	callInfo := struct {
 		Ctx      context.Context
-		Relation entity.ReferenceRelation
+		Relation entity.Relation
 	}{
 		Ctx:      ctx,
 		Relation: relation,
@@ -195,11 +195,11 @@ func (mock *ReferenceReaderWriterMock) CreateRelation(ctx context.Context, relat
 //	len(mockedReferenceReaderWriter.CreateRelationCalls())
 func (mock *ReferenceReaderWriterMock) CreateRelationCalls() []struct {
 	Ctx      context.Context
-	Relation entity.ReferenceRelation
+	Relation entity.Relation
 } {
 	var calls []struct {
 		Ctx      context.Context
-		Relation entity.ReferenceRelation
+		Relation entity.Relation
 	}
 	mock.lockCreateRelation.RLock()
 	calls = mock.calls.CreateRelation
@@ -244,13 +244,13 @@ func (mock *ReferenceReaderWriterMock) DeleteReferenceCalls() []struct {
 }
 
 // DeleteRelation calls DeleteRelationFunc.
-func (mock *ReferenceReaderWriterMock) DeleteRelation(ctx context.Context, relation entity.ReferenceRelation) error {
+func (mock *ReferenceReaderWriterMock) DeleteRelation(ctx context.Context, relation entity.Relation) error {
 	if mock.DeleteRelationFunc == nil {
 		panic("ReferenceReaderWriterMock.DeleteRelationFunc: method is nil but ReferenceReaderWriter.DeleteRelation was just called")
 	}
 	callInfo := struct {
 		Ctx      context.Context
-		Relation entity.ReferenceRelation
+		Relation entity.Relation
 	}{
 		Ctx:      ctx,
 		Relation: relation,
@@ -267,11 +267,11 @@ func (mock *ReferenceReaderWriterMock) DeleteRelation(ctx context.Context, relat
 //	len(mockedReferenceReaderWriter.DeleteRelationCalls())
 func (mock *ReferenceReaderWriterMock) DeleteRelationCalls() []struct {
 	Ctx      context.Context
-	Relation entity.ReferenceRelation
+	Relation entity.Relation
 } {
 	var calls []struct {
 		Ctx      context.Context
-		Relation entity.ReferenceRelation
+		Relation entity.Relation
 	}
 	mock.lockDeleteRelation.RLock()
 	calls = mock.calls.DeleteRelation

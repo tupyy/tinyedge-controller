@@ -11,12 +11,12 @@ type Options interface {
 }
 
 type FilterByKind struct {
-	Kind entity.ReferenceKind
+	Kind entity.ManifestKind
 }
 
 func (f *FilterByKind) Filter(query *gorm.DB) *gorm.DB {
 	refType := "configuration"
-	if f.Kind == entity.WorkloadReferenceKind {
+	if f.Kind == entity.WorkloadManifestKind {
 		refType = "workload"
 	}
 	return query.Where("ref_type = ?", refType)

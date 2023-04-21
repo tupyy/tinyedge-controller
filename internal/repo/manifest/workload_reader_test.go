@@ -1,4 +1,4 @@
-package git
+package manifest
 
 import (
 	"bytes"
@@ -43,7 +43,7 @@ func TestManifestReader(t *testing.T) {
 	RegisterTestingT(t)
 
 	content := bytes.NewBufferString(manifest).Bytes()
-	manifest, err := parseWorkloadManifest(content, "test", "folder")
+	manifest, err := parseWorkloadManifest(content)
 	Expect(err).To(BeNil())
 	Expect(manifest).ToNot(BeNil())
 	w, ok := manifest.(entity.Workload)
@@ -53,4 +53,5 @@ func TestManifestReader(t *testing.T) {
 	Expect(len(w.Resources)).To(Equal(3))
 	Expect(w.Resources[0]).To(Equal("folder/dep/configmap.yaml"))
 	Expect(len(w.Selectors)).To(Equal(5))
+	Expect(w.GetKind()).To(Equal(entity.WorkloadManifestKind))
 }

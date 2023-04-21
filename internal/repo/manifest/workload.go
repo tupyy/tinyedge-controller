@@ -1,61 +1,58 @@
-package git
+package manifest
 
 import (
 	"bytes"
 	"crypto/sha256"
 	"fmt"
-	"path"
 
 	goyaml "github.com/go-yaml/yaml"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	manifestv1 "github.com/tupyy/tinyedge-controller/internal/repo/models/manifest/v1"
+	apiv1 "github.com/tupyy/tinyedge-controller/pkg/api/v1"
 )
 
 // parse parses the manifest file and verify that all the resources defined are valid k8s manifestv1.
 // Returns false if one resource is not a valid ConfigMap or Pod.
-func parseWorkloadManifest(content []byte, filename, basePath string) (entity.Manifest, error) {
-	var manifest manifestv1.Manifest
+func parseWorkloadManifest(content []byte) (entity.Manifest, error) {
+	var workload apiv1.Workload
 
-	if err := goyaml.Unmarshal(content, &manifest); err != nil {
+	if err := goyaml.Unmarshal(content, &workload); err != nil {
 		return nil, err
 	}
 
 	e := entity.Workload{
 		TypeMeta: entity.TypeMeta{
-			Version: manifest.Version,
+			Version: workload.Version,
 			Kind:    entity.WorkloadManifestKind,
 		},
 		ObjectMeta: entity.ObjectMeta{
-			Name:   manifest.Name,
-			Id:     hash(path.Join(basePath, filename)),
 			Labels: make(map[string]string),
 		},
-		Description: manifest.Description,
+		Description: workload.Description,
 		Selectors:   make([]entity.Selector, 0),
-		Secrets:     make([]entity.Secret, 0, len(manifest.Secrets)),
-		Resources:   make([]string, 0, len(manifest.Resources)),
+		Secrets:     make([]entity.Secret, 0, len(workload.Secrets)),
+		Resources:   make([]string, 0, len(workload.Resources)),
 	}
 
 	for i := 0; true; i++ {
 		keepGoing := false
-		if i < len(manifest.Selector.Namespaces) {
+		if i < len(workload.Selector.Namespaces) {
 			e.Selectors = append(e.Selectors, entity.Selector{
 				Type:  entity.NamespaceSelector,
-				Value: manifest.Selector.Namespaces[i],
+				Value: workload.Selector.Namespaces[i],
 			})
 			keepGoing = true
 		}
-		if i < len(manifest.Selector.Sets) {
+		if i < len(workload.Selector.Sets) {
 			e.Selectors = append(e.Selectors, entity.Selector{
 				Type:  entity.SetSelector,
-				Value: manifest.Selector.Sets[i],
+				Value: workload.Selector.Sets[i],
 			})
 			keepGoing = true
 		}
-		if i < len(manifest.Selector.Devices) {
+		if i < len(workload.Selector.Devices) {
 			e.Selectors = append(e.Selectors, entity.Selector{
 				Type:  entity.DeviceSelector,
-				Value: manifest.Selector.Devices[i],
+				Value: workload.Selector.Devices[i],
 			})
 			keepGoing = true
 		}
@@ -64,7 +61,7 @@ func parseWorkloadManifest(content []byte, filename, basePath string) (entity.Ma
 		}
 	}
 
-	for _, s := range manifest.Secrets {
+	for _, s := range workload.Secrets {
 		e.Secrets = append(e.Secrets, entity.Secret{
 			Path: s.Path,
 			Id:   s.Name,
@@ -72,8 +69,28 @@ func parseWorkloadManifest(content []byte, filename, basePath string) (entity.Ma
 		})
 	}
 
-	for _, resource := range manifest.Resources {
-		e.Resources = append(e.Resources, path.Join(basePath, resource.Ref))
+	for _, resource := range workload.Resources {
+		e.Resources = append(e.Resources, resource.Ref)
+	}
+
+	return e, nil
+}
+
+func parseConfigurationManifest(content []byte) (entity.Manifest, error) {
+	var configuration apiv1.Configuration
+
+	if err := goyaml.Unmarshal(content, &configuration); err != nil {
+		return nil, err
+	}
+
+	e := entity.Configuration{
+		TypeMeta: entity.TypeMeta{
+			Version: configuration.Version,
+			Kind:    entity.ConfigurationManifestKind,
+		},
+		ObjectMeta: entity.ObjectMeta{
+			Labels: make(map[string]string),
+		},
 	}
 
 	return e, nil

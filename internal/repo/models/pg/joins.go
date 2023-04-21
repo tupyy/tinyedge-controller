@@ -6,33 +6,42 @@ import (
 
 type DeviceJoin struct {
 	Device
-	ManifestId string `gorm:"column_name:manifest_id;type:TEXT"`
+	ConfigurationID        string `gorm:"column:conf_id;type:TEXT"`
+	ConfigurationPath      string `gorm:"column:conf_path;type:TEXT"`
+	ConfigurationLocalPath string `gorm:"column:conf_local_path;type:TEXT"`
+	WorkloadID             string `gorm:"column:workload_id;type:TEXT"`
+	WorkloadRepoLocalPath  string `gorm:"column:workload_repo_local_path;type:TEXT"`
+	WorkloadPath           string `gorm:"column:workload_path;type:TEXT"`
 }
 
 type SetJoin struct {
 	DeviceSet
-	DeviceId                            string         `gorm:"column_name:device_id;type:TEXT"`
-	ManifestId                          string         `gorm:"column_name:manifest_id;type:TEXT"`
-	ConfigurationID                     string         `gorm:"column_name:configuration_id;type:TEXT"`
-	ConfigurationHeartbeatPeriodSeconds sql.NullInt64  `gorm:"column:configuration_heartbeat_period_seconds;type:INT2;default:30;"`
-	ConfigurationLogLevel               sql.NullString `gorm:"column:configuration_log_level;type:TEXT;default:info;"`
+	DeviceId               string `gorm:"column:device_id;type:TEXT"`
+	ConfigurationID        string `gorm:"column:conf_id;type:TEXT"`
+	ConfigurationPath      string `gorm:"column:conf_path;type:TEXT"`
+	ConfigurationLocalPath string `gorm:"column:conf_local_path;type:TEXT"`
+	WorkloadID             string `gorm:"column:workload_id;type:TEXT"`
+	WorkloadRepoLocalPath  string `gorm:"column:workload_repo_local_path;type:TEXT"`
+	WorkloadPath           string `gorm:"column:workload_path;type:TEXT"`
 }
 
 type NamespaceJoin struct {
 	Namespace
-	DeviceId                            string         `gorm:"column_name:device_id;type:TEXT"`
-	SetId                               string         `gorm:"column_name:set_id;type:TEXT"`
-	ManifestId                          string         `gorm:"column_name:manifest_id;type:TEXT"`
-	ConfigurationID                     string         `gorm:"column_name:configuration_id;type:TEXT"`
-	ConfigurationHeartbeatPeriodSeconds sql.NullInt64  `gorm:"column:configuration_heartbeat_period_seconds;type:INT2;default:30;"`
-	ConfigurationLogLevel               sql.NullString `gorm:"column:configuration_log_level;type:TEXT;default:info;"`
+	DeviceId               string `gorm:"column:device_id;type:TEXT"`
+	SetId                  string `gorm:"column:set_id;type:TEXT"`
+	ConfigurationID        string `gorm:"column:conf_id;type:TEXT"`
+	ConfigurationPath      string `gorm:"column:conf_path;type:TEXT"`
+	ConfigurationLocalPath string `gorm:"column:conf_local_path;type:TEXT"`
+	WorkloadID             string `gorm:"column:workload_id;type:TEXT"`
+	WorkloadRepoLocalPath  string `gorm:"column:workload_repo_local_path;type:TEXT"`
+	WorkloadPath           string `gorm:"column:workload_path;type:TEXT"`
 }
 
-type ReferenceJoin struct {
-	Reference
-	DeviceId               string         `gorm:"column_name:device_id;type:TEXT"`
-	SetId                  string         `gorm:"column_name:set_id;type:TEXT"`
-	NamespaceId            string         `gorm:"column_name:namespace_id;type:TEXT"`
+type ManifestJoin struct {
+	Manifest
+	DeviceId               string         `gorm:"column:device_id;type:TEXT"`
+	SetId                  string         `gorm:"column:set_id;type:TEXT"`
+	NamespaceId            string         `gorm:"column:namespace_id;type:TEXT"`
 	Repo_ID                string         `gorm:"primary_key;column:repo_id;type:TEXT;"`
 	Repo_URL               string         `gorm:"column:repo_url;type:TEXT;"`
 	Repo_Branch            sql.NullString `gorm:"column:repo_branch;type:TEXT;"`

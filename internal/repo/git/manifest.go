@@ -1,17 +1,18 @@
 package git
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
 	"regexp"
 
-	goyaml "github.com/go-yaml/yaml"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
+	reader "github.com/tupyy/tinyedge-controller/internal/repo/manifest"
 	"go.uber.org/zap"
 )
 
@@ -27,31 +28,17 @@ func init() {
 	manifestPattern = regexp.MustCompile(pattern)
 }
 
-type manifestReader struct {
-	repo   entity.Repository
-	reader func(r io.Reader) entity.Workload
-}
-
-func (m *manifestReader) GetManifest(ctx context.Context, filepath string) (entity.Manifest, error) {
-	file := path.Join(m.repo.LocalPath, filepath)
-	_, err := os.Stat(file)
+func getManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+	files, err := findManifestFiles(ctx, repo.LocalPath, manifestPattern)
 	if err != nil {
-		return nil, fmt.Errorf("unable to find file %q in repo %q", filepath, m.repo.LocalPath)
-	}
-	return m.parseManifest(ctx, filepath, m.repo.LocalPath)
-}
-
-func (m *manifestReader) GetManifests(ctx context.Context) ([]entity.Manifest, error) {
-	files, err := m.findManifestFiles(ctx, m.repo.LocalPath, manifestPattern)
-	if err != nil {
-		return nil, fmt.Errorf("unable to search for manifest files in repo %q: %w", m.repo.LocalPath, err)
+		return nil, fmt.Errorf("unable to search for manifest files in repo %q: %w", repo.LocalPath, err)
 	}
 	manifests := make([]entity.Manifest, 0, len(files))
 
 	for _, file := range files {
-		manifest, err := m.parseManifest(ctx, file, m.repo.LocalPath)
+		manifest, err := getManifest(ctx, repo, file)
 		if err != nil {
-			zap.S().Errorf("unable to parse manifest file %q in repo %q: %w", file, m.repo.LocalPath, err)
+			zap.S().Errorf("unable to parse manifest file %q in repo %q: %w", file, repo.LocalPath, err)
 			continue
 		}
 		manifests = append(manifests, manifest)
@@ -60,31 +47,36 @@ func (m *manifestReader) GetManifests(ctx context.Context) ([]entity.Manifest, e
 	return manifests, nil
 }
 
-func (m *manifestReader) parseManifest(ctx context.Context, filename, basePath string) (entity.Manifest, error) {
-	content, err := os.ReadFile(filename)
+func getManifest(ctx context.Context, repo entity.Repository, filepath string) (entity.Manifest, error) {
+	file := path.Join(repo.LocalPath, filepath)
+
+	_, err := os.Stat(file)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read manifest file %q: %w", filename, err)
+		return nil, fmt.Errorf("unable to find file %q in repo %q", filepath, repo.LocalPath)
 	}
 
-	kind, err := m.getKind(content)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read manifest %q kind: %w", filename, err)
-	}
-
-	switch kind {
-	case "workload":
-		manifest, err := parseWorkloadManifest(content, filename, basePath)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse workload manifest %q: %w", filename, err)
+	return parseManifest(ctx, file, func(m entity.Manifest) entity.Manifest {
+		if m.GetKind() == entity.WorkloadManifestKind {
+			w, _ := m.(entity.Workload)
+			w.Id = hash(filepath)[:12]
+			w.Repository = repo
+			return w
 		}
-		return manifest, nil
-	default:
-		return nil, fmt.Errorf("unsupported kind: configuration")
+		return m
+	})
+}
+
+func parseManifest(ctx context.Context, filepath string, transformFn func(entity.Manifest) entity.Manifest) (entity.Manifest, error) {
+	content, err := os.ReadFile(filepath)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read manifest file %q: %w", filepath, err)
 	}
+
+	return reader.ReadManifest(bytes.NewBuffer(content), transformFn)
 }
 
 // findManifestFiles returns the list of all manifestworks files found in the repo
-func (m *manifestReader) findManifestFiles(ctx context.Context, path string, manifestPattern *regexp.Regexp) ([]string, error) {
+func findManifestFiles(ctx context.Context, path string, manifestPattern *regexp.Regexp) ([]string, error) {
 	searchFn := func(ctx context.Context, root string, output chan string, errCh chan error, doneCh chan struct{}, pattern *regexp.Regexp) {
 		err := filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
 			if err != nil {
@@ -133,13 +125,11 @@ func (m *manifestReader) findManifestFiles(ctx context.Context, path string, man
 	return manifestWorks, nil
 }
 
-func (w *manifestReader) getKind(content []byte) (string, error) {
-	type anonymousStruct struct {
-		Kind string `yaml:"kind"`
+func hash(base string, s ...string) string {
+	hash := sha256.New()
+	hash.Write([]byte(base))
+	for _, ss := range s {
+		hash.Write([]byte(ss))
 	}
-	var a anonymousStruct
-	if err := goyaml.Unmarshal(content, &a); err != nil {
-		return "", fmt.Errorf("unknown struct: %s", err)
-	}
-	return a.Kind, nil
+	return fmt.Sprintf("%x", hash.Sum(nil))
 }

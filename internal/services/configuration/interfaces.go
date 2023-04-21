@@ -15,12 +15,7 @@ type DeviceReader interface {
 
 //go:generate moq -out manifest_reader_moq.go . ManifestReader
 type ManifestReader interface {
-	GetManifest(ctx context.Context, ref entity.Reference) (entity.WorkloadManifest, error)
-}
-
-//go:generate moq -out ref_reader_moq.go . ReferenceReader
-type ReferenceReader interface {
-	GetReference(ctx context.Context, id string) (entity.Reference, error)
+	GetManifest(ctx context.Context, repo entity.Repository, file string) (entity.Manifest, error)
 }
 
 //go:generate moq -out configuration_reader_moq.go . ConfigurationReader

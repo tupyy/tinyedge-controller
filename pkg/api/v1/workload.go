@@ -1,8 +1,8 @@
 package v1
 
-type Manifest struct {
-	Version     string     `yaml:"version"`
+type Workload struct {
 	Kind        string     `yaml:"kind" validate:"required"`
+	Version     string     `yaml:"version"`
 	Name        string     `yaml:"name"`
 	Description string     `yaml:"description"`
 	Selector    Selector   `yaml:"selectors"`

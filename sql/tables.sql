@@ -49,28 +49,28 @@ CREATE TABLE device (
 
 CREATE TABLE devices_manifests (
     device_id varchar(255) REFERENCES device(id) ON DELETE CASCADE,
-    workload_manifest_id varchar(255) REFERENCES manifest(id) ON DELETE CASCADE,
+    manifest_id varchar(255) REFERENCES manifest(id) ON DELETE CASCADE,
     CONSTRAINT devices_manifests_pk PRIMARY KEY (
         device_id,
-        workload_manifest_id
+        manifest_id
     )
 );
 
 CREATE TABLE namespaces_manifests (
     namespace_id varchar(255) REFERENCES namespace(id) ON DELETE CASCADE,
-    workload_manifest_id varchar(255) REFERENCES manifest(id) ON DELETE CASCADE,
+    manifest_id varchar(255) REFERENCES manifest(id) ON DELETE CASCADE,
     CONSTRAINT namespace_manifest_pk PRIMARY KEY(
         namespace_id,
-        workload_manifest_id
+        manifest_id
     )
 );
 
 CREATE TABLE sets_manifests (
     device_set_id varchar(255) REFERENCES device_set(id) ON DELETE CASCADE,
-    workload_manifest_id varchar(255) REFERENCES manifest(id) ON DELETE CASCADE,
+    manifest_id varchar(255) REFERENCES manifest(id) ON DELETE CASCADE,
     CONSTRAINT device_set_manifest_pk PRIMARY KEY(
         device_set_id,
-        workload_manifest_id
+        manifest_id
     )
 );
 

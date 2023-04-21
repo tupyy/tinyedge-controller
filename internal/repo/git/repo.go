@@ -102,14 +102,12 @@ func (g *GitRepo) GetHeadSha(ctx context.Context, r entity.Repository) (string, 
 
 // GetManifest return the manifest referred by ref
 func (g *GitRepo) GetManifest(ctx context.Context, repo entity.Repository, filepath string) (entity.Manifest, error) {
-	reader := &manifestReader{repo: repo}
-	return reader.GetManifest(ctx, filepath)
+	return getManifest(ctx, repo, filepath)
 }
 
 // GetManifests returns all the manifest of a repo.
 func (g *GitRepo) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
-	reader := &manifestReader{repo: repo}
-	return reader.GetManifests(ctx)
+	return getManifests(ctx, repo)
 }
 
 func (g *GitRepo) Clone(ctx context.Context, repo entity.Repository) (entity.Repository, error) {

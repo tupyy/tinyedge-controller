@@ -10,12 +10,12 @@ import (
 )
 
 type Service struct {
-	refReaderWriter ReferenceReaderWriter
+	refReaderWriter ManifestReaderWriter
 	deviceReader    DeviceReader
 	gitReader       GitReader
 }
 
-func New(deviceReader DeviceReader, ref ReferenceReaderWriter, git GitReader) *Service {
+func New(deviceReader DeviceReader, ref ManifestReaderWriter, git GitReader) *Service {
 	return &Service{
 		deviceReader:    deviceReader,
 		refReaderWriter: ref,
@@ -212,7 +212,7 @@ func (w *Service) UpdateRelations(ctx context.Context, m entity.Reference) error
 
 func (w *Service) CreateRelations(ctx context.Context, m entity.WorkloadManifest) error {
 	for _, s := range m.Selectors {
-		var r entity.ReferenceRelation
+		var r entity.Relation
 		switch s.Type {
 		case entity.NamespaceSelector:
 			namespace, err := w.deviceReader.GetNamespace(ctx, s.Value)

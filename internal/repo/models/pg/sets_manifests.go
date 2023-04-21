@@ -22,12 +22,12 @@ DB Table Details
 
 Table: sets_manifests
 [ 0] device_set_id                                  VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-[ 1] workload_manifest_id                           VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 1] manifest_id                                    VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "device_set_id": "OvQflvsYYLmPcPVQjywrTWjdW",    "workload_manifest_id": "AYmrYGRxpDKpFTXuBrjnBuGSc"}
+{    "device_set_id": "GwQNhKAIjwlIdIoxKDbwLCjWk",    "manifest_id": "egIHHqESxLDGctwBNixYWjMXF"}
 
 
 
@@ -37,8 +37,8 @@ JSON Sample
 type SetsManifests struct {
 	//[ 0] device_set_id                                  VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 	DeviceSetID string `gorm:"primary_key;column:device_set_id;type:VARCHAR;size:255;"`
-	//[ 1] workload_manifest_id                           VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-	WorkloadManifestID string `gorm:"primary_key;column:workload_manifest_id;type:VARCHAR;size:255;"`
+	//[ 1] manifest_id                                    VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ManifestID string `gorm:"primary_key;column:manifest_id;type:VARCHAR;size:255;"`
 }
 
 var sets_manifestsTableInfo = &TableInfo{
@@ -68,7 +68,7 @@ var sets_manifestsTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "workload_manifest_id",
+			Name:               "manifest_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
@@ -79,10 +79,10 @@ var sets_manifestsTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "VARCHAR",
 			ColumnLength:       255,
-			GoFieldName:        "WorkloadManifestID",
+			GoFieldName:        "ManifestID",
 			GoFieldType:        "string",
-			JSONFieldName:      "workload_manifest_id",
-			ProtobufFieldName:  "workload_manifest_id",
+			JSONFieldName:      "manifest_id",
+			ProtobufFieldName:  "manifest_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},

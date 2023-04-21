@@ -30,7 +30,7 @@ Table: manifest
 
 JSON Sample
 -------------------------------------
-{    "id": "jGLvEhThtjBOHuVUNTbIdecgg",    "ref_type": "skZmQjAfHxsbVqqGpZxHWyyGe",    "name": "iknvyoXBDnojUEcLvbbkIfVvD",    "repo_id": "JXeVyJuTsWUZqBitprtaXqswJ",    "path": "aoTkuxhvtYwjApQDbDWqrNPjU"}
+{    "id": "oukohahpJpJtEQoSqFpZQtkyk",    "ref_type": "MJwmaYaSIiXhXcLigqysrEHBK",    "name": "dpJBakyWSNJrAjepJICtwNLPR",    "repo_id": "MnLXDxJXSyZHMkgpCmWleamvI",    "path": "SmFFxbKFbkJhFPbUmQjGAbfjA"}
 
 
 
