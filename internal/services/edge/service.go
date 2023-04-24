@@ -43,7 +43,7 @@ func (s *Service) Enrol(ctx context.Context, deviceID string) (status entity.Enr
 			EnroledAt:   time.Now().UTC(),
 		}
 		device.EnrolStatus = entity.EnroledStatus
-		err = s.deviceReaderWriter.Create(ctx, device)
+		err = s.deviceReaderWriter.CreateDevice(ctx, device)
 		if err != nil {
 			return entity.NotEnroledStatus, err
 		}
@@ -86,7 +86,7 @@ func (s *Service) Register(ctx context.Context, deviceID string, csr string) (en
 	device.RegisteredAt = time.Now().UTC()
 	device.CertificateSerialNumber = certificate.GetSerialNumber()
 
-	if err := s.deviceReaderWriter.Update(ctx, device); err != nil {
+	if err := s.deviceReaderWriter.UpdateDevice(ctx, device); err != nil {
 		return entity.CertificateGroup{}, fmt.Errorf("unable to update device %q: %w", deviceID, err)
 	}
 

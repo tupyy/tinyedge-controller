@@ -8,23 +8,13 @@ import (
 )
 
 type Service struct {
-	manifestReader ManifestReader
-	deviceReader   DeviceReader
-	confReader     ConfigurationReader
-	refReader      ReferenceReader
+	deviceReader DeviceReader
 }
 
-func New(deviceReader DeviceReader, manifestReader ManifestReader, referenceReader ReferenceReader, confReader ConfigurationReader) *Service {
+func New(deviceReader DeviceReader) *Service {
 	return &Service{
-		manifestReader: manifestReader,
-		deviceReader:   deviceReader,
-		confReader:     confReader,
-		refReader:      referenceReader,
+		deviceReader: deviceReader,
 	}
-}
-
-func (c *Service) GetConfiguration(ctx context.Context, id string) (entity.Configuration, error) {
-	return c.confReader.GetConfiguration(ctx, id)
 }
 
 func (c *Service) GetDeviceConfiguration(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error) {
@@ -87,42 +77,24 @@ func (c *Service) getConfiguration(ctx context.Context, device entity.Device) (e
 	return namespace.Configuration, nil
 }
 
-func (c *Service) getManifests(ctx context.Context, device entity.Device) ([]entity.WorkloadManifest, error) {
-	getManifests := func(ctx context.Context, ids []string) ([]entity.WorkloadManifest, error) {
-		manifests := make([]entity.WorkloadManifest, 0, len(device.ManifestIDS))
-		for _, id := range ids {
-			ref, err := c.refReader.GetReference(ctx, id)
-			if err != nil {
-				zap.S().Errorf("unable to get manifest reference %q: %w", id, err)
-				continue
-			}
-			manifest, err := c.manifestReader.GetManifest(ctx, ref)
-			if err != nil {
-				zap.S().Errorf("unable to get manifest", "error", err)
-				continue
-			}
-			manifests = append(manifests, manifest)
-		}
-		return manifests, nil
-	}
-
-	if len(device.ManifestIDS) > 0 {
-		return getManifests(ctx, device.ManifestIDS)
+func (c *Service) getManifests(ctx context.Context, device entity.Device) ([]entity.Workload, error) {
+	if len(device.Workloads) > 0 {
+		return device.Workloads, nil
 	}
 
 	if device.SetID != nil {
 		sets, err := c.deviceReader.GetSet(ctx, *device.SetID)
 		if err != nil {
-			return []entity.WorkloadManifest{}, err
+			return []entity.Workload{}, err
 		}
-		if len(sets.ManifestIDS) > 0 {
-			return getManifests(ctx, sets.ManifestIDS)
+		if len(sets.Workloads) > 0 {
+			return sets.Workloads, nil
 		}
 	}
 
 	namespace, err := c.deviceReader.GetNamespace(ctx, device.NamespaceID)
 	if err != nil {
-		return []entity.WorkloadManifest{}, err
+		return []entity.Workload{}, err
 	}
-	return getManifests(ctx, namespace.ManifestIDS)
+	return namespace.Workloads, nil
 }

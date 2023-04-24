@@ -14,8 +14,8 @@ type DeviceReader interface {
 
 // DeviceWriter allows creating a device.
 type DeviceWriter interface {
-	Create(ctx context.Context, device entity.Device) error
-	Update(ctx context.Context, device entity.Device) error
+	CreateDevice(ctx context.Context, device entity.Device) error
+	UpdateDevice(ctx context.Context, device entity.Device) error
 }
 
 //go:generate moq -out device_rw_moq.go . DeviceReaderWriter

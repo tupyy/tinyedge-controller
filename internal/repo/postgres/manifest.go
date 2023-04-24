@@ -33,6 +33,14 @@ func NewManifestRepository(client pgclient.Client) (*ManifestRepository, error) 
 	return &ManifestRepository{gormDB, client, client.GetCircuitBreaker()}, nil
 }
 
+func (m *ManifestRepository) GetManifest(ctx context.Context, id string) (entity.Manifest, error) {
+	return nil, nil
+}
+
+func (m *ManifestRepository) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+	return []entity.Manifest{}, nil
+}
+
 func (m *ManifestRepository) InsertManifest(ctx context.Context, manifest entity.Manifest) error {
 	if !m.circuitBreaker.IsAvailable() {
 		return errService.NewPostgresNotAvailableError("manifest repository")

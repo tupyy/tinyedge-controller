@@ -19,8 +19,8 @@ type DeviceReader interface {
 
 // DeviceWriter allows creating a device.
 type DeviceWriter interface {
-	Create(ctx context.Context, device entity.Device) error
-	Update(ctx context.Context, device entity.Device) error
+	CreateDevice(ctx context.Context, device entity.Device) error
+	UpdateDevice(ctx context.Context, device entity.Device) error
 	CreateSet(ctx context.Context, set entity.Set) error
 	DeleteSet(ctx context.Context, id string) error
 	DeleteNamespace(ctx context.Context, id string) error

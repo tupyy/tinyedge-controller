@@ -21,7 +21,7 @@ type ManifestReader interface {
 type ManifestWriter interface {
 	InsertManifest(ctx context.Context, manifest entity.Manifest) error
 	UpdateManifest(ctx context.Context, manifest entity.Manifest) error
-	DeleteManifest(ctx context.Context, manifest entity.Manifest) error
+	DeleteManifest(ctx context.Context, id string) error
 
 	CreateRelation(ctx context.Context, relation entity.Relation) error
 	DeleteRelation(ctx context.Context, relation entity.Relation) error

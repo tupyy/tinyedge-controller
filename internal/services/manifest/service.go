@@ -23,6 +23,14 @@ func New(deviceReader DeviceReader, rw ManifestReaderWriter, git GitReader) *Ser
 	}
 }
 
+func (w *Service) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+	return nil, nil
+}
+
+func (w *Service) GetManifest(ctx context.Context, id string) (entity.Manifest, error) {
+	return nil, nil
+}
+
 func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) error {
 	pgManifests, err := w.manifestReaderWriter.GetManifests(ctx, repo)
 	if err != nil {
@@ -48,7 +56,7 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 	}
 
 	for _, d := range deleted {
-		if err := w.manifestReaderWriter.DeleteManifest(ctx, d); err != nil {
+		if err := w.manifestReaderWriter.DeleteManifest(ctx, d.GetID()); err != nil {
 			return fmt.Errorf("unable to delete manifest %q: %w", d.GetID(), err)
 		}
 	}
@@ -246,7 +254,7 @@ func (w *Service) CreateRelations(ctx context.Context, m entity.Manifest) error 
 
 func (w *Service) deleteManifests(ctx context.Context, manifests []entity.Manifest) {
 	for _, m := range manifests {
-		if err := w.manifestReaderWriter.DeleteManifest(ctx, m); err != nil {
+		if err := w.manifestReaderWriter.DeleteManifest(ctx, m.GetID()); err != nil {
 			zap.S().Error("unable to delete manifest", "error", err, "manifest_id", m.GetID())
 			continue
 		}

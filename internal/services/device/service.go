@@ -142,7 +142,7 @@ func (w *Service) GetDevices(ctx context.Context) ([]entity.Device, error) {
 }
 
 func (w *Service) UpdateDevice(ctx context.Context, device entity.Device) error {
-	err := w.pgDeviceRepo.Update(ctx, device)
+	err := w.pgDeviceRepo.UpdateDevice(ctx, device)
 	if err != nil {
 		return err
 	}

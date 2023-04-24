@@ -20,18 +20,11 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/clients/vault"
 	"github.com/tupyy/tinyedge-controller/internal/configuration"
 	"github.com/tupyy/tinyedge-controller/internal/interceptors"
+	"github.com/tupyy/tinyedge-controller/internal/repo"
 	"github.com/tupyy/tinyedge-controller/internal/repo/git"
-	pgRepo "github.com/tupyy/tinyedge-controller/internal/repo/postgres"
-	certRepo "github.com/tupyy/tinyedge-controller/internal/repo/vault/certificate"
-	secretRepo "github.com/tupyy/tinyedge-controller/internal/repo/vault/secret"
 	"github.com/tupyy/tinyedge-controller/internal/servers"
+	"github.com/tupyy/tinyedge-controller/internal/services"
 	"github.com/tupyy/tinyedge-controller/internal/services/auth"
-	"github.com/tupyy/tinyedge-controller/internal/services/certificate"
-	confService "github.com/tupyy/tinyedge-controller/internal/services/configuration"
-	"github.com/tupyy/tinyedge-controller/internal/services/device"
-	"github.com/tupyy/tinyedge-controller/internal/services/edge"
-	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
-	"github.com/tupyy/tinyedge-controller/internal/services/reference"
 	"github.com/tupyy/tinyedge-controller/internal/services/repository"
 	"github.com/tupyy/tinyedge-controller/internal/workers"
 	"github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
@@ -65,8 +58,8 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			zap.S().Fatal(err)
 		}
-		certRepo := certRepo.New(vaultClient, "pki_int", "home.net", "tinyedge-role")
-		secretRepo := secretRepo.New(vaultClient, "tinyedge")
+		certRepo := repo.NewCertificate(vaultClient, "pki_int", "home.net", "tinyedge-role")
+		secretRepo := repo.NewSecret(vaultClient, "tinyedge")
 		zap.S().Info("vault repositories created")
 
 		pgClient, err := pg.New(pg.ClientParams{
@@ -80,15 +73,15 @@ var runCmd = &cobra.Command{
 			zap.S().Fatal(err)
 		}
 
-		deviceRepo, err := pgRepo.NewDeviceRepo(pgClient)
+		deviceRepo, err := repo.NewDeviceRepo(pgClient)
 		if err != nil {
 			zap.S().Fatal(err)
 		}
-		refRepo, err := pgRepo.NewReferenceRepository(pgClient)
+		repoRepo, err := repo.NewRepository(pgClient)
 		if err != nil {
 			zap.S().Fatal(err)
 		}
-		repoRepo, err := pgRepo.NewRepository(pgClient)
+		manifestRepo, err := repo.NewManifest(pgClient)
 		if err != nil {
 			zap.S().Fatal(err)
 		}
@@ -99,17 +92,16 @@ var runCmd = &cobra.Command{
 
 		// create services
 		zap.S().Info("create services")
-		certService := certificate.New(certRepo)
-		manifestService := manifest.New(refRepo, gitRepo, secretRepo)
-		deviceService := device.New(deviceRepo)
-		configurationService := confService.New(deviceService, manifestService, refRepo, deviceRepo)
-		edgeService := edge.New(deviceRepo, configurationService, certService)
+		certService := services.NewCertificate(certRepo)
+		manifestService := services.NewManifest(deviceRepo, manifestRepo, gitRepo)
+		deviceService := services.NewDevice(deviceRepo)
+		configurationService := services.NewConfiguration(deviceService)
+		edgeService := services.NewEdge(deviceRepo, configurationService, certService)
 		authService := auth.New(certService, deviceRepo)
 		repoService := repository.NewRepositoryService(repoRepo, gitRepo, secretRepo)
-		referenceService := reference.New(deviceRepo, refRepo, gitRepo)
 
 		scheduler := workers.New(5 * time.Second)
-		scheduler.AddWorker(workers.NewGitOpsWorker(referenceService, repoService, configurationService))
+		scheduler.AddWorker(workers.NewGitOpsWorker(repoService, configurationService))
 		go scheduler.Start(ctx)
 
 		tlsConfig, err := certService.TlsConfig(ctx, conf.DefaultCertificateTTL)
@@ -134,7 +126,7 @@ var runCmd = &cobra.Command{
 		go grpcEdgeServer.Serve(lis)
 
 		grpcAdminServer := createAdminServer(logger)
-		adminServer := servers.NewAdminServer(repoService, manifestService, deviceService, configurationService, referenceService)
+		adminServer := servers.NewAdminServer(repoService, manifestService, deviceService, configurationService)
 		admin.RegisterAdminServiceServer(grpcAdminServer, adminServer)
 		grpcAdminServer.Serve(connAdmin)
 	},

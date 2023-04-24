@@ -81,13 +81,13 @@ func DeviceToEntity(joins []models.DeviceJoin, readFn manifestReader) (entity.De
 		}
 	}
 
-	e.Workloads = make([]entity.Manifest, 0, len(manifests))
+	e.Workloads = make([]entity.Workload, 0, len(manifests))
 	for _, m := range manifests {
 		manifest, err := readManifest(m["path"], m["id"], readFn)
 		if err != nil {
 			return entity.Device{}, fmt.Errorf("unable to read manifest file %q: %w", m["path"], err)
 		}
-		e.Workloads = append(e.Workloads, manifest)
+		e.Workloads = append(e.Workloads, manifest.(entity.Workload))
 	}
 
 	return e, nil
@@ -190,13 +190,13 @@ func SetToEntity(s []models.SetJoin, readFn manifestReader) (entity.Set, error) 
 	}
 
 	set.Devices = devices
-	set.Workloads = make([]entity.Manifest, 0, len(manifests))
+	set.Workloads = make([]entity.Workload, 0, len(manifests))
 	for _, m := range manifests {
 		manifest, err := readManifest(m["path"], m["id"], readFn)
 		if err != nil {
 			return entity.Set{}, fmt.Errorf("unable to read manifest file %q: %w", m["path"], err)
 		}
-		set.Workloads = append(set.Workloads, manifest)
+		set.Workloads = append(set.Workloads, manifest.(entity.Workload))
 	}
 
 	return set, nil
@@ -288,13 +288,13 @@ func NamespaceModelToEntity(n []models.NamespaceJoin, readFn manifestReader) (en
 
 	namespace.Sets = sets
 	namespace.Devices = devices
-	namespace.Workloads = make([]entity.Manifest, 0, len(manifests))
+	namespace.Workloads = make([]entity.Workload, 0, len(manifests))
 	for _, m := range manifests {
 		manifest, err := readManifest(m["path"], m["id"], readFn)
 		if err != nil {
 			return entity.Namespace{}, fmt.Errorf("unable to read manifest file %q: %w", m["path"], err)
 		}
-		namespace.Workloads = append(namespace.Workloads, manifest)
+		namespace.Workloads = append(namespace.Workloads, manifest.(entity.Workload))
 	}
 
 	return namespace, nil

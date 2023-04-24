@@ -10,7 +10,6 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/services/device"
 	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
 	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
-	"github.com/tupyy/tinyedge-controller/internal/services/reference"
 	"github.com/tupyy/tinyedge-controller/internal/services/repository"
 	"github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
 	pb "github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
@@ -26,11 +25,10 @@ type AdminServer struct {
 	manifestService   *manifest.Service
 	deviceService     *device.Service
 	confService       *configuration.Service
-	referenceService  *reference.Service
 }
 
-func NewAdminServer(r *repository.Service, m *manifest.Service, d *device.Service, c *configuration.Service, refService *reference.Service) *AdminServer {
-	return &AdminServer{repositoryService: r, manifestService: m, deviceService: d, confService: c, referenceService: refService}
+func NewAdminServer(r *repository.Service, m *manifest.Service, d *device.Service, c *configuration.Service) *AdminServer {
+	return &AdminServer{repositoryService: r, manifestService: m, deviceService: d, confService: c}
 }
 
 func (a *AdminServer) GetDevices(ctx context.Context, req *pb.DevicesListRequest) (*pb.DevicesListResponse, error) {
@@ -94,19 +92,6 @@ func (a *AdminServer) UpdateDevice(ctx context.Context, req *pb.UpdateDeviceRequ
 		device.NamespaceID = req.NamespaceId
 	}
 
-	if req.ConfigurationId != "" {
-		_, err := a.confService.GetConfiguration(ctx, req.ConfigurationId)
-		if err != nil {
-			if errService.IsResourceNotFound(err) {
-				return &common.Device{}, status.Errorf(codes.NotFound, err.Error())
-			}
-			return &common.Device{}, status.Errorf(codes.Internal, "internal error")
-		}
-		device.Configuration = &entity.Configuration{
-			ID: req.ConfigurationId,
-		}
-	}
-
 	if err := a.deviceService.UpdateDevice(ctx, device); err != nil {
 		return &common.Device{}, fmt.Errorf("unable to update device %q", device.ID)
 	}
@@ -124,7 +109,7 @@ func (a *AdminServer) AddSet(ctx context.Context, req *pb.AddSetRequest) (*commo
 	}
 	if req.ConfigurationId != nil {
 		set.Configuration = &entity.Configuration{
-			ID: *req.ConfigurationId,
+			ObjectMeta: entity.ObjectMeta{Id: *req.ConfigurationId},
 		}
 	}
 
@@ -154,7 +139,7 @@ func (a *AdminServer) AddNamespace(ctx context.Context, req *pb.AddNamespaceRequ
 	err := a.deviceService.CreateNamespace(ctx, entity.Namespace{
 		Name: req.Id,
 		Configuration: entity.Configuration{
-			ID: req.ConfigurationId,
+			ObjectMeta: entity.ObjectMeta{Id: req.ConfigurationId},
 		},
 		IsDefault: req.IsDefault,
 	})
@@ -208,7 +193,7 @@ func (a *AdminServer) UpdateNamespace(ctx context.Context, req *pb.UpdateNamespa
 
 	if req.ConfigurationId != "" {
 		namespace.Configuration = entity.Configuration{
-			ID: req.ConfigurationId,
+			ObjectMeta: entity.ObjectMeta{Id: req.ConfigurationId},
 		}
 	}
 	if req.IsDefault {
@@ -301,7 +286,7 @@ func (a *AdminServer) GetManifests(ctx context.Context, req *pb.ListRequest) (*p
 	if err != nil {
 		return nil, err
 	}
-	manifests := make([]entity.WorkloadManifest, 0, 20)
+	manifests := make([]entity.Manifest, 0, 20)
 	for _, r := range repos {
 		m, err := a.manifestService.GetManifests(ctx, r)
 		if err != nil {
@@ -334,16 +319,8 @@ func (a *AdminServer) GetManifest(ctx context.Context, req *pb.IdRequest) (*pb.M
 		return nil, status.Error(codes.InvalidArgument, "id must be present")
 	}
 
-	// get the reference from req.Id
-	reference, err := a.referenceService.GetReference(ctx, req.Id)
-	if err != nil {
-		if errService.IsResourceNotFound(err) {
-			return nil, status.Errorf(codes.NotFound, err.Error())
-		}
-	}
-
 	// get the manifest
-	manifest, err := a.manifestService.GetManifest(ctx, reference)
+	manifest, err := a.manifestService.GetManifest(ctx, req.Id)
 	if err != nil {
 		if errService.IsResourceNotFound(err) {
 			return nil, status.Errorf(codes.NotFound, err.Error())

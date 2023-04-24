@@ -60,7 +60,7 @@ type Device struct {
 	// Configuration of the device
 	Configuration *Configuration
 	// List of workloads attached to this device
-	Workloads []Manifest
+	Workloads []Workload
 }
 
 type Set struct {
@@ -71,7 +71,7 @@ type Set struct {
 	// List of the id of devices in the group
 	Devices []string
 	// List of workload's reference attached to this set
-	Workloads []Manifest
+	Workloads []Workload
 }
 
 type Namespace struct {
@@ -83,5 +83,5 @@ type Namespace struct {
 	// List of devices belonging to this namespace
 	Devices []string
 	// List of workload's reference attached to this namespace
-	Workloads []Manifest
+	Workloads []Workload
 }

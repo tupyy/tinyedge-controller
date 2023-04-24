@@ -240,9 +240,6 @@ var _ = Describe("Git repository", func() {
 
 			manifests, err := r.GetManifests(context.TODO(), clone)
 			Expect(len(manifests)).To(Equal(2))
-
-			Expect(manifests[0].GetName()).To(Equal("manifest1"))
-			Expect(manifests[1].GetName()).To(Equal("manifest2"))
 		})
 
 		AfterEach(func() {

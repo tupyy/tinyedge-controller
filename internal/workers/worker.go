@@ -3,22 +3,20 @@ package workers
 import (
 	"context"
 
-	"github.com/tupyy/tinyedge-controller/internal/services/configuration"
+	"github.com/tupyy/tinyedge-controller/internal/services"
 	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
-	"github.com/tupyy/tinyedge-controller/internal/services/reference"
-	"github.com/tupyy/tinyedge-controller/internal/services/repository"
 	"go.uber.org/zap"
 )
 
 type GitOpsWorker struct {
-	referenceService  *reference.Service
-	repositoryService *repository.Service
-	confService       *configuration.Service
+	manifestService   *services.Manifest
+	repositoryService *services.Repository
+	confService       *services.Configuration
 }
 
-func NewGitOpsWorker(ref *reference.Service, r *repository.Service, c *configuration.Service) *GitOpsWorker {
+func NewGitOpsWorker(r *services.Repository, m *services.Manifest, c *services.Configuration) *GitOpsWorker {
 	return &GitOpsWorker{
-		referenceService:  ref,
+		manifestService:   m,
 		repositoryService: r,
 		confService:       c,
 	}
@@ -61,7 +59,7 @@ func (g *GitOpsWorker) Do(ctx context.Context) error {
 
 		zap.S().Infow("changes detected in repo", "repo_url", repo.Url, "head sha", r.TargetHeadSha, "repo_current_sha", r.CurrentHeadSha)
 
-		if err := g.referenceService.UpdateReferences(ctx, r); err != nil {
+		if err := g.manifestService.UpdateManifests(ctx, r); err != nil {
 			zap.S().Errorw("unable to update repository's manifests", "error", err, "repo_id", r.Id, "repo_url", r.Url)
 			continue
 		}
