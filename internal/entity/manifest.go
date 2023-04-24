@@ -24,8 +24,11 @@ type Manifest interface {
 	GetID() string
 	GetVersion() string
 	GetKind() ManifestKind
-	GetPath() string
-	GetRepository() Repository
+	GetHash() string
+	GetSelectors() Selectors
+	GetNamespaces() []string
+	GetSets() []string
+	GetDevices() []string
 }
 
 type TypeMeta struct {
@@ -48,6 +51,7 @@ type ObjectMeta struct {
 	Id string
 	// Labels
 	Labels map[string]string
+	Hash   string
 }
 
 func (o ObjectMeta) GetID() string {
@@ -56,6 +60,10 @@ func (o ObjectMeta) GetID() string {
 
 func (o ObjectMeta) GetLabels() map[string]string {
 	return o.Labels
+}
+
+func (o ObjectMeta) GetHash() string {
+	return o.Hash
 }
 
 // Workload holds the workload definition.
@@ -84,20 +92,20 @@ type Workload struct {
 	Sets []string
 }
 
-func (w Workload) GetPath() string {
-	return w.Path
+func (w Workload) GetSelectors() Selectors {
+	return w.Selectors
 }
 
-func (w Workload) GetRepository() Repository {
-	return w.Repository
+func (w Workload) GetNamespaces() []string {
+	return w.Namespaces
 }
 
-type Secret struct {
-	Id    string
-	Path  string
-	Key   string
-	Hash  string
-	Value string
+func (w Workload) GetSets() []string {
+	return w.Sets
+}
+
+func (w Workload) GetDevices() []string {
+	return w.Devices
 }
 
 // Configuration holds the configuration for a namespace, set or a device.
@@ -116,14 +124,36 @@ type Configuration struct {
 	LogLevel string
 	// Selectors list of selectors
 	Selectors []Selector
+	// Devices holds the list of devices' ids which use this manifest
+	Devices []string
+	// Namespaces hold the list of namespace ids which use this manifest
+	Namespaces []string
+	// Sets holds the list of sets ids which use this manifest
+	Sets []string
 }
 
-func (c Configuration) GetPath() string {
-	return c.Path
+func (c Configuration) GetSelectors() Selectors {
+	return c.Selectors
 }
 
-func (c Configuration) GetRepository() Repository {
-	return c.Repository
+func (c Configuration) GetNamespaces() []string {
+	return c.Namespaces
+}
+
+func (c Configuration) GetSets() []string {
+	return c.Sets
+}
+
+func (c Configuration) GetDevices() []string {
+	return c.Devices
+}
+
+type Secret struct {
+	Id    string
+	Path  string
+	Key   string
+	Hash  string
+	Value string
 }
 
 /* DeviceProfile specify all the conditions of a profile:
@@ -162,4 +192,16 @@ const (
 type Selector struct {
 	Type  SelectorType
 	Value string
+}
+
+type Selectors []Selector
+
+func (selectors Selectors) ExtractType(t SelectorType) []string {
+	ids := make([]string, 0, len(selectors))
+	for _, s := range selectors {
+		if s.Type == t {
+			ids = append(ids, s.Value)
+		}
+	}
+	return ids
 }

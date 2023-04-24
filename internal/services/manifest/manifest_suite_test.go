@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestManifest(t *testing.T) {
+func TestReference(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Manifest Suite")
+	RunSpecs(t, "Reference Suite")
 }

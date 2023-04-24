@@ -28,6 +28,7 @@ type Repository struct {
 	CurrentHeadSha        string
 	TargetHeadSha         string
 	PullPeriod            time.Duration
+	Manifests             []string
 }
 
 type SSHRepositoryAuth struct {

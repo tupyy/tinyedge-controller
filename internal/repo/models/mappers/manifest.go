@@ -43,9 +43,7 @@ func ManifestsToEntities(mm []models.ManifestJoin) []entity.Manifest {
 func ManifestEntityToModel(e entity.Manifest) models.Manifest {
 	m := models.Manifest{
 		ID:      e.GetID(),
-		RepoID:  e.GetRepository().Id,
 		RefType: e.GetKind().String(),
-		Path:    e.GetPath(),
 	}
 	return m
 }

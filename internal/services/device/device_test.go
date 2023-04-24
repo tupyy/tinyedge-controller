@@ -16,7 +16,7 @@ var _ = Describe("Device", func() {
 		It("correctly delete the default namespace", func() {
 			deviceReaderWriter := &device.DeviceReaderWriterMock{
 				GetNamespaceFunc: func(ctx context.Context, id string) (entity.Namespace, error) {
-					return entity.Namespace{Name: "default", IsDefault: true, DeviceIDs: []string{"toto"}}, nil
+					return entity.Namespace{Name: "default", IsDefault: true, Devices: []string{"toto"}}, nil
 				},
 				GetNamespacesFunc: func(ctx context.Context) ([]entity.Namespace, error) {
 					namespaces := []entity.Namespace{
@@ -162,7 +162,7 @@ var _ = Describe("Device", func() {
 		It("return error when GetDevice fails", func() {
 			deviceReaderWriter := &device.DeviceReaderWriterMock{
 				GetNamespaceFunc: func(ctx context.Context, id string) (entity.Namespace, error) {
-					return entity.Namespace{Name: "default", IsDefault: false, DeviceIDs: []string{"toto"}}, nil
+					return entity.Namespace{Name: "default", IsDefault: false, Devices: []string{"toto"}}, nil
 				},
 				GetNamespacesFunc: func(ctx context.Context) ([]entity.Namespace, error) {
 					namespaces := []entity.Namespace{
@@ -193,7 +193,7 @@ var _ = Describe("Device", func() {
 		It("return error when UpdateDevice fails", func() {
 			deviceReaderWriter := &device.DeviceReaderWriterMock{
 				GetNamespaceFunc: func(ctx context.Context, id string) (entity.Namespace, error) {
-					return entity.Namespace{Name: "default", IsDefault: false, DeviceIDs: []string{"toto"}}, nil
+					return entity.Namespace{Name: "default", IsDefault: false, Devices: []string{"toto"}}, nil
 				},
 				GetNamespacesFunc: func(ctx context.Context) ([]entity.Namespace, error) {
 					namespaces := []entity.Namespace{

@@ -15,7 +15,6 @@ type DeviceReader interface {
 	GetNamespaces(ctx context.Context) ([]entity.Namespace, error)
 	GetSet(ctx context.Context, id string) (entity.Set, error)
 	GetSets(ctx context.Context) ([]entity.Set, error)
-	GetConfiguration(ctx context.Context, id string) (entity.Configuration, error)
 }
 
 // DeviceWriter allows creating a device.

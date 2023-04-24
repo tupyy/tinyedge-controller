@@ -1,7 +1,13 @@
-package reference
+package manifest
+
+import "github.com/tupyy/tinyedge-controller/internal/entity"
 
 // substract return all elements of a which are not found in b
 func substract[T any, S func(elem T) string](a []T, b []T, idFn S) []T {
+	if len(b) == 0 {
+		return a
+	}
+
 	m1 := make(map[string]T)
 	m2 := make(map[string]T)
 
@@ -63,9 +69,9 @@ func intersect[T any, S func(elem T) string, W func(e1, e2 T) bool](a []T, b []T
 	return res
 }
 
-func contains(arr []string, id string) bool {
+func contains(arr []entity.Manifest, id string) bool {
 	for _, a := range arr {
-		if a == id {
+		if a.GetID() == id {
 			return true
 		}
 	}

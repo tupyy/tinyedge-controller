@@ -65,8 +65,8 @@ func (w *Service) DeleteNamespace(ctx context.Context, id string) (entity.Namesp
 	}
 
 	// set the namespace for all devices in the deleted namespace
-	for _, deviceID := range namespace.DeviceIDs {
-		device, err := w.GetDevice(ctx, deviceID)
+	for _, id := range namespace.Devices {
+		device, err := w.GetDevice(ctx, id)
 		if err != nil {
 			return entity.Namespace{}, err
 		}
@@ -74,7 +74,7 @@ func (w *Service) DeleteNamespace(ctx context.Context, id string) (entity.Namesp
 		if err := w.UpdateDevice(ctx, device); err != nil {
 			return entity.Namespace{}, err
 		}
-		zap.S().Infof("device %q was moved into the default namespace %q", deviceID, device.NamespaceID)
+		zap.S().Infof("device %q was moved into the default namespace %q", id, device.NamespaceID)
 	}
 
 	if err := w.pgDeviceRepo.DeleteNamespace(ctx, id); err != nil {

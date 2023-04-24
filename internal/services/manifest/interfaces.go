@@ -6,17 +6,34 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 )
 
-//go:generate moq -out reference_reader_moq.go . ReferenceReader
-type ReferenceReader interface {
-	GetReferences(ctx context.Context, repo entity.Repository) ([]entity.Reference, error)
+//go:generate moq -out device_reader_moq.go . DeviceReader
+type DeviceReader interface {
+	GetDevice(ctx context.Context, id string) (entity.Device, error)
+	GetNamespace(ctx context.Context, id string) (entity.Namespace, error)
+	GetSet(ctx context.Context, id string) (entity.Set, error)
+}
+
+type ManifestReader interface {
+	GetManifest(ctx context.Context, id string) (entity.Manifest, error)
+	GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error)
+}
+
+type ManifestWriter interface {
+	InsertManifest(ctx context.Context, manifest entity.Manifest) error
+	UpdateManifest(ctx context.Context, manifest entity.Manifest) error
+	DeleteManifest(ctx context.Context, manifest entity.Manifest) error
+
+	CreateRelation(ctx context.Context, relation entity.Relation) error
+	DeleteRelation(ctx context.Context, relation entity.Relation) error
+}
+
+//go:generate moq -out manifest_rw_moq.go . ManifestReaderWriter
+type ManifestReaderWriter interface {
+	ManifestReader
+	ManifestWriter
 }
 
 //go:generate moq -out git_reader_moq.go . GitReader
 type GitReader interface {
-	GetWorkload(ctx context.Context, ref entity.Reference) (entity.Workload, error)
-}
-
-//go:generate moq -out secret_reader_moq.go . SecretReader
-type SecretReader interface {
-	GetSecret(ctx context.Context, path, key string) (entity.Secret, error)
+	GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error)
 }
