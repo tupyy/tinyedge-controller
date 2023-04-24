@@ -16,19 +16,19 @@ var _ CertificateWriter = &CertificateWriterMock{}
 
 // CertificateWriterMock is a mock implementation of CertificateWriter.
 //
-//	func TestSomethingThatUsesCertificateWriter(t *testing.T) {
+// 	func TestSomethingThatUsesCertificateWriter(t *testing.T) {
 //
-//		// make and configure a mocked CertificateWriter
-//		mockedCertificateWriter := &CertificateWriterMock{
-//			SignCSRFunc: func(ctx context.Context, csr []byte, cn string, ttl time.Duration) (entity.CertificateGroup, error) {
-//				panic("mock out the SignCSR method")
-//			},
-//		}
+// 		// make and configure a mocked CertificateWriter
+// 		mockedCertificateWriter := &CertificateWriterMock{
+// 			SignCSRFunc: func(ctx context.Context, csr []byte, cn string, ttl time.Duration) (entity.CertificateGroup, error) {
+// 				panic("mock out the SignCSR method")
+// 			},
+// 		}
 //
-//		// use mockedCertificateWriter in code that requires CertificateWriter
-//		// and then make assertions.
+// 		// use mockedCertificateWriter in code that requires CertificateWriter
+// 		// and then make assertions.
 //
-//	}
+// 	}
 type CertificateWriterMock struct {
 	// SignCSRFunc mocks the SignCSR method.
 	SignCSRFunc func(ctx context.Context, csr []byte, cn string, ttl time.Duration) (entity.CertificateGroup, error)
@@ -74,8 +74,7 @@ func (mock *CertificateWriterMock) SignCSR(ctx context.Context, csr []byte, cn s
 
 // SignCSRCalls gets all the calls that were made to SignCSR.
 // Check the length with:
-//
-//	len(mockedCertificateWriter.SignCSRCalls())
+//     len(mockedCertificateWriter.SignCSRCalls())
 func (mock *CertificateWriterMock) SignCSRCalls() []struct {
 	Ctx context.Context
 	Csr []byte

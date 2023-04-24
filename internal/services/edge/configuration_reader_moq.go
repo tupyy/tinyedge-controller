@@ -15,19 +15,19 @@ var _ ConfigurationReader = &ConfigurationReaderMock{}
 
 // ConfigurationReaderMock is a mock implementation of ConfigurationReader.
 //
-//	func TestSomethingThatUsesConfigurationReader(t *testing.T) {
+// 	func TestSomethingThatUsesConfigurationReader(t *testing.T) {
 //
-//		// make and configure a mocked ConfigurationReader
-//		mockedConfigurationReader := &ConfigurationReaderMock{
-//			GetDeviceConfigurationFunc: func(ctx context.Context, id string) (entity.ConfigurationResponse, error) {
-//				panic("mock out the GetDeviceConfiguration method")
-//			},
-//		}
+// 		// make and configure a mocked ConfigurationReader
+// 		mockedConfigurationReader := &ConfigurationReaderMock{
+// 			GetDeviceConfigurationFunc: func(ctx context.Context, id string) (entity.ConfigurationResponse, error) {
+// 				panic("mock out the GetDeviceConfiguration method")
+// 			},
+// 		}
 //
-//		// use mockedConfigurationReader in code that requires ConfigurationReader
-//		// and then make assertions.
+// 		// use mockedConfigurationReader in code that requires ConfigurationReader
+// 		// and then make assertions.
 //
-//	}
+// 	}
 type ConfigurationReaderMock struct {
 	// GetDeviceConfigurationFunc mocks the GetDeviceConfiguration method.
 	GetDeviceConfigurationFunc func(ctx context.Context, id string) (entity.ConfigurationResponse, error)
@@ -65,8 +65,7 @@ func (mock *ConfigurationReaderMock) GetDeviceConfiguration(ctx context.Context,
 
 // GetDeviceConfigurationCalls gets all the calls that were made to GetDeviceConfiguration.
 // Check the length with:
-//
-//	len(mockedConfigurationReader.GetDeviceConfigurationCalls())
+//     len(mockedConfigurationReader.GetDeviceConfigurationCalls())
 func (mock *ConfigurationReaderMock) GetDeviceConfigurationCalls() []struct {
 	Ctx context.Context
 	ID  string

@@ -25,7 +25,7 @@ var _ = Describe("Device", func() {
 					}
 					return namespaces, nil
 				},
-				UpdateFunc: func(ctx context.Context, device entity.Device) error {
+				UpdateDeviceFunc: func(ctx context.Context, device entity.Device) error {
 					return nil
 				},
 				GetDeviceFunc: func(ctx context.Context, id string) (entity.Device, error) {
@@ -54,7 +54,7 @@ var _ = Describe("Device", func() {
 			Expect(len(deviceReaderWriter.GetDeviceCalls())).To(Equal(1))
 
 			// should call UpdateDevice to set the namespace
-			updateDeviceCalls := deviceReaderWriter.UpdateCalls()
+			updateDeviceCalls := deviceReaderWriter.UpdateDeviceCalls()
 			Expect(len(updateDeviceCalls)).To(Equal(1))
 			Expect(updateDeviceCalls[0].Device.NamespaceID).To(Equal("other-one"))
 
@@ -205,7 +205,7 @@ var _ = Describe("Device", func() {
 				GetDeviceFunc: func(ctx context.Context, id string) (entity.Device, error) {
 					return entity.Device{}, nil
 				},
-				UpdateFunc: func(ctx context.Context, device entity.Device) error {
+				UpdateDeviceFunc: func(ctx context.Context, device entity.Device) error {
 					return errors.New("error")
 				},
 				UpdateNamespaceFunc: func(ctx context.Context, namespace entity.Namespace) error {
@@ -396,7 +396,7 @@ var _ = Describe("Device", func() {
 	Describe("Update device", func() {
 		It("update correctly", func() {
 			deviceReaderWriter := &device.DeviceReaderWriterMock{
-				UpdateFunc: func(ctx context.Context, device entity.Device) error {
+				UpdateDeviceFunc: func(ctx context.Context, device entity.Device) error {
 					return nil
 				},
 			}
@@ -406,7 +406,7 @@ var _ = Describe("Device", func() {
 		})
 		It("return error", func() {
 			deviceReaderWriter := &device.DeviceReaderWriterMock{
-				UpdateFunc: func(ctx context.Context, device entity.Device) error {
+				UpdateDeviceFunc: func(ctx context.Context, device entity.Device) error {
 					return errors.New("error")
 				},
 			}

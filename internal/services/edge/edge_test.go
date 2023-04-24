@@ -53,7 +53,7 @@ var _ = Describe("Edge", func() {
 				GetDeviceFunc: func(ctx context.Context, id string) (entity.Device, error) {
 					return entity.Device{}, errService.NewResourceNotFoundError("device", id)
 				},
-				CreateFunc: func(ctx context.Context, device entity.Device) error {
+				CreateDeviceFunc: func(ctx context.Context, device entity.Device) error {
 					return nil
 				},
 			}
@@ -62,7 +62,7 @@ var _ = Describe("Edge", func() {
 			status, err := service.Enrol(context.TODO(), "deviceID")
 			Expect(err).To(BeNil())
 			Expect(status).To(Equal(entity.EnroledStatus))
-			calls := deviceReadWriter.CreateCalls()
+			calls := deviceReadWriter.CreateDeviceCalls()
 			Expect(len(calls)).To(Equal(1))
 
 			firstCall := calls[0]
@@ -78,7 +78,7 @@ var _ = Describe("Edge", func() {
 						EnrolStatus: entity.EnroledStatus,
 					}, nil
 				},
-				CreateFunc: func(ctx context.Context, device entity.Device) error {
+				CreateDeviceFunc: func(ctx context.Context, device entity.Device) error {
 					return nil
 				},
 			}
@@ -87,7 +87,7 @@ var _ = Describe("Edge", func() {
 			status, err := service.Enrol(context.TODO(), "deviceID")
 			Expect(err).To(BeNil())
 			Expect(status).To(Equal(entity.EnroledStatus))
-			calls := deviceReadWriter.CreateCalls()
+			calls := deviceReadWriter.CreateDeviceCalls()
 			Expect(len(calls)).To(Equal(0))
 		})
 
@@ -102,7 +102,7 @@ var _ = Describe("Edge", func() {
 			status, err := service.Enrol(context.TODO(), "deviceID")
 			Expect(err).NotTo(BeNil())
 			Expect(status).To(Equal(entity.NotEnroledStatus))
-			calls := deviceReadWriter.CreateCalls()
+			calls := deviceReadWriter.CreateDeviceCalls()
 			Expect(len(calls)).To(Equal(0))
 		})
 
@@ -111,7 +111,7 @@ var _ = Describe("Edge", func() {
 				GetDeviceFunc: func(ctx context.Context, id string) (entity.Device, error) {
 					return entity.Device{}, errService.NewResourceNotFoundError("device", "deviceID")
 				},
-				CreateFunc: func(ctx context.Context, device entity.Device) error {
+				CreateDeviceFunc: func(ctx context.Context, device entity.Device) error {
 					return errors.New("cannot create device")
 				},
 			}
@@ -120,7 +120,7 @@ var _ = Describe("Edge", func() {
 			status, err := service.Enrol(context.TODO(), "deviceID")
 			Expect(err).NotTo(BeNil())
 			Expect(status).To(Equal(entity.NotEnroledStatus))
-			calls := deviceReadWriter.CreateCalls()
+			calls := deviceReadWriter.CreateDeviceCalls()
 			Expect(len(calls)).To(Equal(1))
 		})
 	})
@@ -134,7 +134,7 @@ var _ = Describe("Edge", func() {
 						EnrolStatus: entity.EnroledStatus,
 					}, nil
 				},
-				UpdateFunc: func(ctx context.Context, device entity.Device) error {
+				UpdateDeviceFunc: func(ctx context.Context, device entity.Device) error {
 					return nil
 				},
 			}
@@ -158,7 +158,7 @@ var _ = Describe("Edge", func() {
 			csr := "csr"
 			certificate, err := service.Register(context.TODO(), "deviceID", csr)
 			Expect(err).To(BeNil())
-			calls := deviceRW.UpdateCalls()
+			calls := deviceRW.UpdateDeviceCalls()
 			Expect(len(calls)).To(Equal(1))
 			Expect(calls[0].Device.Registred).To(BeTrue())
 			Expect(calls[0].Device.CertificateSerialNumber).To(Equal("137D4565568F5D35"))
@@ -172,7 +172,7 @@ var _ = Describe("Edge", func() {
 						EnrolStatus: entity.EnroledStatus,
 					}, nil
 				},
-				UpdateFunc: func(ctx context.Context, device entity.Device) error {
+				UpdateDeviceFunc: func(ctx context.Context, device entity.Device) error {
 					return errors.New("unknown error")
 				},
 			}
@@ -196,7 +196,7 @@ var _ = Describe("Edge", func() {
 			csr := "csr"
 			_, err := service.Register(context.TODO(), "deviceID", csr)
 			Expect(err).NotTo(BeNil())
-			calls := deviceRW.UpdateCalls()
+			calls := deviceRW.UpdateDeviceCalls()
 			Expect(len(calls)).To(Equal(1))
 		})
 		It("unable to sign the csr", func() {
@@ -207,7 +207,7 @@ var _ = Describe("Edge", func() {
 						EnrolStatus: entity.EnroledStatus,
 					}, nil
 				},
-				UpdateFunc: func(ctx context.Context, device entity.Device) error {
+				UpdateDeviceFunc: func(ctx context.Context, device entity.Device) error {
 					return errors.New("unknown error")
 				},
 			}
@@ -220,7 +220,7 @@ var _ = Describe("Edge", func() {
 			csr := "csr"
 			_, err := service.Register(context.TODO(), "deviceID", csr)
 			Expect(err).NotTo(BeNil())
-			calls := deviceRW.UpdateCalls()
+			calls := deviceRW.UpdateDeviceCalls()
 			Expect(len(calls)).To(Equal(0))
 		})
 		It("device not found", func() {
@@ -228,7 +228,7 @@ var _ = Describe("Edge", func() {
 				GetDeviceFunc: func(ctx context.Context, id string) (entity.Device, error) {
 					return entity.Device{}, errors.New("device not found")
 				},
-				UpdateFunc: func(ctx context.Context, device entity.Device) error {
+				UpdateDeviceFunc: func(ctx context.Context, device entity.Device) error {
 					return errors.New("unknown error")
 				},
 			}
@@ -236,7 +236,7 @@ var _ = Describe("Edge", func() {
 			csr := "csr"
 			_, err := service.Register(context.TODO(), "deviceID", csr)
 			Expect(err).NotTo(BeNil())
-			calls := deviceRW.UpdateCalls()
+			calls := deviceRW.UpdateDeviceCalls()
 			Expect(len(calls)).To(Equal(0))
 		})
 		It("device is not enroled", func() {
