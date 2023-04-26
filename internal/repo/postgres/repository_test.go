@@ -2,6 +2,7 @@ package postgres_test
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -23,26 +24,24 @@ var _ = Describe("Repository", Ordered, func() {
 
 	BeforeAll(func() {
 		var err error
+		port, _ := strconv.Atoi(getEnvVar("POSTGRES_PORT", "5433"))
 		pgClient, err = pg.New(pg.ClientParams{
-			Host:     "localhost",
-			Port:     5433,
-			DBName:   "tinyedge",
-			User:     "postgres",
-			Password: "postgres",
+			Host:     getEnvVar("POSTGRES_HOST", "localhost"),
+			Port:     uint(port),
+			DBName:   getEnvVar("POSTGRES_DB", "tinyedge"),
+			User:     getEnvVar("POSTGRES_USER", "postgres"),
+			Password: getEnvVar("POSTGRES_PWD", "postgres"),
 		})
 		Expect(err).To(BeNil())
 
 		rawClient, err = pg.New(pg.ClientParams{
-			Host:     "localhost",
-			Port:     5433,
-			DBName:   "tinyedge",
-			User:     "postgres",
-			Password: "postgres",
+			Host:     getEnvVar("POSTGRES_HOST", "localhost"),
+			Port:     uint(port),
+			DBName:   getEnvVar("POSTGRES_DB", "tinyedge"),
+			User:     getEnvVar("POSTGRES_USER", "postgres"),
+			Password: getEnvVar("POSTGRES_PWD", "postgres"),
 		})
 		Expect(err).To(BeNil())
-
-		// repo, err = pgRepo.NewManifestRepository(pgClient)
-		// Expect(err).To(BeNil())
 
 		repo, err = pgRepo.NewRepository(pgClient)
 		Expect(err).To(BeNil())

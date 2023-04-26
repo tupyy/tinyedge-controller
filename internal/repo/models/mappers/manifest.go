@@ -45,6 +45,13 @@ func ManifestEntityToModel(e entity.Manifest) models.Manifest {
 		ID:      e.GetID(),
 		RefType: e.GetKind().String(),
 	}
+	switch v := e.(type) {
+	case entity.Configuration:
+	case entity.Workload:
+		m.RepoID = v.Repository.Id
+		m.Path = v.Path
+	}
+
 	return m
 }
 

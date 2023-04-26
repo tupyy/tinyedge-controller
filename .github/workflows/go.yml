@@ -9,7 +9,7 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   container-job:
-    runs-on: fedora_latest
+    runs-on: ubuntu-latest
     container: golang:1.20-buster
 
     services:
@@ -32,8 +32,18 @@ jobs:
       with:
         go-version: 1.19
 
+    - name: Install dependencies
+      run: |
+        apt-get update
+        apt-get install --yes --no-install-recommends postgresql-client
+
+    - name: setup pg
+      run: | 
+        chmod 600 sql/.pgpass
+        DB_HOST=postgres DB_PORT=5432 make postgres.setup
+
     - name: Test
-      run: make test
+      run: POSTGRES_HOST=postgres POSTGRES_PORT=5432 make test
 
     - name: Checking generated files are up to date
       run: |

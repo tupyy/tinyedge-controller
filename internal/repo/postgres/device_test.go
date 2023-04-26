@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strconv"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -60,36 +61,33 @@ resources:
 
 var _ = Describe("Device repository", Ordered, func() {
 	var (
-		pgClient  pg.Client
-		rawClient pg.Client
-		//repo       *pgRepo.ManifestRepository
+		pgClient   pg.Client
+		rawClient  pg.Client
 		deviceRepo *pgRepo.DeviceRepo
 		gormDB     *gorm.DB
 		folderTmp  string
 	)
 
 	BeforeAll(func() {
+		port, _ := strconv.Atoi(getEnvVar("POSTGRES_PORT", "5433"))
 		var err error
 		pgClient, err = pg.New(pg.ClientParams{
-			Host:     "localhost",
-			Port:     5433,
-			DBName:   "tinyedge",
-			User:     "postgres",
-			Password: "postgres",
+			Host:     getEnvVar("POSTGRES_HOST", "localhost"),
+			Port:     uint(port),
+			DBName:   getEnvVar("POSTGRES_DB", "tinyedge"),
+			User:     getEnvVar("POSTGRES_USER", "postgres"),
+			Password: getEnvVar("POSTGRES_PWD", "postgres"),
 		})
 		Expect(err).To(BeNil())
 
 		rawClient, err = pg.New(pg.ClientParams{
-			Host:     "localhost",
-			Port:     5433,
-			DBName:   "tinyedge",
-			User:     "postgres",
-			Password: "postgres",
+			Host:     getEnvVar("POSTGRES_HOST", "localhost"),
+			Port:     uint(port),
+			DBName:   getEnvVar("POSTGRES_DB", "tinyedge"),
+			User:     getEnvVar("POSTGRES_USER", "postgres"),
+			Password: getEnvVar("POSTGRES_PWD", "postgres"),
 		})
 		Expect(err).To(BeNil())
-
-		// repo, err = pgRepo.NewManifestRepository(pgClient)
-		// Expect(err).To(BeNil())
 
 		deviceRepo, err = pgRepo.NewDeviceRepo(pgClient)
 		Expect(err).To(BeNil())

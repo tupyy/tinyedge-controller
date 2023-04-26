@@ -156,30 +156,30 @@ test: ginkgo
 
 DB_HOST ?= localhost
 DB_PORT ?= 5433
-ROOT_USER = postgres
-ROOT_PWD = postgres
+PG_USER = postgres
+PG_PWD = postgres
 PGPASSFILE=$(CURDIR)/sql/.pgpass
-PSQL_COMMAND=PGPASSFILE=$(PGPASSFILE) psql --quiet --host=$(DB_HOST) --port=$(DB_PORT) -v ON_ERROR_STOP=on
+PSQL_COMMAND=PGPASSFILE=$(PGPASSFILE) psql --quiet --host=$(DB_HOST) --port=$(DB_PORT) -v ON_ERROR_STOP=on --user=$(PG_USER)
 
 #help postgres.setup: Setup postgres from scratch
 postgres.setup: postgres.setup.init postgres.setup.tables postgres.setup.fixtures
 
 #help postgres.setup.clean: cleans postgres from all created resources
 postgres.setup.clean:
-	$(PSQL_COMMAND) --user=$(ROOT_USER) -f sql/clean.sql
+	$(PSQL_COMMAND) -f sql/clean.sql
 
 #help postgres.setup.init: init the database
 postgres.setup.init:
-	$(PSQL_COMMAND) --dbname=postgres --user=$(ROOT_USER) \
+	$(PSQL_COMMAND) --dbname=postgres \
 		-f sql/init.sql
 
 #help postgres.setup.users: init postgres users
 postgres.setup.tables:
-	$(PSQL_COMMAND) --dbname=tinyedge --user=$(ROOT_USER) \
+	$(PSQL_COMMAND) --dbname=tinyedge \
 		-f sql/tables.sql
 
 postgres.setup.fixtures:
-	$(PSQL_COMMAND) --dbname=tinyedge --user=$(ROOT_USER) \
+	$(PSQL_COMMAND) --dbname=tinyedge \
 		-f sql/fixtures.sql
 
 ##@ Vault

@@ -51,7 +51,7 @@ func TestManifestReader(t *testing.T) {
 	Expect(w).NotTo(BeNil())
 
 	Expect(len(w.Resources)).To(Equal(3))
-	Expect(w.Resources[0]).To(Equal("folder/dep/configmap.yaml"))
+	Expect(w.Resources[0]).To(Equal("/dep/configmap.yaml"))
 	Expect(len(w.Selectors)).To(Equal(5))
-	Expect(w.GetKind()).To(Equal(entity.WorkloadManifestKind))
+	Expect(w.GetKind().String()).To(Equal("workload"))
 }
