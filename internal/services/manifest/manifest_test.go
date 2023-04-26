@@ -65,8 +65,8 @@ var _ = Describe("manifests", func() {
 					db.InsertManifest(manifest)
 					return nil
 				},
-				DeleteManifestFunc: func(ctx context.Context, manifest entity.Manifest) error {
-					db.DeleteManifest(manifest)
+				DeleteManifestFunc: func(ctx context.Context, id string) error {
+					db.DeleteManifest(id)
 					return nil
 				},
 				DeleteRelationFunc: func(ctx context.Context, relation entity.Relation) error {
@@ -912,10 +912,10 @@ func (d *db) GetRelations() []entity.Relation {
 	return r
 }
 
-func (d *db) DeleteManifest(m entity.Manifest) {
-	delete(d.Manifests, m.GetID())
+func (d *db) DeleteManifest(id string) {
+	delete(d.Manifests, id)
 	for id := range d.Relations {
-		if strings.Contains(id, m.GetID()) {
+		if strings.Contains(id, id) {
 			delete(d.Relations, id)
 		}
 	}

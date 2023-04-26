@@ -21,7 +21,7 @@ func IDValidationInterceptor(validationFn func(id string) bool) grpc.UnaryServer
 		switch v := req.(type) {
 		case pb.EnrolRequest:
 			if !validationFn(v.DeviceId) {
-				return returnFn(&pb.EnrolResponse{EnrolmentStatus: common.EnrolmentStatus_REFUSED})
+				return returnFn(&pb.EnrolResponse{EnrolmentStatus: pb.EnrolmentStatus_REFUSED})
 			}
 		case pb.ConfigurationRequest:
 			if !validationFn(v.DeviceId) {

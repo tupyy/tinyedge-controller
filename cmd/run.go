@@ -101,7 +101,7 @@ var runCmd = &cobra.Command{
 		repoService := repository.NewRepositoryService(repoRepo, gitRepo, secretRepo)
 
 		scheduler := workers.New(5 * time.Second)
-		scheduler.AddWorker(workers.NewGitOpsWorker(repoService, configurationService))
+		scheduler.AddWorker(workers.NewGitOpsWorker(repoService, manifestService, configurationService))
 		go scheduler.Start(ctx)
 
 		tlsConfig, err := certService.TlsConfig(ctx, conf.DefaultCertificateTTL)

@@ -154,10 +154,10 @@ test: ginkgo
 ##@ Infra
 .PHONY: postgres.setup.clean postgres.setup.init postgres.setup.tables postgres.setup.migrations
 
-DB_HOST=localhost
-DB_PORT=5433
-ROOT_USER=postgres
-ROOT_PWD=postgres
+DB_HOST ?= localhost
+DB_PORT ?= 5433
+ROOT_USER = postgres
+ROOT_PWD = postgres
 PGPASSFILE=$(CURDIR)/sql/.pgpass
 PSQL_COMMAND=PGPASSFILE=$(PGPASSFILE) psql --quiet --host=$(DB_HOST) --port=$(DB_PORT) -v ON_ERROR_STOP=on
 
