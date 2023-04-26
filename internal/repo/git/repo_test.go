@@ -239,7 +239,7 @@ var _ = Describe("Git repository", func() {
 			Expect(clone.Branch).To(Equal("master"))
 
 			manifests, err := r.GetManifests(context.TODO(), clone)
-			Expect(len(manifests)).To(Equal(0)) // TODO FIX == 2
+			Expect(len(manifests)).To(Equal(2)) // TODO FIX == 2
 		})
 
 		AfterEach(func() {

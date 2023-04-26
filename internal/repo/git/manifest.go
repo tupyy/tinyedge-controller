@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 
@@ -48,14 +47,12 @@ func getManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifes
 }
 
 func getManifest(ctx context.Context, repo entity.Repository, filepath string) (entity.Manifest, error) {
-	file := path.Join(repo.LocalPath, filepath)
-
-	_, err := os.Stat(file)
+	_, err := os.Stat(filepath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find file %q in repo %q", filepath, repo.LocalPath)
 	}
 
-	return parseManifest(ctx, file, func(m entity.Manifest) entity.Manifest {
+	return parseManifest(ctx, filepath, func(m entity.Manifest) entity.Manifest {
 		if m.GetKind() == entity.WorkloadManifestKind {
 			w, _ := m.(entity.Workload)
 			w.Id = hash(filepath)[:12]
