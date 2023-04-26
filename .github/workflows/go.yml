@@ -4,11 +4,25 @@ on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches:
+      - '**'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  container-job:
+    runs-on: fedora_latest
+    container: golang:1.20-buster
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
    
     steps:
     - uses: actions/checkout@v2
@@ -20,7 +34,7 @@ jobs:
 
     - name: Test
       run: make test
-    
+
     - name: Checking generated files are up to date
       run: |
         if [[ $(git ls-files --others --exclude-standard) ]]; then git ls-files --others --exclude-standard; echo "These files are not tracked by git"; exit 1; fi
