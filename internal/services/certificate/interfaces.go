@@ -23,7 +23,7 @@ type CertificateReaderWriter interface {
 }
 
 type ConfigurationCacheReaderWriter interface {
-	Get(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error)
-	Put(ctx context.Context, deviceID string, conf entity.ConfigurationResponse) error
+	Get(ctx context.Context, deviceID string) (entity.DeviceConfiguration, error)
+	Put(ctx context.Context, deviceID string, conf entity.DeviceConfiguration) error
 	Delete(ctx context.Context, deviceID string) error
 }

@@ -8,24 +8,24 @@ import (
 )
 
 type MemCacheRepo struct {
-	cache map[string]entity.ConfigurationResponse
+	cache map[string]entity.DeviceConfiguration
 }
 
 func NewCacheRepo() *MemCacheRepo {
 	return &MemCacheRepo{
-		cache: make(map[string]entity.ConfigurationResponse),
+		cache: make(map[string]entity.DeviceConfiguration),
 	}
 }
 
-func (c *MemCacheRepo) Put(ctx context.Context, id string, confResponse entity.ConfigurationResponse) error {
+func (c *MemCacheRepo) Put(ctx context.Context, id string, confResponse entity.DeviceConfiguration) error {
 	c.cache[id] = confResponse
 	return nil
 }
 
-func (c *MemCacheRepo) Get(ctx context.Context, id string) (entity.ConfigurationResponse, error) {
+func (c *MemCacheRepo) Get(ctx context.Context, id string) (entity.DeviceConfiguration, error) {
 	conf, found := c.cache[id]
 	if !found {
-		return entity.ConfigurationResponse{}, errService.NewResourceNotFoundError("configuration", id)
+		return entity.DeviceConfiguration{}, errService.NewResourceNotFoundError("configuration", id)
 	}
 	return conf, nil
 }

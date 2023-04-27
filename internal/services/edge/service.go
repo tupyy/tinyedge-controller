@@ -103,7 +103,7 @@ func (s *Service) IsRegistered(ctx context.Context, deviceID string) (bool, erro
 	return device.Registred, nil
 }
 
-func (s *Service) GetConfiguration(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error) {
+func (s *Service) GetConfiguration(ctx context.Context, deviceID string) (entity.DeviceConfiguration, error) {
 	return s.confReader.GetDeviceConfiguration(ctx, deviceID)
 }
 

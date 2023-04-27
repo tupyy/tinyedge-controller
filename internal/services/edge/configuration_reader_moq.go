@@ -30,7 +30,7 @@ var _ ConfigurationReader = &ConfigurationReaderMock{}
 // 	}
 type ConfigurationReaderMock struct {
 	// GetDeviceConfigurationFunc mocks the GetDeviceConfiguration method.
-	GetDeviceConfigurationFunc func(ctx context.Context, id string) (entity.ConfigurationResponse, error)
+	GetDeviceConfigurationFunc func(ctx context.Context, id string) (entity.DeviceConfiguration, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -46,7 +46,7 @@ type ConfigurationReaderMock struct {
 }
 
 // GetDeviceConfiguration calls GetDeviceConfigurationFunc.
-func (mock *ConfigurationReaderMock) GetDeviceConfiguration(ctx context.Context, id string) (entity.ConfigurationResponse, error) {
+func (mock *ConfigurationReaderMock) GetDeviceConfiguration(ctx context.Context, id string) (entity.DeviceConfiguration, error) {
 	if mock.GetDeviceConfigurationFunc == nil {
 		panic("ConfigurationReaderMock.GetDeviceConfigurationFunc: method is nil but ConfigurationReader.GetDeviceConfiguration was just called")
 	}

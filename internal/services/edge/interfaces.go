@@ -26,7 +26,7 @@ type DeviceReaderWriter interface {
 
 //go:generate moq -out configuration_reader_moq.go . ConfigurationReader
 type ConfigurationReader interface {
-	GetDeviceConfiguration(ctx context.Context, id string) (entity.ConfigurationResponse, error)
+	GetDeviceConfiguration(ctx context.Context, id string) (entity.DeviceConfiguration, error)
 }
 
 //go:generate moq -out certficate_writer_moq.go . CertificateWriter

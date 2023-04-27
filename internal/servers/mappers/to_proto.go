@@ -6,7 +6,7 @@ import (
 	edgepb "github.com/tupyy/tinyedge-controller/pkg/grpc/edge"
 )
 
-func MapConfigurationToProto(conf entity.ConfigurationResponse) *edgepb.ConfigurationResponse {
+func MapConfigurationToProto(conf entity.DeviceConfiguration) *edgepb.ConfigurationResponse {
 	response := &edgepb.ConfigurationResponse{
 		Hash: conf.Hash,
 	}

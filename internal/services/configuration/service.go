@@ -17,7 +17,7 @@ func New(deviceReader DeviceReader) *Service {
 	}
 }
 
-func (c *Service) GetDeviceConfiguration(ctx context.Context, deviceID string) (entity.ConfigurationResponse, error) {
+func (c *Service) GetDeviceConfiguration(ctx context.Context, deviceID string) (entity.DeviceConfiguration, error) {
 	// conf, err := c.cacheReadWriter.Get(ctx, deviceID)
 	// if err != nil {
 	// 	if !errors.Is(err, common.ErrResourceNotFound) {
@@ -27,15 +27,15 @@ func (c *Service) GetDeviceConfiguration(ctx context.Context, deviceID string) (
 	// create configuration from pg and save it to cache
 	device, err := c.deviceReader.GetDevice(ctx, deviceID)
 	if err != nil {
-		return entity.ConfigurationResponse{}, err
+		return entity.DeviceConfiguration{}, err
 	}
 	configuration, err := c.getConfiguration(ctx, device)
 	if err != nil {
-		return entity.ConfigurationResponse{}, err
+		return entity.DeviceConfiguration{}, err
 	}
-	manifests, err := c.getManifests(ctx, device)
+	manifests, err := c.getWorkloads(ctx, device)
 	if err != nil {
-		return entity.ConfigurationResponse{}, err
+		return entity.DeviceConfiguration{}, err
 	}
 	confResponse := createConfigurationResponse(configuration, manifests)
 
@@ -77,7 +77,7 @@ func (c *Service) getConfiguration(ctx context.Context, device entity.Device) (e
 	return namespace.Configuration, nil
 }
 
-func (c *Service) getManifests(ctx context.Context, device entity.Device) ([]entity.Workload, error) {
+func (c *Service) getWorkloads(ctx context.Context, device entity.Device) ([]entity.Workload, error) {
 	if len(device.Workloads) > 0 {
 		return device.Workloads, nil
 	}
