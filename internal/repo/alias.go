@@ -4,8 +4,7 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/repo/cache"
 	"github.com/tupyy/tinyedge-controller/internal/repo/git"
 	"github.com/tupyy/tinyedge-controller/internal/repo/postgres"
-	"github.com/tupyy/tinyedge-controller/internal/repo/vault/certificate"
-	"github.com/tupyy/tinyedge-controller/internal/repo/vault/secret"
+	"github.com/tupyy/tinyedge-controller/internal/repo/vault"
 )
 
 type (
@@ -13,8 +12,8 @@ type (
 	Manifest    postgres.ManifestRepository
 	Repository  postgres.Repository
 	Git         git.GitRepo
-	Certificate certificate.CertficateRepo
-	Secret      secret.Repository
+	Certificate vault.CertficateRepo
+	Secret      vault.SecretRepository
 	MemCache    cache.MemCacheRepo
 )
 
@@ -23,7 +22,7 @@ var (
 	NewManifest    = postgres.NewManifestRepository
 	NewRepository  = postgres.NewRepository
 	NewGit         = git.New
-	NewCertificate = certificate.New
-	NewSecret      = secret.New
+	NewCertificate = vault.NewCertificateRepository
+	NewSecret      = vault.NewSecretRepository
 	NewMemCache    = cache.NewCacheRepo
 )

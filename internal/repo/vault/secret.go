@@ -1,4 +1,4 @@
-package secret
+package vault
 
 import (
 	"bytes"
@@ -10,19 +10,19 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 )
 
-type Repository struct {
+type SecretRepository struct {
 	vault      *vault.Vault
 	enginePath string
 }
 
-func New(v *vault.Vault, enginePath string) *Repository {
-	return &Repository{
+func NewSecretRepository(v *vault.Vault, enginePath string) *SecretRepository {
+	return &SecretRepository{
 		vault:      v,
 		enginePath: enginePath,
 	}
 }
 
-func (r *Repository) GetSecret(ctx context.Context, path, key string) (entity.Secret, error) {
+func (r *SecretRepository) GetSecret(ctx context.Context, path, key string) (entity.Secret, error) {
 	secret, err := r.vault.Client.KVv2(r.enginePath).Get(ctx, path)
 	if err != nil {
 		return entity.Secret{}, fmt.Errorf("unable to read secret: %w", err)
@@ -48,13 +48,13 @@ func (r *Repository) GetSecret(ctx context.Context, path, key string) (entity.Se
 	return e, nil
 }
 
-func (r *Repository) compuateHash(path, key, value string) string {
+func (r *SecretRepository) compuateHash(path, key, value string) string {
 	hash := sha512.New()
 	hash.Write(bytes.NewBufferString(fmt.Sprintf("%s%s%s", path, key, value)).Bytes())
 	return fmt.Sprintf("%x", hash.Sum(nil))
 }
 
-func (r *Repository) GetCredentialsFunc(ctx context.Context, authType entity.RepositoryAuthType, secretPath string) entity.CredentialsFunc {
+func (r *SecretRepository) GetCredentialsFunc(ctx context.Context, authType entity.RepositoryAuthType, secretPath string) entity.CredentialsFunc {
 	return func(ctx context.Context, path string) (interface{}, error) {
 		secret, err := r.vault.Client.KVv2(r.enginePath).Get(ctx, path)
 		if err != nil {

@@ -1,4 +1,4 @@
-package certificate
+package vault
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ type CertficateRepo struct {
 	pkiRoleID            string
 }
 
-func New(v *vault.Vault, certificateMountPath, cnSuffix, pkiRoleID string) *CertficateRepo {
+func NewCertificateRepository(v *vault.Vault, certificateMountPath, cnSuffix, pkiRoleID string) *CertficateRepo {
 	return &CertficateRepo{
 		vault:                v,
 		certificateMountPath: certificateMountPath,
