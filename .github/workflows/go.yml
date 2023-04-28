@@ -44,7 +44,14 @@ jobs:
 
     - name: Test
       run: POSTGRES_HOST=postgres POSTGRES_PORT=5432 make test
-
+    
+    - name: Coverage
+      id: coverage
+      run: |
+        make test-create-coverage
+        COVERAGE=$(go tool cover --func=cover.out |  grep total | grep -Eo '[0-9]+\.[0-9]+')
+        echo "::set-output name=coverage::${COVERAGE}"
+    
     - name: Checking generated files are up to date
       run: |
         if [[ $(git ls-files --others --exclude-standard) ]]; then git ls-files --others --exclude-standard; echo "These files are not tracked by git"; exit 1; fi

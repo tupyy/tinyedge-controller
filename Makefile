@@ -150,7 +150,15 @@ podman.build.vault:
 	$(DOCKER) build -t vault -f build/vault/Dockerfile
 
 test: ginkgo
-	$(GINKGO) -focus=$(FOCUS) -v ./...
+	$(GINKGO) -focus=$(FOCUS) -v --cover --coverprofile=cover.out ./...
+
+test-create-coverage:
+	go tool cover -func cover.out
+	go tool cover --html=cover.out -o coverage.html
+
+test-coverage:
+	go tool cover --html=cover.out 
+
 ##@ Infra
 .PHONY: postgres.setup.clean postgres.setup.init postgres.setup.tables postgres.setup.migrations
 

@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func manifestToEntity(mm []models.ManifestJoin) entity.Manifest {
+func ManifestToEntity(mm []models.ManifestJoin) entity.Manifest {
 	if kind(mm[0].RefType) == entity.WorkloadManifestKind {
 		return createWorkload(mm)
 	}

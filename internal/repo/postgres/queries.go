@@ -1,6 +1,10 @@
 package postgres
 
-import "gorm.io/gorm"
+import (
+	"context"
+
+	"gorm.io/gorm"
+)
 
 func namespaceQuery(db *gorm.DB) *gorm.DB {
 	workloadSubQuery := db.Table("manifest").
@@ -75,4 +79,50 @@ func deviceQuery(db *gorm.DB) *gorm.DB {
 		Joins("LEFT JOIN device_set ON device_set.id = device.device_set_id").
 		Joins("LEFT JOIN (?) as c ON c.conf_id = device.configuration_manifest_id", configurationSubQuery).
 		Joins("LEFT JOIN (?) as w ON w.device_id = device.id", workloadSubQuery)
+}
+
+type manifestQueryBuilder struct {
+	tx *gorm.DB
+}
+
+func newManifestQuery(ctx context.Context, db *gorm.DB) *manifestQueryBuilder {
+	tx := db.Session(&gorm.Session{SkipHooks: true}).WithContext(ctx).Table("manifest_reference").
+		Select(`manifest_reference.*, devices_references.device_id as device_id, sets_references.device_set_id as set_id, namespaces_references.namespace_id as namespace_id,
+		repo.id as repo_id, repo.url as repo_url, repo.branch as repo_branch, repo.local_path as repo_local_path,
+		repo.current_head_sha as repo_current_head_sha, repo.target_head_sha as repo_target_head_sha,
+		repo.pull_period_seconds as repo_pull_period_seconds`).
+		Joins("LEFT JOIN namespaces_references ON namespaces_references.manifest_reference_id = manifest_reference.id").
+		Joins("LEFT JOIN sets_references ON sets_references.manifest_reference_id = manifest_reference.id").
+		Joins("LEFT JOIN devices_references ON devices_references.manifest_reference_id = manifest_reference.id").
+		Joins("JOIN repo ON repo.id = manifest_reference.repo_id")
+	return &manifestQueryBuilder{tx}
+}
+
+func (mm *manifestQueryBuilder) WithRepoId(id string) *manifestQueryBuilder {
+	mm.tx.Where("repo_id = ?", id)
+	return mm
+}
+
+func (mm *manifestQueryBuilder) WithReferenceID(id string) *manifestQueryBuilder {
+	mm.tx.Where("manifest_reference.id = ?", id)
+	return mm
+}
+
+func (mm *manifestQueryBuilder) WithNamespaceID(id string) *manifestQueryBuilder {
+	mm.tx.Where("namespaces_references.namespace_id = ?", id)
+	return mm
+}
+
+func (mm *manifestQueryBuilder) WithDeviceID(id string) *manifestQueryBuilder {
+	mm.tx.Where("devices_references.device_id = ?", id)
+	return mm
+}
+
+func (mm *manifestQueryBuilder) WithSetID(id string) *manifestQueryBuilder {
+	mm.tx.Where("sets_references.device_set_id = ?", id)
+	return mm
+}
+
+func (mm *manifestQueryBuilder) Build() *gorm.DB {
+	return mm.tx
 }

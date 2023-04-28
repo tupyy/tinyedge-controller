@@ -34,11 +34,47 @@ func NewManifestRepository(client pgclient.Client) (*ManifestRepository, error) 
 }
 
 func (m *ManifestRepository) GetManifest(ctx context.Context, id string) (entity.Manifest, error) {
-	return nil, nil
+	if !m.circuitBreaker.IsAvailable() {
+		return nil, errService.NewPostgresNotAvailableError("reference repository")
+	}
+
+	manifests := []models.ManifestJoin{}
+
+	tx := newManifestQuery(ctx, m.db).WithReferenceID(id).Build()
+	if err := tx.Find(&manifests).Error; err != nil {
+		if m.checkNetworkError(err) {
+			return nil, errService.NewPostgresNotAvailableError("reference repository")
+		}
+		return nil, err
+	}
+
+	if len(manifests) == 0 {
+		return nil, errService.NewResourceNotFoundError("reference", id)
+	}
+
+	return mappers.ManifestToEntity(manifests), nil
 }
 
 func (m *ManifestRepository) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
-	return []entity.Manifest{}, nil
+	if !m.circuitBreaker.IsAvailable() {
+		return []entity.Manifest{}, errService.NewPostgresNotAvailableError("reference repository")
+	}
+
+	manifests := []models.ManifestJoin{}
+
+	tx := newManifestQuery(ctx, m.db).WithRepoId(repo.Id).Build()
+	if err := tx.Find(&manifests).Error; err != nil {
+		if m.checkNetworkError(err) {
+			return []entity.Manifest{}, errService.NewPostgresNotAvailableError("reference repository")
+		}
+		return []entity.Manifest{}, err
+	}
+
+	if len(manifests) == 0 {
+		return []entity.Manifest{}, nil
+	}
+
+	return mappers.ManifestsToEntities(manifests), nil
 }
 
 func (m *ManifestRepository) InsertManifest(ctx context.Context, manifest entity.Manifest) error {
