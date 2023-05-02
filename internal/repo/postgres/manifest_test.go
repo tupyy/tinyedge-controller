@@ -109,6 +109,87 @@ var _ = Describe("Manifest repository", Ordered, func() {
 			Expect(w.Repository.PullPeriod).To(Equal(10 * time.Second))
 		})
 
+		It("successfully retrieve workload with device ids", func() {
+			ierr := gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
+			('workload', 'workload', 'workload', 'id', '%s'),
+			('workload2', 'workload','workload2','id','%s');`, workload, workload)).Error
+			Expect(ierr).To(BeNil())
+
+			ierr = gormDB.Exec("INSERT INTO devices_manifests (device_id, manifest_id) VALUES ('device1','workload');").Error
+			Expect(ierr).To(BeNil())
+
+			m, err := repo.GetManifest(context.TODO(), "workload")
+			Expect(err).To(BeNil())
+
+			Expect(m.GetKind().String()).To(Equal("workload"))
+			Expect(m.GetID()).To(Equal("workload"))
+			Expect(len(m.GetDevices())).To(Equal(1))
+			Expect(m.GetDevices()[0]).To(Equal("device1"))
+
+			w, ok := m.(entity.Workload)
+			Expect(ok).To(BeTrue())
+			Expect(w.Repository.Id).To(Equal("id"))
+			Expect(w.Repository.AuthType).To(Equal(entity.SSHRepositoryAuthType))
+			Expect(w.Repository.CredentialsSecretPath).To(Equal("/secret/ssh"))
+			Expect(w.Repository.CurrentHeadSha).To(Equal("current"))
+			Expect(w.Repository.TargetHeadSha).To(Equal("target"))
+			Expect(w.Repository.PullPeriod).To(Equal(10 * time.Second))
+		})
+
+		It("successfully retrieve workload with namespace ids", func() {
+			ierr := gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
+			('workload', 'workload', 'workload', 'id', '%s'),
+			('workload2', 'workload','workload2','id','%s');`, workload, workload)).Error
+			Expect(ierr).To(BeNil())
+
+			ierr = gormDB.Exec("INSERT INTO namespaces_manifests (namespace_id, manifest_id) VALUES ('namespace','workload');").Error
+			Expect(ierr).To(BeNil())
+
+			m, err := repo.GetManifest(context.TODO(), "workload")
+			Expect(err).To(BeNil())
+
+			Expect(m.GetKind().String()).To(Equal("workload"))
+			Expect(m.GetID()).To(Equal("workload"))
+			Expect(len(m.GetNamespaces())).To(Equal(1))
+			Expect(m.GetNamespaces()[0]).To(Equal("namespace"))
+
+			w, ok := m.(entity.Workload)
+			Expect(ok).To(BeTrue())
+			Expect(w.Repository.Id).To(Equal("id"))
+			Expect(w.Repository.AuthType).To(Equal(entity.SSHRepositoryAuthType))
+			Expect(w.Repository.CredentialsSecretPath).To(Equal("/secret/ssh"))
+			Expect(w.Repository.CurrentHeadSha).To(Equal("current"))
+			Expect(w.Repository.TargetHeadSha).To(Equal("target"))
+			Expect(w.Repository.PullPeriod).To(Equal(10 * time.Second))
+		})
+
+		It("successfully retrieve workload with set ids", func() {
+			ierr := gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
+			('workload', 'workload', 'workload', 'id', '%s'),
+			('workload2', 'workload','workload2','id','%s');`, workload, workload)).Error
+			Expect(ierr).To(BeNil())
+
+			ierr = gormDB.Exec("INSERT INTO sets_manifests (device_set_id, manifest_id) VALUES ('set','workload');").Error
+			Expect(ierr).To(BeNil())
+
+			m, err := repo.GetManifest(context.TODO(), "workload")
+			Expect(err).To(BeNil())
+
+			Expect(m.GetKind().String()).To(Equal("workload"))
+			Expect(m.GetID()).To(Equal("workload"))
+			Expect(len(m.GetSets())).To(Equal(1))
+			Expect(m.GetSets()[0]).To(Equal("set"))
+
+			w, ok := m.(entity.Workload)
+			Expect(ok).To(BeTrue())
+			Expect(w.Repository.Id).To(Equal("id"))
+			Expect(w.Repository.AuthType).To(Equal(entity.SSHRepositoryAuthType))
+			Expect(w.Repository.CredentialsSecretPath).To(Equal("/secret/ssh"))
+			Expect(w.Repository.CurrentHeadSha).To(Equal("current"))
+			Expect(w.Repository.TargetHeadSha).To(Equal("target"))
+			Expect(w.Repository.PullPeriod).To(Equal(10 * time.Second))
+		})
+
 		It("successfully all manifests", func() {
 			ierr := gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
 			('workload', 'workload', 'workload', 'id', '%s'),
