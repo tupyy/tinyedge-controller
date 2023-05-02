@@ -7,6 +7,7 @@ import (
 
 	pgclient "github.com/tupyy/tinyedge-controller/internal/clients/pg"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
+	"github.com/tupyy/tinyedge-controller/internal/repo/manifest"
 	"github.com/tupyy/tinyedge-controller/internal/repo/models/mappers"
 	models "github.com/tupyy/tinyedge-controller/internal/repo/models/pg"
 	errService "github.com/tupyy/tinyedge-controller/internal/services/errors"
@@ -18,6 +19,7 @@ type ManifestRepository struct {
 	db             *gorm.DB
 	client         pgclient.Client
 	circuitBreaker pgclient.CircuitBreaker
+	manifestReader manifest.ManifestReader
 }
 
 func NewManifestRepository(client pgclient.Client) (*ManifestRepository, error) {
@@ -30,7 +32,7 @@ func NewManifestRepository(client pgclient.Client) (*ManifestRepository, error) 
 		return &ManifestRepository{}, err
 	}
 
-	return &ManifestRepository{gormDB, client, client.GetCircuitBreaker()}, nil
+	return &ManifestRepository{gormDB, client, client.GetCircuitBreaker(), manifest.ReadManifest}, nil
 }
 
 func (m *ManifestRepository) GetManifest(ctx context.Context, id string) (entity.Manifest, error) {
@@ -43,21 +45,21 @@ func (m *ManifestRepository) GetManifest(ctx context.Context, id string) (entity
 	tx := newManifestQuery(ctx, m.db).WithReferenceID(id).Build()
 	if err := tx.Find(&manifests).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return nil, errService.NewPostgresNotAvailableError("reference repository")
+			return nil, errService.NewPostgresNotAvailableError("manifest repository")
 		}
 		return nil, err
 	}
 
 	if len(manifests) == 0 {
-		return nil, errService.NewResourceNotFoundError("reference", id)
+		return nil, errService.NewResourceNotFoundError("manifest", id)
 	}
 
-	return mappers.ManifestToEntity(manifests), nil
+	return mappers.ManifestToEntity(manifests, m.manifestReader)
 }
 
 func (m *ManifestRepository) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
 	if !m.circuitBreaker.IsAvailable() {
-		return []entity.Manifest{}, errService.NewPostgresNotAvailableError("reference repository")
+		return []entity.Manifest{}, errService.NewPostgresNotAvailableError("manifest repository")
 	}
 
 	manifests := []models.ManifestJoin{}
@@ -65,7 +67,7 @@ func (m *ManifestRepository) GetManifests(ctx context.Context, repo entity.Repos
 	tx := newManifestQuery(ctx, m.db).WithRepoId(repo.Id).Build()
 	if err := tx.Find(&manifests).Error; err != nil {
 		if m.checkNetworkError(err) {
-			return []entity.Manifest{}, errService.NewPostgresNotAvailableError("reference repository")
+			return []entity.Manifest{}, errService.NewPostgresNotAvailableError("manifest repository")
 		}
 		return []entity.Manifest{}, err
 	}
@@ -74,7 +76,7 @@ func (m *ManifestRepository) GetManifests(ctx context.Context, repo entity.Repos
 		return []entity.Manifest{}, nil
 	}
 
-	return mappers.ManifestsToEntities(manifests), nil
+	return mappers.ManifestsToEntities(manifests, m.manifestReader)
 }
 
 func (m *ManifestRepository) InsertManifest(ctx context.Context, manifest entity.Manifest) error {

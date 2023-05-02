@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	configuration = `
+	configurationContent = `
 kind: configuration
 version: v1
 
@@ -28,7 +28,7 @@ name: conf
 description: |
   blabla
 `
-	workload = `
+	workloadContent = `
 kind: workload
 version: v1
 
@@ -104,10 +104,10 @@ var _ = Describe("Device repository", Ordered, func() {
 		tmpDir, err := os.MkdirTemp("", "repo-*")
 		Expect(err).To(BeNil())
 
-		workload, err := writeManifest(tmpDir, workload)
+		workload, err := writeManifest(tmpDir, workloadContent)
 		Expect(err).To(BeNil())
 
-		conf, err := writeManifest(tmpDir, configuration)
+		conf, err := writeManifest(tmpDir, configurationContent)
 		Expect(err).To(BeNil())
 
 		folderTmp = tmpDir

@@ -4,16 +4,14 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
-	"io"
 	"os"
 	"path"
 	"time"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
+	"github.com/tupyy/tinyedge-controller/internal/repo/manifest"
 	models "github.com/tupyy/tinyedge-controller/internal/repo/models/pg"
 )
-
-type manifestReader func(r io.Reader, transformFn ...func(entity.Manifest) entity.Manifest) (entity.Manifest, error)
 
 func DeviceEntityToModel(device entity.Device) models.Device {
 	m := models.Device{
@@ -47,7 +45,7 @@ func DeviceEntityToModel(device entity.Device) models.Device {
 	return m
 }
 
-func DeviceToEntity(joins []models.DeviceJoin, readFn manifestReader) (entity.Device, error) {
+func DeviceToEntity(joins []models.DeviceJoin, readFn manifest.ManifestReader) (entity.Device, error) {
 	e := entity.Device{
 		ID:          joins[0].ID,
 		NamespaceID: joins[0].NamespaceID,
@@ -93,7 +91,7 @@ func DeviceToEntity(joins []models.DeviceJoin, readFn manifestReader) (entity.De
 	return e, nil
 }
 
-func DevicesToEntity(joins []models.DeviceJoin, readFn manifestReader) ([]entity.Device, error) {
+func DevicesToEntity(joins []models.DeviceJoin, readFn manifest.ManifestReader) ([]entity.Device, error) {
 	nmap := make(map[string][]models.DeviceJoin)
 	for _, j := range joins {
 		_, ok := nmap[j.ID]
@@ -131,7 +129,7 @@ func ConfigurationToEntity(c models.Configuration) entity.Configuration {
 	return e
 }
 
-func SetsToEntity(sets []models.SetJoin, readFn manifestReader) ([]entity.Set, error) {
+func SetsToEntity(sets []models.SetJoin, readFn manifest.ManifestReader) ([]entity.Set, error) {
 	nmap := make(map[string][]models.SetJoin)
 	for _, n := range sets {
 		_, ok := nmap[n.ID]
@@ -156,7 +154,7 @@ func SetsToEntity(sets []models.SetJoin, readFn manifestReader) ([]entity.Set, e
 	return entities, nil
 }
 
-func SetToEntity(s []models.SetJoin, readFn manifestReader) (entity.Set, error) {
+func SetToEntity(s []models.SetJoin, readFn manifest.ManifestReader) (entity.Set, error) {
 	set := entity.Set{
 		Name:        s[0].ID,
 		NamespaceID: s[0].NamespaceID,
@@ -221,7 +219,7 @@ func NamespaceToModel(namespace entity.Namespace) models.Namespace {
 	}
 }
 
-func NamespacesModelToEntity(namespaces []models.NamespaceJoin, reader manifestReader) ([]entity.Namespace, error) {
+func NamespacesModelToEntity(namespaces []models.NamespaceJoin, reader manifest.ManifestReader) ([]entity.Namespace, error) {
 	nmap := make(map[string][]models.NamespaceJoin)
 	for _, n := range namespaces {
 		_, ok := nmap[n.ID]
@@ -246,7 +244,7 @@ func NamespacesModelToEntity(namespaces []models.NamespaceJoin, reader manifestR
 	return entities, nil
 }
 
-func NamespaceModelToEntity(n []models.NamespaceJoin, readFn manifestReader) (entity.Namespace, error) {
+func NamespaceModelToEntity(n []models.NamespaceJoin, readFn manifest.ManifestReader) (entity.Namespace, error) {
 	namespace := entity.Namespace{
 		Name:      n[0].ID,
 		IsDefault: false,
@@ -300,7 +298,7 @@ func NamespaceModelToEntity(n []models.NamespaceJoin, readFn manifestReader) (en
 	return namespace, nil
 }
 
-func readManifest(filepath string, id string, readFn manifestReader) (entity.Manifest, error) {
+func readManifest(filepath string, id string, readFn manifest.ManifestReader) (entity.Manifest, error) {
 	content, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, err

@@ -86,15 +86,16 @@ type manifestQueryBuilder struct {
 }
 
 func newManifestQuery(ctx context.Context, db *gorm.DB) *manifestQueryBuilder {
-	tx := db.Session(&gorm.Session{SkipHooks: true}).WithContext(ctx).Table("manifest_reference").
-		Select(`manifest_reference.*, devices_references.device_id as device_id, sets_references.device_set_id as set_id, namespaces_references.namespace_id as namespace_id,
+	tx := db.Session(&gorm.Session{SkipHooks: true}).WithContext(ctx).Table("manifest").
+		Select(`manifest.*, devices_manifests.device_id as device_id, sets_manifests.device_set_id as set_id, namespaces_manifests.namespace_id as namespace_id,
 		repo.id as repo_id, repo.url as repo_url, repo.branch as repo_branch, repo.local_path as repo_local_path,
+		repo.auth_type as repo_auth_type, repo.auth_secret_path as repo_auth_secret_path,
 		repo.current_head_sha as repo_current_head_sha, repo.target_head_sha as repo_target_head_sha,
 		repo.pull_period_seconds as repo_pull_period_seconds`).
-		Joins("LEFT JOIN namespaces_references ON namespaces_references.manifest_reference_id = manifest_reference.id").
-		Joins("LEFT JOIN sets_references ON sets_references.manifest_reference_id = manifest_reference.id").
-		Joins("LEFT JOIN devices_references ON devices_references.manifest_reference_id = manifest_reference.id").
-		Joins("JOIN repo ON repo.id = manifest_reference.repo_id")
+		Joins("LEFT JOIN namespaces_manifests ON namespaces_manifests.manifest_id = manifest.id").
+		Joins("LEFT JOIN sets_manifests ON sets_manifests.manifest_id = manifest.id").
+		Joins("LEFT JOIN devices_manifests ON devices_manifests.manifest_id = manifest.id").
+		Joins("JOIN repo ON repo.id = manifest.repo_id")
 	return &manifestQueryBuilder{tx}
 }
 
@@ -104,22 +105,22 @@ func (mm *manifestQueryBuilder) WithRepoId(id string) *manifestQueryBuilder {
 }
 
 func (mm *manifestQueryBuilder) WithReferenceID(id string) *manifestQueryBuilder {
-	mm.tx.Where("manifest_reference.id = ?", id)
+	mm.tx.Where("manifest.id = ?", id)
 	return mm
 }
 
 func (mm *manifestQueryBuilder) WithNamespaceID(id string) *manifestQueryBuilder {
-	mm.tx.Where("namespaces_references.namespace_id = ?", id)
+	mm.tx.Where("namespaces_manifests.namespace_id = ?", id)
 	return mm
 }
 
 func (mm *manifestQueryBuilder) WithDeviceID(id string) *manifestQueryBuilder {
-	mm.tx.Where("devices_references.device_id = ?", id)
+	mm.tx.Where("devices_manifests.device_id = ?", id)
 	return mm
 }
 
 func (mm *manifestQueryBuilder) WithSetID(id string) *manifestQueryBuilder {
-	mm.tx.Where("sets_references.device_set_id = ?", id)
+	mm.tx.Where("sets_manifests.device_set_id = ?", id)
 	return mm
 }
 

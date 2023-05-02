@@ -10,6 +10,8 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 )
 
+type ManifestReader func(r io.Reader, transformFn ...func(entity.Manifest) entity.Manifest) (entity.Manifest, error)
+
 // ReadManifest parses the content of a reader and return a Manifest or error.
 // TODO find a better way to set the id
 func ReadManifest(r io.Reader, transformFn ...func(entity.Manifest) entity.Manifest) (entity.Manifest, error) {

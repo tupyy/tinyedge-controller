@@ -39,14 +39,16 @@ type NamespaceJoin struct {
 
 type ManifestJoin struct {
 	Manifest
-	DeviceId               string         `gorm:"column:device_id;type:TEXT"`
-	SetId                  string         `gorm:"column:set_id;type:TEXT"`
-	NamespaceId            string         `gorm:"column:namespace_id;type:TEXT"`
-	Repo_ID                string         `gorm:"primary_key;column:repo_id;type:TEXT;"`
-	Repo_URL               string         `gorm:"column:repo_url;type:TEXT;"`
-	Repo_Branch            sql.NullString `gorm:"column:repo_branch;type:TEXT;"`
-	Repo_LocalPath         sql.NullString `gorm:"column:repo_local_path;type:TEXT;"`
-	Repo_CurrentHeadSha    sql.NullString `gorm:"column:repo_current_head_sha;type:TEXT;"`
-	Repo_TargetHeadSha     sql.NullString `gorm:"column:repo_target_head_sha;type:TEXT;"`
-	Repo_PullPeriodSeconds sql.NullInt64  `gorm:"column:repo_pull_period_seconds;type:INT2;default:20;"`
+	DeviceId              string         `gorm:"column:device_id;type:TEXT"`
+	SetId                 string         `gorm:"column:set_id;type:TEXT"`
+	NamespaceId           string         `gorm:"column:namespace_id;type:TEXT"`
+	RepoID                string         `gorm:"column:repo_id;type:TEXT;"`
+	RepoURL               string         `gorm:"column:repo_url;type:TEXT;"`
+	RepoBranch            sql.NullString `gorm:"column:repo_branch;type:TEXT;"`
+	RepoLocalPath         sql.NullString `gorm:"column:repo_local_path;type:TEXT;"`
+	RepoAuth              sql.NullString `gorm:"column:repo_auth_type;type:TEXT;"`
+	RepoAuthSecret        sql.NullString `gorm:"column:repo_auth_secret_path;type:TEXT;"`
+	RepoCurrentHeadSha    sql.NullString `gorm:"column:repo_current_head_sha;type:TEXT;"`
+	RepoTargetHeadSha     sql.NullString `gorm:"column:repo_target_head_sha;type:TEXT;"`
+	RepoPullPeriodSeconds sql.NullInt64  `gorm:"column:repo_pull_period_seconds;type:INT2;default:20;"`
 }

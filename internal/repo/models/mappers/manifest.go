@@ -1,33 +1,26 @@
 package mappers
 
 import (
-	"bytes"
-	"fmt"
-	"os"
+	"errors"
 	"path"
 	"time"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
-	reader "github.com/tupyy/tinyedge-controller/internal/repo/manifest"
+	"github.com/tupyy/tinyedge-controller/internal/repo/manifest"
 	models "github.com/tupyy/tinyedge-controller/internal/repo/models/pg"
-	"go.uber.org/zap"
 )
 
-func ManifestToEntity(mm []models.ManifestJoin) entity.Manifest {
-	if kind(mm[0].RefType) == entity.WorkloadManifestKind {
-		return createWorkload(mm)
-	}
-	return nil
+func ManifestToEntity(mm []models.ManifestJoin, readFn manifest.ManifestReader) (entity.Manifest, error) {
+	return parseManifest(mm, readFn)
 }
 
-func ManifestsToEntities(mm []models.ManifestJoin) []entity.Manifest {
+func ManifestsToEntities(mm []models.ManifestJoin, readFn manifest.ManifestReader) ([]entity.Manifest, error) {
 	entities := make(map[string][]models.ManifestJoin)
 	// makes sure that we add only once the id of the devices, sets or namespaces
 	for _, m := range mm {
 		list, ok := entities[m.ID]
 		if !ok {
 			entities[m.ID] = make([]models.ManifestJoin, 0, len(mm))
-			continue
 		}
 		list = append(list, m)
 		entities[m.ID] = list
@@ -35,9 +28,13 @@ func ManifestsToEntities(mm []models.ManifestJoin) []entity.Manifest {
 
 	ee := make([]entity.Manifest, 0, len(entities))
 	for _, v := range entities {
-		ee = append(ee, createWorkload(v))
+		m, err := parseManifest(v, readFn)
+		if err != nil {
+			return []entity.Manifest{}, err
+		}
+		ee = append(ee, m)
 	}
-	return ee
+	return ee, nil
 }
 
 func ManifestEntityToModel(e entity.Manifest) models.Manifest {
@@ -55,105 +52,86 @@ func ManifestEntityToModel(e entity.Manifest) models.Manifest {
 	return m
 }
 
-func createWorkload(mm []models.ManifestJoin) entity.Workload {
+func parseManifest(mm []models.ManifestJoin, readFn manifest.ManifestReader) (entity.Manifest, error) {
 	m := mm[0]
 
-	e := entity.Workload{
-		ObjectMeta: entity.ObjectMeta{
-			Id: m.ID,
-		},
-		TypeMeta: entity.TypeMeta{
-			Kind: kind(m.RefType),
-		},
-		Repository: entity.Repository{
-			Id:  m.Repo_ID,
-			Url: m.Repo_URL,
-		},
-		Devices:    make([]string, 0, len(mm)),
-		Namespaces: make([]string, 0, len(mm)),
-		Sets:       make([]string, 0, len(mm)),
+	repo := entity.Repository{}
+	repo.Id = m.RepoID
+	repo.Url = m.RepoURL
+	if m.RepoBranch.Valid {
+		repo.Branch = m.RepoBranch.String
 	}
-	if m.Repo_Branch.Valid {
-		e.Repository.Branch = m.Repo_Branch.String
+	if m.RepoLocalPath.Valid {
+		repo.LocalPath = m.RepoLocalPath.String
 	}
-	if m.Repo_LocalPath.Valid {
-		e.Repository.LocalPath = m.Repo_LocalPath.String
+	if m.RepoCurrentHeadSha.Valid {
+		repo.CurrentHeadSha = m.RepoCurrentHeadSha.String
 	}
-	if m.Repo_CurrentHeadSha.Valid {
-		e.Repository.CurrentHeadSha = m.Repo_CurrentHeadSha.String
+	if m.RepoTargetHeadSha.Valid {
+		repo.TargetHeadSha = m.RepoTargetHeadSha.String
 	}
-	if m.Repo_TargetHeadSha.Valid {
-		e.Repository.TargetHeadSha = m.Repo_TargetHeadSha.String
+	if m.RepoPullPeriodSeconds.Valid {
+		repo.PullPeriod = time.Duration(m.RepoPullPeriodSeconds.Int64) * time.Second
 	}
-	if m.Repo_PullPeriodSeconds.Valid {
-		e.Repository.PullPeriod = time.Duration(m.Repo_PullPeriodSeconds.Int64) * time.Second
+	if m.RepoAuth.Valid {
+		switch m.RepoAuth.String {
+		case "ssh":
+			repo.AuthType = entity.SSHRepositoryAuthType
+		case "basic":
+			repo.AuthType = entity.BasicRepositoryAuthType
+		case "token":
+			repo.AuthType = entity.TokenRepositoryAuthType
+		default:
+			repo.AuthType = entity.NoRepositoryAuthType
+		}
+	}
+	if m.RepoAuth.Valid && m.RepoAuthSecret.Valid {
+		repo.CredentialsSecretPath = m.RepoAuthSecret.String
 	}
 
 	// makes sure that we add only once the id of the devices, sets or namespaces
 	idMap := make(uniqueIds)
 
+	devices := make([]string, 0, len(mm))
+	sets := make([]string, 0, len(mm))
+	namespaces := make([]string, 0, len(mm))
 	for _, m := range mm {
 		if m.DeviceId != "" && !idMap.exists(m.DeviceId, "device") {
-			e.Devices = append(e.Devices, m.DeviceId)
+			devices = append(devices, m.DeviceId)
 			idMap.add(m.DeviceId, "device")
 		}
 		if m.NamespaceId != "" && !idMap.exists(m.NamespaceId, "namespace") {
-			e.Namespaces = append(e.Namespaces, m.NamespaceId)
+			namespaces = append(namespaces, m.NamespaceId)
 			idMap.add(m.NamespaceId, "namespace")
 		}
 		if m.SetId != "" && !idMap.exists(m.SetId, "set") {
-			e.Sets = append(e.Sets, m.SetId)
+			sets = append(sets, m.SetId)
 			idMap.add(m.SetId, "set")
 		}
 	}
 
-	content, err := os.ReadFile(path.Join(e.Repository.LocalPath, mm[0].Path))
+	manifest, err := readManifest(path.Join(repo.LocalPath, mm[0].Path), mm[0].ID, readFn)
 	if err != nil {
-		zap.S().Errorf("unable to read manifest %q from repository %q: %w", mm[0].Path, e.Repository.LocalPath, err)
-		return e
+		return nil, err
 	}
 
-	// read manifest from repo to get the rest of stuff
-	repoManifest, err := reader.ReadManifest(bytes.NewReader(content))
-	if err != nil {
-		zap.S().Errorf("unable to parse manifest %q content: %w", mm[0].Path, err)
-		return e
+	w, ok := manifest.(entity.Workload)
+	if ok {
+		w.Repository = repo
+		w.Devices = devices
+		w.Namespaces = namespaces
+		w.Sets = sets
+		return w, nil
 	}
 
-	w, ok := repoManifest.(entity.Workload)
-	if !ok {
-		zap.S().Errorf("manifest %q is not a workload", mm[0].Path)
+	c, ok := manifest.(entity.Configuration)
+	if ok {
+		c.Repository = repo
+		c.Devices = devices
+		c.Namespaces = namespaces
+		c.Sets = sets
+		return c, nil
 	}
 
-	e.Rootless = w.Rootless
-	e.Resources = w.Resources
-	e.Selectors = w.Selectors
-	e.Secrets = w.Secrets
-	e.Version = w.Version
-
-	return e
-}
-
-func kind(refType string) entity.ManifestKind {
-	switch refType {
-	case "configuration":
-		return entity.ConfigurationManifestKind
-	case "workload":
-		return entity.WorkloadManifestKind
-	default:
-		return -1
-	}
-}
-
-type uniqueIds map[string]struct{}
-
-func (u uniqueIds) exists(id string, prefix string) bool {
-	_id := fmt.Sprintf("%s%s", prefix, id)
-	_, ok := u[_id]
-	return ok
-}
-
-func (u uniqueIds) add(id string, prefix string) {
-	_id := fmt.Sprintf("%s%s", prefix, id)
-	u[_id] = struct{}{}
+	return nil, errors.New("unknown type")
 }

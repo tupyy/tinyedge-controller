@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"io"
 
 	pgclient "github.com/tupyy/tinyedge-controller/internal/clients/pg"
 	"github.com/tupyy/tinyedge-controller/internal/entity"
@@ -22,7 +21,7 @@ type DeviceRepo struct {
 	db             *gorm.DB
 	client         pgclient.Client
 	circuitBreaker pgclient.CircuitBreaker
-	manifestReader func(r io.Reader, transformFn ...func(entity.Manifest) entity.Manifest) (entity.Manifest, error)
+	manifestReader manifest.ManifestReader
 }
 
 func NewDeviceRepo(client pgclient.Client) (*DeviceRepo, error) {
