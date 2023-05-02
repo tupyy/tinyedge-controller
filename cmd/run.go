@@ -1,7 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -21,11 +17,8 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/configuration"
 	"github.com/tupyy/tinyedge-controller/internal/interceptors"
 	"github.com/tupyy/tinyedge-controller/internal/repo"
-	"github.com/tupyy/tinyedge-controller/internal/repo/git"
 	"github.com/tupyy/tinyedge-controller/internal/servers"
 	"github.com/tupyy/tinyedge-controller/internal/services"
-	"github.com/tupyy/tinyedge-controller/internal/services/auth"
-	"github.com/tupyy/tinyedge-controller/internal/services/repository"
 	"github.com/tupyy/tinyedge-controller/internal/workers"
 	"github.com/tupyy/tinyedge-controller/pkg/grpc/admin"
 	edgePb "github.com/tupyy/tinyedge-controller/pkg/grpc/edge"
@@ -88,7 +81,7 @@ var runCmd = &cobra.Command{
 		// cacheRepo := cache.NewCacheRepo()
 
 		// git repo
-		gitRepo := git.New("/home/cosmin/tmp/git")
+		gitRepo := repo.NewGit("/home/cosmin/tmp/git")
 
 		// create services
 		zap.S().Info("create services")
@@ -97,8 +90,8 @@ var runCmd = &cobra.Command{
 		deviceService := services.NewDevice(deviceRepo)
 		configurationService := services.NewConfiguration(deviceService)
 		edgeService := services.NewEdge(deviceRepo, configurationService, certService)
-		authService := auth.New(certService, deviceRepo)
-		repoService := repository.NewRepositoryService(repoRepo, gitRepo, secretRepo)
+		authService := services.NewAuth(certService, deviceRepo)
+		repoService := services.NewRepository(repoRepo, gitRepo, secretRepo)
 
 		scheduler := workers.New(5 * time.Second)
 		scheduler.AddWorker(workers.NewGitOpsWorker(repoService, manifestService, configurationService))
@@ -163,7 +156,7 @@ func setupLogger() *zap.Logger {
 	return plain
 }
 
-func createEdgeServer(tlsConfig *tls.Config, auth *auth.Service, logger *zap.Logger) *grpc.Server {
+func createEdgeServer(tlsConfig *tls.Config, auth *services.Auth, logger *zap.Logger) *grpc.Server {
 	// start edge server
 	creds := credentials.NewTLS(tlsConfig)
 	opts := []grpc.ServerOption{grpc.Creds(creds)}
