@@ -1,70 +1,42 @@
 package configuration
 
 import (
-	"os"
 	"time"
 
-	"github.com/spf13/viper"
+	"github.com/cristalhq/aconfig"
 )
 
 const (
 	prefix = "TINYEDGE"
-
-	defaultCertificateTTL = 3600 * 24 * 365 * time.Second
 )
 
 type Configuration struct {
-	BaseDomain            string
-	DefaultCertificateTTL time.Duration
-	VaultAddress          string
-	VaultApproleRoleID    string
+	BaseDomain            string `default:"home.net" usage:"base domain"`
+	DefaultCertificateTTL int64  `default:"31536000"`
+	VaultAddress          string `usage:"vault address"`
+	VaultApproleRoleID    string `default:"app-role-id"`
 	VaultAppRoleSecretID  string
-	VaultSecretMountPath  string
-	PostgresAddress       string
-	PostgresUser          string
-	PostgresPassword      string
-	PostgresDB            string
+	VaultSecretMountPath  string `default:"tinyedge"`
+	PostgresAddress       string `default:"localhost:5432"`
+	PostgresUser          string `default:"postgres"`
+	PostgresPassword      string `default:"postgres"`
+	PostgresDB            string `default:"tinyedge"`
+}
+
+func (c Configuration) GetCertificateTTL() time.Duration {
+	return time.Duration(c.DefaultCertificateTTL) * time.Second
 }
 
 func GetConfiguration() Configuration {
-	return Configuration{
-		BaseDomain:            "home.net",
-		DefaultCertificateTTL: defaultCertificateTTL,
-		VaultAddress:          "http://localhost:8200",
-		VaultApproleRoleID:    "app-role-id",
-		VaultSecretMountPath:  "tinyedge",
-		VaultAppRoleSecretID:  os.Getenv("VAULT_SECRET_ID"),
-		PostgresAddress:       "localhost:5432",
-		PostgresUser:          "postgres",
-		PostgresPassword:      "postgres",
-		PostgresDB:            "tinyedge",
+	var cfg Configuration
+	loader := aconfig.LoaderFor(&cfg, aconfig.Config{
+		SkipFiles: true,
+		EnvPrefix: prefix,
+	})
+	if err := loader.Load(); err != nil {
+		panic(err)
 	}
-}
-
-// func ParseConfiguration(confFile string) error {
-// 	// setDefaults()
-
-// 	// viper.SetEnvPrefix(prefix)
-// 	// viper.AutomaticEnv() // read in environment variables that match
-
-// 	// if len(confFile) == 0 {
-// 	// 	return errors.New("no config file specified")
-// 	// }
-
-// 	// content, err := os.ReadFile(confFile)
-// 	// if err != nil {
-// 	// 	return err
-// 	// }
-// 	// if err := json.Unmarshal(content, &configuration); err != nil {
-// 	// 	return err
-// 	// }
-
-// 	// zap.S().Infow("configuration read", "file", confFile)
-// 	// return nil
-// }
-
-func setDefaults() {
-	viper.SetDefault("defaultCertificateTTL", defaultCertificateTTL)
+	return cfg
 }
 
 // func GetLogLevel() zapcore.Level {
