@@ -13,7 +13,7 @@ const (
 type Configuration struct {
 	BaseDomain            string `default:"home.net" usage:"base domain"`
 	DefaultCertificateTTL int64  `default:"31536000"`
-	VaultAddress          string `usage:"vault address"`
+	VaultAddress          string `default:"http://localhost:8200" usage:"vault address"`
 	VaultApproleRoleID    string `default:"app-role-id"`
 	VaultAppRoleSecretID  string
 	VaultSecretMountPath  string `default:"tinyedge"`
@@ -30,7 +30,6 @@ func (c Configuration) GetCertificateTTL() time.Duration {
 func GetConfiguration() Configuration {
 	var cfg Configuration
 	loader := aconfig.LoaderFor(&cfg, aconfig.Config{
-		SkipFiles: true,
 		EnvPrefix: prefix,
 	})
 	if err := loader.Load(); err != nil {

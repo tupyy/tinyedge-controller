@@ -8,6 +8,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/cristalhq/aconfig"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -43,6 +44,8 @@ var runCmd = &cobra.Command{
 		defer cancel()
 
 		conf := configuration.GetConfiguration()
+		fmt.Printf("****** %+v\n", conf)
+
 		vaultClient, err := vault.NewVaultAppRoleClient(ctx, vault.VaultParameters{
 			Address:         conf.VaultAddress,
 			ApproleRoleID:   conf.VaultApproleRoleID,
@@ -97,7 +100,7 @@ var runCmd = &cobra.Command{
 		scheduler.AddWorker(workers.NewGitOpsWorker(repoService, manifestService, configurationService))
 		go scheduler.Start(ctx)
 
-		tlsConfig, err := certService.TlsConfig(ctx, conf.DefaultCertificateTTL)
+		tlsConfig, err := certService.TlsConfig(ctx, conf.GetCertificateTTL())
 		if err != nil {
 			zap.S().Fatal(err)
 		}
@@ -127,6 +130,8 @@ var runCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(runCmd)
+	loader := aconfig.LoaderFor(&configuration.Configuration{}, aconfig.Config{})
+	rootCmd.PersistentFlags().AddGoFlagSet(loader.Flags())
 }
 
 func setupLogger() *zap.Logger {

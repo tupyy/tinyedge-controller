@@ -129,8 +129,9 @@ build: ## Build binary.
 build.client: ## Build the client
 	go build -mod=vendor -o $(PWD)/bin/tinyedge-cli $(PWD)/client/main.go
 
+FLAGS=--vault_address "localhost:8200"
 run: ## Run the controller from your host.
-	bin/tinyedge-controller run | $(COLORIZE)
+	bin/tinyedge-controller run $(FLAGS) | $(COLORIZE)
 
 run.infra: podman.build.vault
 	podman play kube $(CURDIR)/build/kube.yaml
