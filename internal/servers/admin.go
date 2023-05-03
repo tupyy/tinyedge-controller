@@ -133,8 +133,8 @@ func (a *AdminServer) AddSet(ctx context.Context, req *pb.AddSetRequest) (*commo
 }
 
 func (a *AdminServer) AddNamespace(ctx context.Context, req *pb.AddNamespaceRequest) (*pb.Namespace, error) {
-	if req.Id == "" || req.ConfigurationId == "" {
-		return nil, status.Error(codes.InvalidArgument, "namespace name or configuration id is missing")
+	if req.Id == "" {
+		return nil, status.Error(codes.InvalidArgument, "namespace name")
 	}
 	err := a.deviceService.CreateNamespace(ctx, entity.Namespace{
 		Name:      req.Id,
@@ -147,7 +147,7 @@ func (a *AdminServer) AddNamespace(ctx context.Context, req *pb.AddNamespaceRequ
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &pb.Namespace{Id: req.Id, Configuration: req.ConfigurationId, IsDefault: req.IsDefault}, nil
+	return &pb.Namespace{Id: req.Id, IsDefault: req.IsDefault}, nil
 }
 
 func (a *AdminServer) DeleteNamespace(ctx context.Context, req *pb.IdRequest) (*pb.Namespace, error) {
@@ -176,7 +176,7 @@ func (a *AdminServer) UpdateNamespace(ctx context.Context, req *pb.UpdateNamespa
 		return nil, status.Error(codes.InvalidArgument, "namespace id is required")
 	}
 
-	if req.ConfigurationId == "" && !req.IsDefault {
+	if !req.IsDefault {
 		return nil, status.Error(codes.InvalidArgument, "either configuration id or is_default is required")
 	}
 

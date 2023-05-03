@@ -21,15 +21,14 @@ var updateNamespace = &cobra.Command{
 		if len(args) == 0 {
 			return fmt.Errorf("Please provide a namespace id")
 		}
-		if configurationID == "" && !isDefault {
+		if !isDefault {
 			return fmt.Errorf("Please provide configuration id or set is-default flat")
 		}
 
 		fn := func(ctx context.Context, client adminGrpc.AdminServiceClient) (*adminGrpc.Namespace, error) {
 			req := &adminGrpc.UpdateNamespaceRequest{
-				Id:              args[0],
-				ConfigurationId: configurationID,
-				IsDefault:       isDefault,
+				Id:        args[0],
+				IsDefault: isDefault,
 			}
 			return client.UpdateNamespace(ctx, req)
 		}
@@ -40,6 +39,5 @@ var updateNamespace = &cobra.Command{
 
 func init() {
 	setCmd.AddCommand(updateNamespace)
-	updateNamespace.Flags().StringVarP(&configurationID, "configuration", "c", "", "configuration id")
 	updateNamespace.Flags().BoolVarP(&isDefault, "is-default", "d", true, "set the namespace be the default one")
 }
