@@ -34,7 +34,7 @@ func DeviceEntityToModel(device entity.Device) models.Device {
 	}
 
 	if device.Configuration != nil {
-		m.ConfigurationManifestID = sql.NullString{Valid: true, String: device.Configuration.Id}
+		m.ConfigurationID = sql.NullString{Valid: true, String: device.Configuration.Id}
 	}
 
 	if device.SetID != nil {
@@ -205,7 +205,7 @@ func SetToModel(set entity.Set) models.DeviceSet {
 		NamespaceID: set.NamespaceID,
 	}
 	if set.Configuration != nil {
-		model.ConfigurationManifestID = sql.NullString{Valid: true, String: set.Configuration.Id}
+		model.ConfigurationID = sql.NullString{Valid: true, String: set.Configuration.Id}
 	}
 	return model
 }
@@ -217,7 +217,7 @@ func NamespaceToModel(namespace entity.Namespace) models.Namespace {
 	}
 
 	if namespace.Configuration != nil {
-		model.ConfigurationManifestID = sql.NullString{Valid: true, String: namespace.Configuration.Id}
+		model.ConfigurationID = sql.NullString{Valid: true, String: namespace.Configuration.Id}
 	}
 	return model
 }

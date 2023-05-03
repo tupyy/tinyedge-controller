@@ -27,7 +27,7 @@ Table: sets_manifests
 
 JSON Sample
 -------------------------------------
-{    "device_set_id": "aSCrQVPfEMsuqGKrAlgtuTDHb",    "manifest_id": "gokTSoRfwTFsAcMcBsJmBLlyB"}
+{    "device_set_id": "rokmCdykVCpCyiHnjntBntkDP",    "manifest_id": "DfSrStHBaHpEjbMEyehmKWSUi"}
 
 
 

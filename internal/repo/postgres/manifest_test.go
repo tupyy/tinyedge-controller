@@ -76,10 +76,10 @@ var _ = Describe("Manifest repository", Ordered, func() {
 		Expect(insertErr).To(BeNil())
 		gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
 			('configuration', 'configuration', 'configuration', 'id', '%s');`, path.Join(folderTmp, conf)))
-		gormDB.Exec(`INSERT INTO namespace (id,is_default, configuration_manifest_id) VALUES 
+		gormDB.Exec(`INSERT INTO namespace (id,is_default, configuration_id) VALUES 
 			('namespace1', false, 'configuration'),
 			('namespace', true, 'configuration');`)
-		gormDB.Exec(`INSERT into device_set (id, namespace_id, configuration_manifest_id) VALUES 
+		gormDB.Exec(`INSERT into device_set (id, namespace_id, configuration_id) VALUES 
 			('set', 'namespace', 'configuration'),
 			('set1', 'namespace1', 'configuration');`)
 		gormDB.Exec(`INSERT INTO device (id, enroled, registered, namespace_id, device_set_id) VALUES

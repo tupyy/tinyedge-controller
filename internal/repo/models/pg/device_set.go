@@ -22,13 +22,13 @@ DB Table Details
 
 Table: device_set
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
-[ 1] configuration_manifest_id                      VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 1] configuration_id                               VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 [ 2] namespace_id                                   VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "UAxspxWgMIkGmNYRQqmNKREaI",    "configuration_manifest_id": "nfcumRgmndFjxeUpcFYqVbHBD",    "namespace_id": "IAEnUhTPOtXwGooBDegoeZacp"}
+{    "id": "NYHKUVdJrMBWnjIBFbcQuhpca",    "configuration_id": "YBbFKwwtsXieuVWWyAvKddnbf",    "namespace_id": "klcPaSmIaLeJysByVaMEUshDd"}
 
 
 
@@ -38,8 +38,8 @@ JSON Sample
 type DeviceSet struct {
 	//[ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
-	//[ 1] configuration_manifest_id                      VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-	ConfigurationManifestID sql.NullString `gorm:"column:configuration_manifest_id;type:VARCHAR;size:255;"`
+	//[ 1] configuration_id                               VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ConfigurationID sql.NullString `gorm:"column:configuration_id;type:VARCHAR;size:255;"`
 	//[ 2] namespace_id                                   VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 	NamespaceID string `gorm:"column:namespace_id;type:VARCHAR;size:255;"`
 }
@@ -71,7 +71,7 @@ var device_setTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "configuration_manifest_id",
+			Name:               "configuration_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           true,
@@ -82,10 +82,10 @@ var device_setTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "VARCHAR",
 			ColumnLength:       255,
-			GoFieldName:        "ConfigurationManifestID",
+			GoFieldName:        "ConfigurationID",
 			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "configuration_manifest_id",
-			ProtobufFieldName:  "configuration_manifest_id",
+			JSONFieldName:      "configuration_id",
+			ProtobufFieldName:  "configuration_id",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},

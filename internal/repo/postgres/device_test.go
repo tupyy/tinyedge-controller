@@ -246,10 +246,10 @@ var _ = Describe("Device repository", Ordered, func() {
 			Expect(count).To(Equal(1))
 
 			var n = struct {
-				ConfigurationManifestID string
+				ConfigurationID string
 			}{}
-			gormDB.Raw("SELECT configuration_manifest_id from namespace where id = ?;", "test").Scan(&n)
-			Expect(n.ConfigurationManifestID).To(Equal("configuration1"))
+			gormDB.Raw("SELECT configuration_id from namespace where id = ?;", "test").Scan(&n)
+			Expect(n.ConfigurationID).To(Equal("configuration1"))
 		})
 
 		It("cannot remove last namespace", func() {
@@ -380,7 +380,7 @@ var _ = Describe("Device repository", Ordered, func() {
 		})
 
 		It("get namespaces successfully", func() {
-			err := gormDB.Exec(`INSERT INTO namespace (id, is_default, configuration_manifest_id) VALUES
+			err := gormDB.Exec(`INSERT INTO namespace (id, is_default, configuration_id) VALUES
 				('first',true,'configuration'),
 				('second',false,'configuration');`).Error
 			Expect(err).To(BeNil())
@@ -571,7 +571,7 @@ var _ = Describe("Device repository", Ordered, func() {
 
 	Context("set", func() {
 		BeforeEach(func() {
-			gormDB.Exec(`INSERT INTO namespace (id, is_default, configuration_manifest_id) VALUES
+			gormDB.Exec(`INSERT INTO namespace (id, is_default, configuration_id) VALUES
 			('namespace1', true, 'configuration'),
 			('namespace2', false, 'configuration');`)
 		})
@@ -606,7 +606,7 @@ var _ = Describe("Device repository", Ordered, func() {
 		})
 
 		It("successfully retrieve a set with configuration", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_manifest_id) VALUES
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
 				('set1', 'namespace1', 'configuration');`).Error
 			Expect(eerr).To(BeNil())
 
@@ -619,7 +619,7 @@ var _ = Describe("Device repository", Ordered, func() {
 		})
 
 		It("successfully retrieve a set with devices", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_manifest_id) VALUES
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
 				('set1', 'namespace1', 'configuration');`).Error
 			Expect(eerr).To(BeNil())
 
@@ -636,7 +636,7 @@ var _ = Describe("Device repository", Ordered, func() {
 		})
 
 		It("successfully retrieve a set with workloads", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_manifest_id) VALUES
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
 				('set1', 'namespace1', 'configuration');`).Error
 			Expect(eerr).To(BeNil())
 
@@ -653,7 +653,7 @@ var _ = Describe("Device repository", Ordered, func() {
 		})
 
 		It("successfully retrieve all sets", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_manifest_id) VALUES
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
 				('set', 'namespace2','configuration'),
 				('set1', 'namespace1', 'configuration');`).Error
 			Expect(eerr).To(BeNil())
@@ -666,7 +666,7 @@ var _ = Describe("Device repository", Ordered, func() {
 		})
 
 		It("successfully delete set", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_manifest_id) VALUES
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
 				('set', 'namespace1', 'configuration');`).Error
 			Expect(eerr).To(BeNil())
 
@@ -680,7 +680,7 @@ var _ = Describe("Device repository", Ordered, func() {
 		})
 
 		It("successfully update set", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_manifest_id) VALUES
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
 				('set', 'namespace1', 'configuration');`).Error
 			Expect(eerr).To(BeNil())
 
@@ -696,7 +696,7 @@ var _ = Describe("Device repository", Ordered, func() {
 		})
 
 		It("successfully update set with new namespace id", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_manifest_id) VALUES
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
 				('set', 'namespace1', 'configuration');`).Error
 			Expect(eerr).To(BeNil())
 
@@ -718,7 +718,7 @@ var _ = Describe("Device repository", Ordered, func() {
 		})
 
 		It("unable to update set when namespace does not exists", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_manifest_id) VALUES
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
 				('set', 'namespace1', 'configuration');`).Error
 			Expect(eerr).To(BeNil())
 

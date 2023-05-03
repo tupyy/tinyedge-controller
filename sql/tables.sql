@@ -26,12 +26,12 @@ CREATE TABLE manifest (
 CREATE TABLE namespace (
     id TEXT PRIMARY KEY,
     is_default BOOLEAN DEFAULT false,
-    configuration_manifest_id varchar(255) REFERENCES manifest(id) ON DELETE CASCADE
+    configuration_id varchar(255) REFERENCES manifest(id) ON DELETE CASCADE
 );
 
 CREATE TABLE device_set (
     id TEXT PRIMARY KEY,
-    configuration_manifest_id varchar(255) REFERENCES manifest(id) ON DELETE SET NULL,
+    configuration_id varchar(255) REFERENCES manifest(id) ON DELETE SET NULL,
     namespace_id varchar(255) NOT NULL REFERENCES namespace(id) ON DELETE CASCADE
 );
 
@@ -44,7 +44,7 @@ CREATE TABLE device (
     certificate_sn TEXT,
     namespace_id varchar(255) NOT NULL REFERENCES namespace(id) ON DELETE SET NULL,
     device_set_id varchar(255) REFERENCES device_set(id) ON DELETE SET NULL,
-    configuration_manifest_id varchar(255) REFERENCES manifest(id) ON DELETE SET NULL
+    configuration_id varchar(255) REFERENCES manifest(id) ON DELETE SET NULL
 );
 
 CREATE TABLE devices_manifests (

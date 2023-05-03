@@ -202,9 +202,9 @@ func (d *DeviceRepo) UpdateSet(ctx context.Context, set entity.Set) error {
 
 	oldSet.NamespaceID = set.NamespaceID
 	if set.Configuration != nil {
-		oldSet.ConfigurationManifestID = sql.NullString{Valid: true, String: set.Configuration.GetID()}
+		oldSet.ConfigurationID = sql.NullString{Valid: true, String: set.Configuration.GetID()}
 	} else {
-		oldSet.ConfigurationManifestID = sql.NullString{Valid: false}
+		oldSet.ConfigurationID = sql.NullString{Valid: false}
 	}
 
 	return d.getDb(ctx).Save(oldSet).Error

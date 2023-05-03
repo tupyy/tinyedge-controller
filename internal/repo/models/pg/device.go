@@ -29,12 +29,12 @@ Table: device
 [ 5] certificate_sn                                 TEXT                 null: true   primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 6] namespace_id                                   VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 [ 7] device_set_id                                  VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-[ 8] configuration_manifest_id                      VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 8] configuration_id                               VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "eyIEDolgnrSvwifZJWHtHcqUN",    "enroled_at": "2176-10-12T10:52:12.813438108+02:00",    "registered_at": "2054-08-15T01:59:34.77705368+02:00",    "enroled": "FuewwvVVoaxIlfqjlowegrLDO",    "registered": true,    "certificate_sn": "yHBqWehFVbwZZHtIfxOEfWawq",    "namespace_id": "tmCFDRDRtpagCWMcbYFjbFyIR",    "device_set_id": "wcRvGHeqyMrifLDBxcfABvtfk",    "configuration_manifest_id": "AVsAUjHhxkLVnjprDevGYOdWV"}
+{    "id": "JNTjhYfPsLynxKrohHBeRXfOy",    "enroled_at": "2176-06-19T00:24:28.39560596+02:00",    "registered_at": "2099-07-21T07:06:38.028836751+02:00",    "enroled": "VasMKDaBGkLZYxWZlPpEmGuvG",    "registered": true,    "certificate_sn": "uFnisYhxPiYLBSEslSLHCwNFA",    "namespace_id": "spogZYGDpwOZyaoYEpPvyyFxG",    "device_set_id": "SACRsYOcuWjgbdpRxsUlYgBGD",    "configuration_id": "PuhxbgWDIkDDpkOIjjAvunRcg"}
 
 
 
@@ -58,8 +58,8 @@ type Device struct {
 	NamespaceID string `gorm:"column:namespace_id;type:VARCHAR;size:255;"`
 	//[ 7] device_set_id                                  VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 	DeviceSetID sql.NullString `gorm:"column:device_set_id;type:VARCHAR;size:255;"`
-	//[ 8] configuration_manifest_id                      VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-	ConfigurationManifestID sql.NullString `gorm:"column:configuration_manifest_id;type:VARCHAR;size:255;"`
+	//[ 8] configuration_id                               VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	ConfigurationID sql.NullString `gorm:"column:configuration_id;type:VARCHAR;size:255;"`
 }
 
 var deviceTableInfo = &TableInfo{
@@ -236,7 +236,7 @@ var deviceTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              8,
-			Name:               "configuration_manifest_id",
+			Name:               "configuration_id",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           true,
@@ -247,10 +247,10 @@ var deviceTableInfo = &TableInfo{
 			IsArray:            false,
 			ColumnType:         "VARCHAR",
 			ColumnLength:       255,
-			GoFieldName:        "ConfigurationManifestID",
+			GoFieldName:        "ConfigurationID",
 			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "configuration_manifest_id",
-			ProtobufFieldName:  "configuration_manifest_id",
+			JSONFieldName:      "configuration_id",
+			ProtobufFieldName:  "configuration_id",
 			ProtobufType:       "string",
 			ProtobufPos:        9,
 		},
