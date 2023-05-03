@@ -19,7 +19,7 @@ var _ GitReader = &GitReaderMock{}
 //
 // 		// make and configure a mocked GitReader
 // 		mockedGitReader := &GitReaderMock{
-// 			GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+// 			GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 // 				panic("mock out the GetManifests method")
 // 			},
 // 		}
@@ -30,7 +30,7 @@ var _ GitReader = &GitReaderMock{}
 // 	}
 type GitReaderMock struct {
 	// GetManifestsFunc mocks the GetManifests method.
-	GetManifestsFunc func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error)
+	GetManifestsFunc func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -40,39 +40,45 @@ type GitReaderMock struct {
 			Ctx context.Context
 			// Repo is the repo argument value.
 			Repo entity.Repository
+			// FilterFn is the filterFn argument value.
+			FilterFn func(m entity.Manifest) bool
 		}
 	}
 	lockGetManifests sync.RWMutex
 }
 
 // GetManifests calls GetManifestsFunc.
-func (mock *GitReaderMock) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+func (mock *GitReaderMock) GetManifests(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 	if mock.GetManifestsFunc == nil {
 		panic("GitReaderMock.GetManifestsFunc: method is nil but GitReader.GetManifests was just called")
 	}
 	callInfo := struct {
-		Ctx  context.Context
-		Repo entity.Repository
+		Ctx      context.Context
+		Repo     entity.Repository
+		FilterFn func(m entity.Manifest) bool
 	}{
-		Ctx:  ctx,
-		Repo: repo,
+		Ctx:      ctx,
+		Repo:     repo,
+		FilterFn: filterFn,
 	}
 	mock.lockGetManifests.Lock()
 	mock.calls.GetManifests = append(mock.calls.GetManifests, callInfo)
 	mock.lockGetManifests.Unlock()
-	return mock.GetManifestsFunc(ctx, repo)
+	return mock.GetManifestsFunc(ctx, repo, filterFn)
 }
 
 // GetManifestsCalls gets all the calls that were made to GetManifests.
 // Check the length with:
 //     len(mockedGitReader.GetManifestsCalls())
 func (mock *GitReaderMock) GetManifestsCalls() []struct {
-	Ctx  context.Context
-	Repo entity.Repository
+	Ctx      context.Context
+	Repo     entity.Repository
+	FilterFn func(m entity.Manifest) bool
 } {
 	var calls []struct {
-		Ctx  context.Context
-		Repo entity.Repository
+		Ctx      context.Context
+		Repo     entity.Repository
+		FilterFn func(m entity.Manifest) bool
 	}
 	mock.lockGetManifests.RLock()
 	calls = mock.calls.GetManifests

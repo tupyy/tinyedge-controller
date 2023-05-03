@@ -27,7 +27,7 @@ func init() {
 	manifestPattern = regexp.MustCompile(pattern)
 }
 
-func getManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+func getManifests(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 	files, err := findManifestFiles(ctx, repo.LocalPath, manifestPattern)
 	if err != nil {
 		return nil, fmt.Errorf("unable to search for manifest files in repo %q: %w", repo.LocalPath, err)
@@ -40,7 +40,9 @@ func getManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifes
 			zap.S().Errorf("unable to parse manifest file %q in repo %q: %w", file, repo.LocalPath, err)
 			continue
 		}
-		manifests = append(manifests, manifest)
+		if filterFn(manifest) {
+			manifests = append(manifests, manifest)
+		}
 	}
 
 	return manifests, nil

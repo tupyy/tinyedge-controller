@@ -106,8 +106,8 @@ func (g *GitRepo) GetManifest(ctx context.Context, repo entity.Repository, filep
 }
 
 // GetManifests returns all the manifest of a repo.
-func (g *GitRepo) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
-	return getManifests(ctx, repo)
+func (g *GitRepo) GetManifests(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
+	return getManifests(ctx, repo, filterFn)
 }
 
 func (g *GitRepo) Clone(ctx context.Context, repo entity.Repository) (entity.Repository, error) {

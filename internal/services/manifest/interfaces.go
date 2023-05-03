@@ -6,6 +6,8 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/entity"
 )
 
+type FilterFn func(m entity.Manifest) bool
+
 //go:generate moq -out device_reader_moq.go . DeviceReader
 type DeviceReader interface {
 	GetDevice(ctx context.Context, id string) (entity.Device, error)
@@ -15,7 +17,7 @@ type DeviceReader interface {
 
 type ManifestReader interface {
 	GetManifest(ctx context.Context, id string) (entity.Manifest, error)
-	GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error)
+	GetManifests(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error)
 }
 
 type ManifestWriter interface {
@@ -35,5 +37,5 @@ type ManifestReaderWriter interface {
 
 //go:generate moq -out git_reader_moq.go . GitReader
 type GitReader interface {
-	GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error)
+	GetManifests(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error)
 }

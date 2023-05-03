@@ -57,7 +57,7 @@ func (m *ManifestRepository) GetManifest(ctx context.Context, id string) (entity
 	return mappers.ManifestToEntity(manifests, m.manifestReader)
 }
 
-func (m *ManifestRepository) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+func (m *ManifestRepository) GetManifests(ctx context.Context, repo entity.Repository, fiterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 	if !m.circuitBreaker.IsAvailable() {
 		return []entity.Manifest{}, errService.NewPostgresNotAvailableError("manifest repository")
 	}
@@ -76,7 +76,19 @@ func (m *ManifestRepository) GetManifests(ctx context.Context, repo entity.Repos
 		return []entity.Manifest{}, nil
 	}
 
-	return mappers.ManifestsToEntities(manifests, m.manifestReader)
+	mm, err := mappers.ManifestsToEntities(manifests, m.manifestReader)
+	if err != nil {
+		return []entity.Manifest{}, err
+	}
+
+	output := make([]entity.Manifest, 0, len(mm))
+	for _, m := range mm {
+		if fiterFn(m) {
+			output = append(output, m)
+		}
+	}
+
+	return output, nil
 }
 
 func (m *ManifestRepository) InsertManifest(ctx context.Context, manifest entity.Manifest) error {

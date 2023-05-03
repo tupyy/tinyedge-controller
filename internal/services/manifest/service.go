@@ -32,12 +32,12 @@ func (w *Service) GetManifest(ctx context.Context, id string) (entity.Manifest, 
 }
 
 func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) error {
-	pgManifests, err := w.manifestReaderWriter.GetManifests(ctx, repo)
+	pgManifests, err := w.manifestReaderWriter.GetManifests(ctx, repo, filterWorkload)
 	if err != nil {
 		return fmt.Errorf("unable to read manifests of repo %q: %w", repo.Id, err)
 	}
 
-	gitManifests, err := w.gitReader.GetManifests(ctx, repo)
+	gitManifests, err := w.gitReader.GetManifests(ctx, repo, filterWorkload)
 	if err != nil {
 		return fmt.Errorf("unable to read manifest from repo %q: %w", repo.Id, err)
 	}
@@ -203,4 +203,8 @@ func (w *Service) updateRelations(ctx context.Context, gitManifest entity.Manife
 	}
 
 	return nil
+}
+
+func filterWorkload(m entity.Manifest) bool {
+	return m.GetKind() == entity.WorkloadManifestKind
 }

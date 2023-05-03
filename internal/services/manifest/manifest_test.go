@@ -12,6 +12,10 @@ import (
 	"github.com/tupyy/tinyedge-controller/internal/services/manifest"
 )
 
+func allManifestsFilter(m entity.Manifest) bool {
+	return true
+}
+
 var _ = Describe("manifests", func() {
 	var (
 		gitReader            *manifest.GitReaderMock
@@ -43,7 +47,7 @@ var _ = Describe("manifests", func() {
 				},
 			}
 			manifestReaderWriter = &manifest.ManifestReaderWriterMock{
-				GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					return db.GetManifests(), nil
 				},
 				GetManifestFunc: func(ctx context.Context, id string) (entity.Manifest, error) {
@@ -79,7 +83,7 @@ var _ = Describe("manifests", func() {
 		Context("namespace", func() {
 			It("successfully creates a relation for a namespace", func() {
 				gitReader = &manifest.GitReaderMock{
-					GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+					GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 						workload := entity.Workload{
 							ObjectMeta: entity.ObjectMeta{
 								Id:   "test",
@@ -113,7 +117,7 @@ var _ = Describe("manifests", func() {
 
 			It("unable to create relation when namespace is missing", func() {
 				gitReader = &manifest.GitReaderMock{
-					GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+					GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 						workload := entity.Workload{
 							ObjectMeta: entity.ObjectMeta{
 								Id:   "test",
@@ -147,7 +151,7 @@ var _ = Describe("manifests", func() {
 
 			It("successfully delete a relation for a namespace", func() {
 				gitReader = &manifest.GitReaderMock{
-					GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+					GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 						workload := entity.Workload{
 							ObjectMeta: entity.ObjectMeta{
 								Id:   "test",
@@ -178,7 +182,7 @@ var _ = Describe("manifests", func() {
 				Expect(r.ResourceID).To(Equal("namespace"))
 				Expect(r.ManifestID).To(Equal("test"))
 
-				gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -205,7 +209,7 @@ var _ = Describe("manifests", func() {
 
 			It("successfully updates a relation for a namespace", func() {
 				gitReader = &manifest.GitReaderMock{
-					GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+					GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 						workload := entity.Workload{
 							ObjectMeta: entity.ObjectMeta{
 								Id:   "test",
@@ -236,7 +240,7 @@ var _ = Describe("manifests", func() {
 				Expect(r.ResourceID).To(Equal("namespace"))
 				Expect(r.ManifestID).To(Equal("test"))
 
-				gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -273,7 +277,7 @@ var _ = Describe("manifests", func() {
 
 			It("successfully delete relation and manifest when manifest removed from git", func() {
 				gitReader = &manifest.GitReaderMock{
-					GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+					GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 						workload := entity.Workload{
 							ObjectMeta: entity.ObjectMeta{
 								Id:   "test",
@@ -304,7 +308,7 @@ var _ = Describe("manifests", func() {
 				Expect(r.ResourceID).To(Equal("namespace"))
 				Expect(r.ManifestID).To(Equal("test"))
 
-				gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					manifest := []entity.Manifest{}
 					return manifest, nil
 				}
@@ -327,7 +331,7 @@ var _ = Describe("manifests", func() {
 	Context("sets", func() {
 		It("successfully creates a relation for a set", func() {
 			gitReader = &manifest.GitReaderMock{
-				GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -361,7 +365,7 @@ var _ = Describe("manifests", func() {
 
 		It("unable to create a relation when set is missing", func() {
 			gitReader = &manifest.GitReaderMock{
-				GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -396,7 +400,7 @@ var _ = Describe("manifests", func() {
 
 		It("successfully creates a relation for a set and a namespace", func() {
 			gitReader = &manifest.GitReaderMock{
-				GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -430,7 +434,7 @@ var _ = Describe("manifests", func() {
 
 		It("successfully delete a relation for a set", func() {
 			gitReader = &manifest.GitReaderMock{
-				GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -461,7 +465,7 @@ var _ = Describe("manifests", func() {
 			Expect(r.ResourceID).To(Equal("set"))
 			Expect(r.ManifestID).To(Equal("test"))
 
-			gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+			gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 				workload := entity.Workload{
 					ObjectMeta: entity.ObjectMeta{
 						Id:   "test",
@@ -487,7 +491,7 @@ var _ = Describe("manifests", func() {
 
 		It("successfully updates a relation for a set", func() {
 			gitReader = &manifest.GitReaderMock{
-				GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -518,7 +522,7 @@ var _ = Describe("manifests", func() {
 			Expect(r.ResourceID).To(Equal("set"))
 			Expect(r.ManifestID).To(Equal("test"))
 
-			gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+			gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 				workload := entity.Workload{
 					ObjectMeta: entity.ObjectMeta{
 						Id:   "test",
@@ -555,7 +559,7 @@ var _ = Describe("manifests", func() {
 	Context("devices", func() {
 		It("successfully creates a relation for a device", func() {
 			gitReader = &manifest.GitReaderMock{
-				GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -585,7 +589,7 @@ var _ = Describe("manifests", func() {
 
 		It("unable to create relation when device is missing", func() {
 			gitReader = &manifest.GitReaderMock{
-				GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -619,7 +623,7 @@ var _ = Describe("manifests", func() {
 
 		It("successfully creates a relation for 1 set,1 namespace and 1 device", func() {
 			gitReader = &manifest.GitReaderMock{
-				GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -656,7 +660,7 @@ var _ = Describe("manifests", func() {
 
 		It("successfully deletes a relation for the set only", func() {
 			gitReader = &manifest.GitReaderMock{
-				GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -690,7 +694,7 @@ var _ = Describe("manifests", func() {
 			Expect(mCount).To(Equal(1), "expect 1 manifest")
 			Expect(rCount).To(Equal(3), "expect 3 relations")
 
-			gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+			gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 				workload := entity.Workload{
 					ObjectMeta: entity.ObjectMeta{
 						Id:   "test",
@@ -727,7 +731,7 @@ var _ = Describe("manifests", func() {
 
 		It("successfully delete a relation for a device", func() {
 			gitReader = &manifest.GitReaderMock{
-				GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -758,7 +762,7 @@ var _ = Describe("manifests", func() {
 			Expect(r.ResourceID).To(Equal("device"))
 			Expect(r.ManifestID).To(Equal("test"))
 
-			gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+			gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 				workload := entity.Workload{
 					ObjectMeta: entity.ObjectMeta{
 						Id:   "test",
@@ -784,7 +788,7 @@ var _ = Describe("manifests", func() {
 
 		It("successfully updates a relation for a device", func() {
 			gitReader = &manifest.GitReaderMock{
-				GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+				GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 					workload := entity.Workload{
 						ObjectMeta: entity.ObjectMeta{
 							Id:   "test",
@@ -811,7 +815,7 @@ var _ = Describe("manifests", func() {
 			Expect(mCount).To(Equal(1), "expect 1 manifest")
 			Expect(rCount).To(Equal(1), "expect 1 relation")
 
-			gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+			gitReader.GetManifestsFunc = func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 				workload := entity.Workload{
 					ObjectMeta: entity.ObjectMeta{
 						Id:   "test",

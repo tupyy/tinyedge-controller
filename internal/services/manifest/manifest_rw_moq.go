@@ -31,7 +31,7 @@ var _ ManifestReaderWriter = &ManifestReaderWriterMock{}
 // 			GetManifestFunc: func(ctx context.Context, id string) (entity.Manifest, error) {
 // 				panic("mock out the GetManifest method")
 // 			},
-// 			GetManifestsFunc: func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+// 			GetManifestsFunc: func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 // 				panic("mock out the GetManifests method")
 // 			},
 // 			InsertManifestFunc: func(ctx context.Context, manifest entity.Manifest) error {
@@ -60,7 +60,7 @@ type ManifestReaderWriterMock struct {
 	GetManifestFunc func(ctx context.Context, id string) (entity.Manifest, error)
 
 	// GetManifestsFunc mocks the GetManifests method.
-	GetManifestsFunc func(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error)
+	GetManifestsFunc func(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error)
 
 	// InsertManifestFunc mocks the InsertManifest method.
 	InsertManifestFunc func(ctx context.Context, manifest entity.Manifest) error
@@ -104,6 +104,8 @@ type ManifestReaderWriterMock struct {
 			Ctx context.Context
 			// Repo is the repo argument value.
 			Repo entity.Repository
+			// FilterFn is the filterFn argument value.
+			FilterFn func(m entity.Manifest) bool
 		}
 		// InsertManifest holds details about calls to the InsertManifest method.
 		InsertManifest []struct {
@@ -270,33 +272,37 @@ func (mock *ManifestReaderWriterMock) GetManifestCalls() []struct {
 }
 
 // GetManifests calls GetManifestsFunc.
-func (mock *ManifestReaderWriterMock) GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error) {
+func (mock *ManifestReaderWriterMock) GetManifests(ctx context.Context, repo entity.Repository, filterFn func(m entity.Manifest) bool) ([]entity.Manifest, error) {
 	if mock.GetManifestsFunc == nil {
 		panic("ManifestReaderWriterMock.GetManifestsFunc: method is nil but ManifestReaderWriter.GetManifests was just called")
 	}
 	callInfo := struct {
-		Ctx  context.Context
-		Repo entity.Repository
+		Ctx      context.Context
+		Repo     entity.Repository
+		FilterFn func(m entity.Manifest) bool
 	}{
-		Ctx:  ctx,
-		Repo: repo,
+		Ctx:      ctx,
+		Repo:     repo,
+		FilterFn: filterFn,
 	}
 	mock.lockGetManifests.Lock()
 	mock.calls.GetManifests = append(mock.calls.GetManifests, callInfo)
 	mock.lockGetManifests.Unlock()
-	return mock.GetManifestsFunc(ctx, repo)
+	return mock.GetManifestsFunc(ctx, repo, filterFn)
 }
 
 // GetManifestsCalls gets all the calls that were made to GetManifests.
 // Check the length with:
 //     len(mockedManifestReaderWriter.GetManifestsCalls())
 func (mock *ManifestReaderWriterMock) GetManifestsCalls() []struct {
-	Ctx  context.Context
-	Repo entity.Repository
+	Ctx      context.Context
+	Repo     entity.Repository
+	FilterFn func(m entity.Manifest) bool
 } {
 	var calls []struct {
-		Ctx  context.Context
-		Repo entity.Repository
+		Ctx      context.Context
+		Repo     entity.Repository
+		FilterFn func(m entity.Manifest) bool
 	}
 	mock.lockGetManifests.RLock()
 	calls = mock.calls.GetManifests

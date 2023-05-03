@@ -197,7 +197,7 @@ var _ = Describe("Manifest repository", Ordered, func() {
 			('workload2', 'workload','workload2','id','%s');`, path.Join(folderTmp, workload), path.Join(folderTmp, workload))).Error
 			Expect(ierr).To(BeNil())
 
-			manifests, err := repo.GetManifests(context.TODO(), entity.Repository{Id: "id"})
+			manifests, err := repo.GetManifests(context.TODO(), entity.Repository{Id: "id"}, allManifest)
 			Expect(err).To(BeNil())
 			Expect(len(manifests)).To(Equal(3))
 			Expect([]string{manifests[0].GetID(), manifests[1].GetID(), manifests[2].GetID()}).Should(ContainElement("workload"))
@@ -420,3 +420,7 @@ var _ = Describe("Manifest repository", Ordered, func() {
 		rawClient.Shutdown(ctx)
 	})
 })
+
+func allManifest(m entity.Manifest) bool {
+	return true
+}

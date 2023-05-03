@@ -24,8 +24,6 @@ type GitReader interface {
 	Open(ctx context.Context, r entity.Repository) (entity.Repository, error)
 	Pull(ctx context.Context, r entity.Repository) error
 	GetHeadSha(ctx context.Context, r entity.Repository) (string, error)
-	GetManifests(ctx context.Context, repo entity.Repository) ([]entity.Manifest, error)
-	GetManifest(ctx context.Context, repo entity.Repository, file string) (entity.Manifest, error)
 }
 
 type GitWriter interface {
