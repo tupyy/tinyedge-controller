@@ -50,7 +50,7 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 		if err := w.manifestReaderWriter.InsertManifest(ctx, c); err != nil && !errService.IsResourceAlreadyExists(err) {
 			return fmt.Errorf("unable to insert manifest %q: %w", c.GetID(), err)
 		}
-		if err := w.UpdateRelations(ctx, c); err != nil {
+		if err := w.updateRelations(ctx, c); err != nil {
 			return err
 		}
 	}
@@ -62,7 +62,7 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 	}
 
 	for _, u := range updated {
-		if err := w.UpdateRelations(ctx, u); err != nil {
+		if err := w.updateRelations(ctx, u); err != nil {
 			return err
 		}
 		if err := w.manifestReaderWriter.UpdateManifest(ctx, u); err != nil {
@@ -73,7 +73,7 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 	return nil
 }
 
-func (w *Service) UpdateRelations(ctx context.Context, gitManifest entity.Manifest) error {
+func (w *Service) updateRelations(ctx context.Context, gitManifest entity.Manifest) error {
 	// get the old pgManifest
 	pgManifest, err := w.manifestReaderWriter.GetManifest(ctx, gitManifest.GetID())
 	if err != nil {
@@ -203,69 +203,4 @@ func (w *Service) UpdateRelations(ctx context.Context, gitManifest entity.Manife
 	}
 
 	return nil
-}
-
-func (w *Service) CreateRelations(ctx context.Context, m entity.Manifest) error {
-	for _, s := range m.GetSelectors() {
-		var r entity.Relation
-		switch s.Type {
-		case entity.NamespaceSelector:
-			namespace, err := w.deviceReader.GetNamespace(ctx, s.Value)
-			if err != nil {
-				if errService.IsResourceNotFound(err) {
-					zap.S().Warnw("unable to create relation. namespace does not exist", "namespace", s.Value)
-					continue
-				}
-				return fmt.Errorf("unable to get namespace %q: %w", s.Value, err)
-			}
-			r = entity.NewNamespaceRelation(namespace.Name, m.GetID())
-		case entity.SetSelector:
-			set, err := w.deviceReader.GetSet(ctx, s.Value)
-			if err != nil {
-				if errService.IsResourceNotFound(err) {
-					zap.S().Warnw("unable to create relation. set does not exist", "set", s.Value)
-					continue
-				}
-				return fmt.Errorf("unable to get set %q: %w", s.Value, err)
-			}
-			r = entity.NewSetRelation(set.Name, m.GetID())
-		case entity.DeviceSelector:
-			device, err := w.deviceReader.GetDevice(ctx, s.Value)
-			if err != nil {
-				if errService.IsResourceNotFound(err) {
-					zap.S().Warnw("unable to create relation. device does not exist", "device_id", s.Value)
-					continue
-				}
-				return fmt.Errorf("unable to get device %q: %w", s.Value, err)
-			}
-			r = entity.NewDeviceRelation(device.ID, m.GetID())
-		}
-
-		if err := w.manifestReaderWriter.CreateRelation(ctx, r); err != nil {
-			if errService.IsResourceAlreadyExists(err) {
-				zap.S().Info("Relation %q between %s and manifest %s already exists", r.Type, r.ResourceID, r.ManifestID)
-				continue
-			}
-			return fmt.Errorf("unable to create relation between resource %q and manifest %q: %w", r.ResourceID, r.ResourceID, err)
-		}
-	}
-	return nil
-}
-
-func (w *Service) deleteManifests(ctx context.Context, manifests []entity.Manifest) {
-	for _, m := range manifests {
-		if err := w.manifestReaderWriter.DeleteManifest(ctx, m.GetID()); err != nil {
-			zap.S().Error("unable to delete manifest", "error", err, "manifest_id", m.GetID())
-			continue
-		}
-	}
-}
-
-func (w *Service) updateManifests(ctx context.Context, manifests []entity.Manifest) {
-	for _, m := range manifests {
-		if err := w.manifestReaderWriter.UpdateManifest(ctx, m); err != nil {
-			zap.S().Errorw("unable to update manifest", "error", err, "manifest_id", m.GetID())
-			continue
-		}
-	}
 }
