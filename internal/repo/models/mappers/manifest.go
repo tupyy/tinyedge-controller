@@ -43,6 +43,8 @@ func ManifestEntityToModel(e entity.Manifest) models.Manifest {
 	}
 	switch v := e.(type) {
 	case entity.Configuration:
+		m.RepoID = v.Repository.Id
+		m.Path = v.Path
 	case entity.Workload:
 		m.RepoID = v.Repository.Id
 		m.Path = v.Path

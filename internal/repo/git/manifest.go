@@ -60,6 +60,13 @@ func getManifest(ctx context.Context, repo entity.Repository, filepath string) (
 			w.Path = filepath
 			return w
 		}
+		if m.GetKind() == entity.ConfigurationManifestKind {
+			c, _ := m.(entity.Configuration)
+			c.Id = hash(filepath)[:12]
+			c.Repository = repo
+			c.Path = filepath
+			return c
+		}
 		return m
 	})
 }
