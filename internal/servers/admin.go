@@ -362,6 +362,17 @@ func (a *AdminServer) AddRepository(ctx context.Context, req *pb.AddRepositoryRe
 		Id:  req.Name,
 	}
 
+	switch req.AuthMethod {
+	case "ssh":
+		repo.AuthType = entity.SSHRepositoryAuthType
+		repo.CredentialsSecretPath = req.AuthSecretPath
+	case "token":
+		repo.AuthType = entity.TokenRepositoryAuthType
+		repo.CredentialsSecretPath = req.AuthSecretPath
+	default:
+		repo.AuthType = entity.NoRepositoryAuthType
+	}
+
 	if err := a.repositoryService.Add(ctx, repo); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "unable to add repository %s", err)
 	}

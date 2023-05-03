@@ -51,8 +51,8 @@ var addRepository = &cobra.Command{
 func init() {
 	addCmd.AddCommand(addRepository)
 
-	addRepository.Flags().StringVarP(&repoUrl, "repo-url", "r", "", "git repository url")
-	addRepository.Flags().StringVarP(&repoName, "repo-name", "n", "", "git repository name")
+	addRepository.Flags().StringVarP(&repoUrl, "url", "u", "", "git repository url")
+	addRepository.Flags().StringVarP(&repoName, "name", "n", "", "git repository name")
 	addRepository.Flags().StringVar(&authMethod, "auth-method", "", "auth method")
 	addRepository.Flags().StringVar(&authSecretPath, "auth-secret-path", "", "auth vault secret path")
 }
