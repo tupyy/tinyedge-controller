@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"path"
 	"time"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
@@ -73,7 +72,7 @@ func DeviceToEntity(joins []models.DeviceJoin, readFn manifest.ManifestReader) (
 		if d.WorkloadID != "" && !idMap.exists(d.WorkloadID, "manifest") {
 			manifests = append(manifests, map[string]string{
 				"id":   d.WorkloadID,
-				"path": path.Join(d.WorkloadRepoLocalPath, d.WorkloadPath),
+				"path": d.WorkloadPath,
 			})
 			idMap.add(d.WorkloadID, "manifest")
 		}
@@ -162,7 +161,7 @@ func SetToEntity(s []models.SetJoin, readFn manifest.ManifestReader) (entity.Set
 
 	if s[0].ConfigurationID != "" {
 		// read conf
-		c, err := readManifest(path.Join(s[0].ConfigurationLocalPath, s[0].ConfigurationPath), s[0].ConfigurationID, readFn)
+		c, err := readManifest(s[0].ConfigurationPath, s[0].ConfigurationID, readFn)
 		if err != nil {
 			return entity.Set{}, err
 		}
@@ -181,7 +180,7 @@ func SetToEntity(s []models.SetJoin, readFn manifest.ManifestReader) (entity.Set
 		if ss.WorkloadID != "" && !idMap.exists(ss.WorkloadID, "manifest") {
 			manifests = append(manifests, map[string]string{
 				"id":   ss.WorkloadID,
-				"path": path.Join(ss.WorkloadRepoLocalPath, ss.WorkloadPath),
+				"path": ss.WorkloadPath,
 			})
 			idMap.add(ss.WorkloadID, "manifest")
 		}
@@ -212,11 +211,15 @@ func SetToModel(set entity.Set) models.DeviceSet {
 }
 
 func NamespaceToModel(namespace entity.Namespace) models.Namespace {
-	return models.Namespace{
-		ID:                      namespace.Name,
-		IsDefault:               sql.NullBool{Valid: true, Bool: namespace.IsDefault},
-		ConfigurationManifestID: namespace.Configuration.Id,
+	model := models.Namespace{
+		ID:        namespace.Name,
+		IsDefault: sql.NullBool{Valid: true, Bool: namespace.IsDefault},
 	}
+
+	if namespace.Configuration != nil {
+		model.ConfigurationManifestID = sql.NullString{Valid: true, String: namespace.Configuration.Id}
+	}
+	return model
 }
 
 func NamespacesModelToEntity(namespaces []models.NamespaceJoin, reader manifest.ManifestReader) ([]entity.Namespace, error) {
@@ -250,13 +253,16 @@ func NamespaceModelToEntity(n []models.NamespaceJoin, readFn manifest.ManifestRe
 		IsDefault: false,
 	}
 
-	// read conf
-	conf, err := readManifest(path.Join(n[0].ConfigurationLocalPath, n[0].ConfigurationPath), n[0].ConfigurationID, readFn)
-	if err != nil {
-		return entity.Namespace{}, err
-	}
+	if n[0].ConfigurationPath != "" {
+		// read conf
+		conf, err := readManifest(n[0].ConfigurationPath, n[0].ConfigurationID, readFn)
+		if err != nil {
+			return entity.Namespace{}, err
+		}
 
-	namespace.Configuration = conf.(entity.Configuration)
+		c := conf.(entity.Configuration)
+		namespace.Configuration = &c
+	}
 
 	if n[0].Namespace.IsDefault.Valid {
 		namespace.IsDefault = n[0].Namespace.IsDefault.Bool
@@ -278,7 +284,7 @@ func NamespaceModelToEntity(n []models.NamespaceJoin, readFn manifest.ManifestRe
 		if nn.WorkloadID != "" && !idMap.exists(nn.WorkloadID, "manifest") {
 			manifests = append(manifests, map[string]string{
 				"id":   nn.WorkloadID,
-				"path": path.Join(nn.WorkloadRepoLocalPath, nn.WorkloadPath),
+				"path": nn.WorkloadPath,
 			})
 			idMap.add(nn.WorkloadID, "manifest")
 		}

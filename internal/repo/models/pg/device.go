@@ -34,7 +34,7 @@ Table: device
 
 JSON Sample
 -------------------------------------
-{    "id": "IMWmbYbHTlIlGRHpbhrWfwIXi",    "enroled_at": "2179-02-28T08:18:27.457454034+01:00",    "registered_at": "2155-12-29T07:55:16.066146167+01:00",    "enroled": "uIMpuZuSWfYlNOsPjrcpAxCup",    "registered": false,    "certificate_sn": "QTnqTArEbnmrKWaZgTvCWpssg",    "namespace_id": "ZvPpYAqPiTNlOJyNOBsZZkohV",    "device_set_id": "KnnqtfEbspyxYIytcNggVMHXY",    "configuration_manifest_id": "aXmeBvErtGEiKrZGeWSopnFJR"}
+{    "id": "eyIEDolgnrSvwifZJWHtHcqUN",    "enroled_at": "2176-10-12T10:52:12.813438108+02:00",    "registered_at": "2054-08-15T01:59:34.77705368+02:00",    "enroled": "FuewwvVVoaxIlfqjlowegrLDO",    "registered": true,    "certificate_sn": "yHBqWehFVbwZZHtIfxOEfWawq",    "namespace_id": "tmCFDRDRtpagCWMcbYFjbFyIR",    "device_set_id": "wcRvGHeqyMrifLDBxcfABvtfk",    "configuration_manifest_id": "AVsAUjHhxkLVnjprDevGYOdWV"}
 
 
 

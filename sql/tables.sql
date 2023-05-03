@@ -26,7 +26,7 @@ CREATE TABLE manifest (
 CREATE TABLE namespace (
     id TEXT PRIMARY KEY,
     is_default BOOLEAN DEFAULT false,
-    configuration_manifest_id varchar(255) NOT NULL REFERENCES manifest(id) ON DELETE CASCADE
+    configuration_manifest_id varchar(255) REFERENCES manifest(id) ON DELETE CASCADE
 );
 
 CREATE TABLE device_set (

@@ -115,7 +115,7 @@ var _ = Describe("Device repository", Ordered, func() {
 		gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
 			('workload', 'workload', 'workload', 'id', '%s'),
 			('workload2', 'workload','workload2','id','%s'),
-			('configuration', 'configuration', 'configuration', 'id', '%s');`, workload, workload, conf))
+			('configuration', 'configuration', 'configuration', 'id', '%s');`, path.Join(folderTmp, workload), path.Join(folderTmp, workload), path.Join(folderTmp, conf)))
 	})
 
 	Context("namespace", func() {
@@ -123,7 +123,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -140,7 +140,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -151,7 +151,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err = deviceRepo.UpdateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: false,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -174,7 +174,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -185,7 +185,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err = deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test1",
 				IsDefault: false,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -196,7 +196,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err = deviceRepo.UpdateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test1",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -222,7 +222,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -233,7 +233,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err = deviceRepo.UpdateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration1",
 					},
@@ -256,7 +256,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -276,7 +276,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -287,7 +287,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err = deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "isdefault",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -309,7 +309,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -320,7 +320,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err = deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test1",
 				IsDefault: false,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -350,7 +350,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -361,7 +361,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err = deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "isdefault",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -398,7 +398,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -409,7 +409,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err = deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "otherone",
 				IsDefault: false,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -440,7 +440,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "otherone",
 				IsDefault: false,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -473,7 +473,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "otherone",
 				IsDefault: false,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -507,7 +507,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "otherone",
 				IsDefault: false,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},
@@ -539,7 +539,7 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "otherone",
 				IsDefault: false,
-				Configuration: entity.Configuration{
+				Configuration: &entity.Configuration{
 					ObjectMeta: entity.ObjectMeta{
 						Id: "configuration",
 					},

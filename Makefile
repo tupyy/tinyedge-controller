@@ -92,7 +92,7 @@ DEST ?= .
 generate.proto:
 	$(PROTOC) -I=protocol --go_out=$(DEST) --go-grpc_opt=module=github.com/tupyy/tinyedge-controller --go_opt=module=github.com/tupyy/tinyedge-controller --go-grpc_out=$(DEST) protocol/edge.proto protocol/common.proto protocol/admin.proto
 
-BASE_CONNSTR="postgresql://$(ROOT_USER):$(ROOT_PWD)@$(DB_HOST):$(DB_PORT)"
+BASE_CONNSTR="postgresql://$(PG_USER):$(PG_PWD)@$(DB_HOST):$(DB_PORT)"
 GEN_CMD=$(TOOLS_DIR)/gen --sqltype=postgres \
 	--module=github.com/tupyy/tinyedge-controller/internal/repo/models/pg --exclude=schema_migrations \
 	--gorm --no-json --no-xml --overwrite --out $(CURDIR)/internal/repo/models

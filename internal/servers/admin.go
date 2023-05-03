@@ -137,10 +137,7 @@ func (a *AdminServer) AddNamespace(ctx context.Context, req *pb.AddNamespaceRequ
 		return nil, status.Error(codes.InvalidArgument, "namespace name or configuration id is missing")
 	}
 	err := a.deviceService.CreateNamespace(ctx, entity.Namespace{
-		Name: req.Id,
-		Configuration: entity.Configuration{
-			ObjectMeta: entity.ObjectMeta{Id: req.ConfigurationId},
-		},
+		Name:      req.Id,
 		IsDefault: req.IsDefault,
 	})
 
@@ -191,11 +188,6 @@ func (a *AdminServer) UpdateNamespace(ctx context.Context, req *pb.UpdateNamespa
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	if req.ConfigurationId != "" {
-		namespace.Configuration = entity.Configuration{
-			ObjectMeta: entity.ObjectMeta{Id: req.ConfigurationId},
-		}
-	}
 	if req.IsDefault {
 		namespace.IsDefault = req.IsDefault
 	}

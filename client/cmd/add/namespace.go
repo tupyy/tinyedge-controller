@@ -17,15 +17,10 @@ var addNamespace = &cobra.Command{
 			return fmt.Errorf("namespace name is missing")
 		}
 
-		if configurationID == "" {
-			return fmt.Errorf("configuration id is missing")
-		}
-
 		fn := func(ctx context.Context, client adminGrpc.AdminServiceClient) (*adminGrpc.Namespace, error) {
 			req := &adminGrpc.AddNamespaceRequest{
-				Id:              args[0],
-				ConfigurationId: configurationID,
-				IsDefault:       isDefault,
+				Id:        args[0],
+				IsDefault: isDefault,
 			}
 			return client.AddNamespace(ctx, req)
 		}
@@ -37,6 +32,5 @@ var addNamespace = &cobra.Command{
 func init() {
 	addCmd.AddCommand(addNamespace)
 
-	addNamespace.Flags().StringVarP(&configurationID, "configuration", "", "", "configuration id")
 	addNamespace.Flags().BoolVarP(&isDefault, "is-default", "", false, "true if the namespace is the default one")
 }

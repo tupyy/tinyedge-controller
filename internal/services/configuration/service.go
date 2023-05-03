@@ -37,7 +37,11 @@ func (c *Service) GetDeviceConfiguration(ctx context.Context, deviceID string) (
 	if err != nil {
 		return entity.DeviceConfiguration{}, err
 	}
-	confResponse := createConfigurationResponse(configuration, manifests)
+
+	var confResponse entity.DeviceConfiguration
+	if configuration != nil {
+		confResponse = createConfigurationResponse(*configuration, manifests)
+	}
 
 	// err = c.cacheReadWriter.Put(ctx, device.ID, confResponse)
 	// if err != nil {
@@ -51,26 +55,26 @@ func (c *Service) GetDeviceConfiguration(ctx context.Context, deviceID string) (
 	// return conf, nil
 }
 
-func (c *Service) getConfiguration(ctx context.Context, device entity.Device) (entity.Configuration, error) {
+func (c *Service) getConfiguration(ctx context.Context, device entity.Device) (*entity.Configuration, error) {
 	if device.Configuration != nil {
-		return *device.Configuration, nil
+		return device.Configuration, nil
 	}
 
 	// if device has no configuration look at the set of the device
 	if device.SetID != nil {
 		set, err := c.deviceReader.GetSet(ctx, *device.SetID)
 		if err != nil {
-			return entity.Configuration{}, err
+			return nil, err
 		}
 		if set.Configuration != nil {
-			return *set.Configuration, nil
+			return set.Configuration, nil
 		}
 	}
 
 	// if the device has no set or the set has no configuration just grab the configuration from namespace
 	namespace, err := c.deviceReader.GetNamespace(ctx, device.NamespaceID)
 	if err != nil {
-		return entity.Configuration{}, err
+		return nil, err
 	}
 
 	// namespace always has a configuration
