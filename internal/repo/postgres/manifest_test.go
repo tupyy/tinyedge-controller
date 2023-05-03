@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path"
 	"strconv"
 	"time"
 
@@ -74,7 +75,7 @@ var _ = Describe("Manifest repository", Ordered, func() {
 			VALUES('id','url','%s','ssh', '/secret/ssh','current','target',10);`, folderTmp)).Error
 		Expect(insertErr).To(BeNil())
 		gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
-			('configuration', 'configuration', 'configuration', 'id', '%s');`, conf))
+			('configuration', 'configuration', 'configuration', 'id', '%s');`, path.Join(folderTmp, conf)))
 		gormDB.Exec(`INSERT INTO namespace (id,is_default, configuration_manifest_id) VALUES 
 			('namespace1', false, 'configuration'),
 			('namespace', true, 'configuration');`)
@@ -90,7 +91,7 @@ var _ = Describe("Manifest repository", Ordered, func() {
 		It("successfully retrieve workload", func() {
 			ierr := gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
 			('workload', 'workload', 'workload', 'id', '%s'),
-			('workload2', 'workload','workload2','id','%s');`, workload, workload)).Error
+			('workload2', 'workload','workload2','id','%s');`, path.Join(folderTmp, workload), path.Join(folderTmp, workload))).Error
 			Expect(ierr).To(BeNil())
 
 			m, err := repo.GetManifest(context.TODO(), "workload")
@@ -112,7 +113,7 @@ var _ = Describe("Manifest repository", Ordered, func() {
 		It("successfully retrieve workload with device ids", func() {
 			ierr := gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
 			('workload', 'workload', 'workload', 'id', '%s'),
-			('workload2', 'workload','workload2','id','%s');`, workload, workload)).Error
+			('workload2', 'workload','workload2','id','%s');`, path.Join(folderTmp, workload), path.Join(folderTmp, workload))).Error
 			Expect(ierr).To(BeNil())
 
 			ierr = gormDB.Exec("INSERT INTO devices_manifests (device_id, manifest_id) VALUES ('device1','workload');").Error
@@ -139,7 +140,7 @@ var _ = Describe("Manifest repository", Ordered, func() {
 		It("successfully retrieve workload with namespace ids", func() {
 			ierr := gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
 			('workload', 'workload', 'workload', 'id', '%s'),
-			('workload2', 'workload','workload2','id','%s');`, workload, workload)).Error
+			('workload2', 'workload','workload2','id','%s');`, path.Join(folderTmp, workload), path.Join(folderTmp, workload))).Error
 			Expect(ierr).To(BeNil())
 
 			ierr = gormDB.Exec("INSERT INTO namespaces_manifests (namespace_id, manifest_id) VALUES ('namespace','workload');").Error
@@ -166,7 +167,7 @@ var _ = Describe("Manifest repository", Ordered, func() {
 		It("successfully retrieve workload with set ids", func() {
 			ierr := gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
 			('workload', 'workload', 'workload', 'id', '%s'),
-			('workload2', 'workload','workload2','id','%s');`, workload, workload)).Error
+			('workload2', 'workload','workload2','id','%s');`, path.Join(folderTmp, workload), path.Join(folderTmp, workload))).Error
 			Expect(ierr).To(BeNil())
 
 			ierr = gormDB.Exec("INSERT INTO sets_manifests (device_set_id, manifest_id) VALUES ('set','workload');").Error
@@ -193,7 +194,7 @@ var _ = Describe("Manifest repository", Ordered, func() {
 		It("successfully all manifests", func() {
 			ierr := gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
 			('workload', 'workload', 'workload', 'id', '%s'),
-			('workload2', 'workload','workload2','id','%s');`, workload, workload)).Error
+			('workload2', 'workload','workload2','id','%s');`, path.Join(folderTmp, workload), path.Join(folderTmp, workload))).Error
 			Expect(ierr).To(BeNil())
 
 			manifests, err := repo.GetManifests(context.TODO(), entity.Repository{Id: "id"})

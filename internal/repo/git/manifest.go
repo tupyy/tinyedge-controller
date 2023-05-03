@@ -57,6 +57,7 @@ func getManifest(ctx context.Context, repo entity.Repository, filepath string) (
 			w, _ := m.(entity.Workload)
 			w.Id = hash(filepath)[:12]
 			w.Repository = repo
+			w.Path = filepath
 			return w
 		}
 		return m

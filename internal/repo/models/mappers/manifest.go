@@ -2,7 +2,6 @@ package mappers
 
 import (
 	"errors"
-	"path"
 	"time"
 
 	"github.com/tupyy/tinyedge-controller/internal/entity"
@@ -110,7 +109,7 @@ func parseManifest(mm []models.ManifestJoin, readFn manifest.ManifestReader) (en
 		}
 	}
 
-	manifest, err := readManifest(path.Join(repo.LocalPath, mm[0].Path), mm[0].ID, readFn)
+	manifest, err := readManifest(mm[0].Path, mm[0].ID, readFn)
 	if err != nil {
 		return nil, err
 	}
