@@ -56,6 +56,9 @@ func (r *SecretRepository) compuateHash(path, key, value string) string {
 
 func (r *SecretRepository) GetCredentialsFunc(ctx context.Context, authType entity.RepositoryAuthType, secretPath string) entity.CredentialsFunc {
 	return func(ctx context.Context, path string) (interface{}, error) {
+		if secretPath == "" {
+			return entity.Secret{}, fmt.Errorf("unable to read secret. Secret path is missing")
+		}
 		secret, err := r.vault.Client.KVv2(r.enginePath).Get(ctx, path)
 		if err != nil {
 			return entity.Secret{}, fmt.Errorf("unable to read secret: %w", err)
