@@ -77,7 +77,7 @@ type Set struct {
 type Namespace struct {
 	Name          string
 	IsDefault     bool
-	Configuration Configuration
+	Configuration *Configuration
 	// List of sets belonging to his namespace
 	Sets []string
 	// List of devices belonging to this namespace
