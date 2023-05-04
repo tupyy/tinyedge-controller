@@ -32,12 +32,12 @@ func (w *Service) GetManifest(ctx context.Context, id string) (entity.Manifest, 
 }
 
 func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) error {
-	pgManifests, err := w.manifestReaderWriter.GetManifests(ctx, repo, filterWorkload)
+	pgManifests, err := w.manifestReaderWriter.GetManifests(ctx, repo, func(m entity.Manifest) bool { return true })
 	if err != nil {
 		return fmt.Errorf("unable to read manifests of repo %q: %w", repo.Id, err)
 	}
 
-	gitManifests, err := w.gitReader.GetManifests(ctx, repo, filterWorkload)
+	gitManifests, err := w.gitReader.GetManifests(ctx, repo, func(m entity.Manifest) bool { return true })
 	if err != nil {
 		return fmt.Errorf("unable to read manifest from repo %q: %w", repo.Id, err)
 	}
@@ -50,8 +50,10 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 		if err := w.manifestReaderWriter.InsertManifest(ctx, c); err != nil && !errService.IsResourceAlreadyExists(err) {
 			return fmt.Errorf("unable to insert manifest %q: %w", c.GetID(), err)
 		}
-		if err := w.updateRelations(ctx, c); err != nil {
-			return err
+		if c.GetKind() == entity.WorkloadManifestKind {
+			if err := w.updateWorkloadRelations(ctx, c); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -62,18 +64,20 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 	}
 
 	for _, u := range updated {
-		if err := w.updateRelations(ctx, u); err != nil {
+		if err := w.updateWorkloadRelations(ctx, u); err != nil {
 			return err
 		}
-		if err := w.manifestReaderWriter.UpdateManifest(ctx, u); err != nil {
-			return fmt.Errorf("unable to update manifest %q: %w", u.GetID(), err)
+		if u.GetKind() == entity.WorkloadManifestKind {
+			if err := w.manifestReaderWriter.UpdateManifest(ctx, u); err != nil {
+				return fmt.Errorf("unable to update manifest %q: %w", u.GetID(), err)
+			}
 		}
 	}
 
 	return nil
 }
 
-func (w *Service) updateRelations(ctx context.Context, gitManifest entity.Manifest) error {
+func (w *Service) updateWorkloadRelations(ctx context.Context, gitManifest entity.Manifest) error {
 	// get the old pgManifest
 	pgManifest, err := w.manifestReaderWriter.GetManifest(ctx, gitManifest.GetID())
 	if err != nil {
