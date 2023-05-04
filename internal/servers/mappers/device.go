@@ -10,11 +10,10 @@ import (
 
 func NamespaceToProto(n entity.Namespace) *admin.Namespace {
 	return &admin.Namespace{
-		Id:            n.Name,
-		IsDefault:     n.IsDefault,
-		Configuration: n.Configuration.GetID(),
-		Devices:       n.Devices,
-		Sets:          n.Sets,
+		Id:        n.Name,
+		IsDefault: n.IsDefault,
+		Devices:   n.Devices,
+		Sets:      n.Sets,
 	}
 }
 
@@ -24,9 +23,6 @@ func SetToProto(s entity.Set) *common.Set {
 		Namespace: s.NamespaceID,
 		Manifests: make([]string, 0, len(s.Workloads)),
 		Devices:   make([]string, 0, len(s.Workloads)),
-	}
-	if s.Configuration != nil {
-		set.Configuration = s.Configuration.GetID()
 	}
 	for _, m := range s.Workloads {
 		set.Manifests = append(set.Manifests, m.GetID())
@@ -56,10 +52,6 @@ func DeviceToProto(d entity.Device) *common.Device {
 
 	if d.SetID != nil {
 		dp.Set = *d.SetID
-	}
-
-	if d.Configuration != nil {
-		dp.Configuration = d.Configuration.GetID()
 	}
 
 	return dp

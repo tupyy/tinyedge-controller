@@ -55,19 +55,12 @@ func getManifest(ctx context.Context, repo entity.Repository, filepath string) (
 	}
 
 	return parseManifest(ctx, filepath, func(m entity.Manifest) entity.Manifest {
-		if m.GetKind() == entity.WorkloadManifestKind {
-			w, _ := m.(entity.Workload)
+		if m.GetVersion() == entity.ManifestVersionV1 {
+			w, _ := m.(entity.ManifestV1)
 			w.Id = hash(filepath)[:12]
 			w.Repository = repo
 			w.Path = filepath
 			return w
-		}
-		if m.GetKind() == entity.ConfigurationManifestKind {
-			c, _ := m.(entity.Configuration)
-			c.Id = hash(filepath)[:12]
-			c.Repository = repo
-			c.Path = filepath
-			return c
 		}
 		return m
 	})

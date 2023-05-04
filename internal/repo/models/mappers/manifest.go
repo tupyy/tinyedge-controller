@@ -39,13 +39,10 @@ func ManifestsToEntities(mm []models.ManifestJoin, readFn manifest.ManifestReade
 func ManifestEntityToModel(e entity.Manifest) models.Manifest {
 	m := models.Manifest{
 		ID:      e.GetID(),
-		RefType: e.GetKind().String(),
+		Version: e.GetVersion().String(),
 	}
 	switch v := e.(type) {
-	case entity.Configuration:
-		m.RepoID = v.Repository.Id
-		m.Path = v.Path
-	case entity.Workload:
+	case entity.ManifestV1:
 		m.RepoID = v.Repository.Id
 		m.Path = v.Path
 	}
@@ -116,7 +113,7 @@ func parseManifest(mm []models.ManifestJoin, readFn manifest.ManifestReader) (en
 		return nil, err
 	}
 
-	w, ok := manifest.(entity.Workload)
+	w, ok := manifest.(entity.ManifestV1)
 	if ok {
 		w.Repository = repo
 		w.Devices = devices

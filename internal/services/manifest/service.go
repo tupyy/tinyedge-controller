@@ -50,10 +50,8 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 		if err := w.manifestReaderWriter.InsertManifest(ctx, c); err != nil && !errService.IsResourceAlreadyExists(err) {
 			return fmt.Errorf("unable to insert manifest %q: %w", c.GetID(), err)
 		}
-		if c.GetKind() == entity.WorkloadManifestKind {
-			if err := w.updateWorkloadRelations(ctx, c); err != nil {
-				return err
-			}
+		if err := w.updateWorkloadRelations(ctx, c); err != nil {
+			return err
 		}
 	}
 
@@ -67,10 +65,8 @@ func (w *Service) UpdateManifests(ctx context.Context, repo entity.Repository) e
 		if err := w.updateWorkloadRelations(ctx, u); err != nil {
 			return err
 		}
-		if u.GetKind() == entity.WorkloadManifestKind {
-			if err := w.manifestReaderWriter.UpdateManifest(ctx, u); err != nil {
-				return fmt.Errorf("unable to update manifest %q: %w", u.GetID(), err)
-			}
+		if err := w.manifestReaderWriter.UpdateManifest(ctx, u); err != nil {
+			return fmt.Errorf("unable to update manifest %q: %w", u.GetID(), err)
 		}
 	}
 
@@ -207,8 +203,4 @@ func (w *Service) updateWorkloadRelations(ctx context.Context, gitManifest entit
 	}
 
 	return nil
-}
-
-func filterWorkload(m entity.Manifest) bool {
-	return m.GetKind() == entity.WorkloadManifestKind
 }

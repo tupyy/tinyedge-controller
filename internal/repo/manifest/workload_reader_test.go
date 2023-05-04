@@ -43,15 +43,15 @@ func TestManifestReader(t *testing.T) {
 	RegisterTestingT(t)
 
 	content := bytes.NewBufferString(manifest).Bytes()
-	manifest, err := parseWorkloadManifest(content)
+	manifest, err := parseManifestV1(content)
 	Expect(err).To(BeNil())
 	Expect(manifest).ToNot(BeNil())
-	w, ok := manifest.(entity.Workload)
+	w, ok := manifest.(entity.ManifestV1)
 	Expect(ok).To(BeTrue())
 	Expect(w).NotTo(BeNil())
 
 	Expect(len(w.Resources)).To(Equal(3))
 	Expect(w.Resources[0]).To(Equal("/dep/configmap.yaml"))
 	Expect(len(w.Selectors)).To(Equal(5))
-	Expect(w.GetKind().String()).To(Equal("workload"))
+	Expect(w.GetVersion().String()).To(Equal("v1"))
 }

@@ -12,17 +12,16 @@ import (
 
 // parse parses the manifest file and verify that all the resources defined are valid k8s manifestv1.
 // Returns false if one resource is not a valid ConfigMap or Pod.
-func parseWorkloadManifest(content []byte) (entity.Manifest, error) {
+func parseManifestV1(content []byte) (entity.Manifest, error) {
 	var workload apiv1.Workload
 
 	if err := goyaml.Unmarshal(content, &workload); err != nil {
 		return nil, err
 	}
 
-	e := entity.Workload{
+	e := entity.ManifestV1{
 		TypeMeta: entity.TypeMeta{
-			Version: workload.Version,
-			Kind:    entity.WorkloadManifestKind,
+			Version: entity.ManifestVersionV1,
 		},
 		ObjectMeta: entity.ObjectMeta{
 			Labels: make(map[string]string),
@@ -71,26 +70,6 @@ func parseWorkloadManifest(content []byte) (entity.Manifest, error) {
 
 	for _, resource := range workload.Resources {
 		e.Resources = append(e.Resources, resource.Ref)
-	}
-
-	return e, nil
-}
-
-func parseConfigurationManifest(content []byte) (entity.Manifest, error) {
-	var configuration apiv1.Configuration
-
-	if err := goyaml.Unmarshal(content, &configuration); err != nil {
-		return nil, err
-	}
-
-	e := entity.Configuration{
-		TypeMeta: entity.TypeMeta{
-			Version: configuration.Version,
-			Kind:    entity.ConfigurationManifestKind,
-		},
-		ObjectMeta: entity.ObjectMeta{
-			Labels: make(map[string]string),
-		},
 	}
 
 	return e, nil

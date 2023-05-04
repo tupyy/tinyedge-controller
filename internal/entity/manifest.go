@@ -2,28 +2,20 @@ package entity
 
 import "time"
 
-type ManifestKind int
+type Version string
 
-func (m ManifestKind) String() string {
-	switch m {
-	case WorkloadManifestKind:
-		return "workload"
-	case ConfigurationManifestKind:
-		return "configuration"
-	default:
-		return "unknown"
-	}
+func (v Version) String() string {
+	return string(v)
 }
 
 const (
-	WorkloadManifestKind = iota
-	ConfigurationManifestKind
+	ManifestVersionV1      Version = "v1"
+	ManifestUnknownVersion Version = "unknown version"
 )
 
 type Manifest interface {
 	GetID() string
-	GetVersion() string
-	GetKind() ManifestKind
+	GetVersion() Version
 	GetHash() string
 	GetSelectors() Selectors
 	GetNamespaces() []string
@@ -32,17 +24,11 @@ type Manifest interface {
 }
 
 type TypeMeta struct {
-	// kind to the manifest
-	Kind ManifestKind
 	// Version
-	Version string
+	Version Version
 }
 
-func (t TypeMeta) GetKind() ManifestKind {
-	return t.Kind
-}
-
-func (t TypeMeta) GetVersion() string {
+func (t TypeMeta) GetVersion() Version {
 	return t.Version
 }
 
@@ -66,8 +52,8 @@ func (o ObjectMeta) GetHash() string {
 	return o.Hash
 }
 
-// Workload holds the workload definition.
-type Workload struct {
+// ManifestV1 holds the workload definition.
+type ManifestV1 struct {
 	TypeMeta
 	ObjectMeta
 	// repository
@@ -92,19 +78,19 @@ type Workload struct {
 	Sets []string
 }
 
-func (w Workload) GetSelectors() Selectors {
+func (w ManifestV1) GetSelectors() Selectors {
 	return w.Selectors
 }
 
-func (w Workload) GetNamespaces() []string {
+func (w ManifestV1) GetNamespaces() []string {
 	return w.Namespaces
 }
 
-func (w Workload) GetSets() []string {
+func (w ManifestV1) GetSets() []string {
 	return w.Sets
 }
 
-func (w Workload) GetDevices() []string {
+func (w ManifestV1) GetDevices() []string {
 	return w.Devices
 }
 

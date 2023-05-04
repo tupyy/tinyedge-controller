@@ -19,15 +19,6 @@ import (
 )
 
 var (
-	configurationContent = `
-kind: configuration
-version: v1
-
-name: conf
-
-description: |
-  blabla
-`
 	workloadContent = `
 kind: workload
 version: v1
@@ -107,15 +98,11 @@ var _ = Describe("Device repository", Ordered, func() {
 		workload, err := writeManifest(tmpDir, workloadContent)
 		Expect(err).To(BeNil())
 
-		conf, err := writeManifest(tmpDir, configurationContent)
-		Expect(err).To(BeNil())
-
 		folderTmp = tmpDir
 		gormDB.Exec(fmt.Sprintf("INSERT INTO repo (id,url,local_path) VALUES('id','url','%s');", folderTmp))
-		gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
-			('workload', 'workload', 'workload', 'id', '%s'),
-			('workload2', 'workload','workload2','id','%s'),
-			('configuration', 'configuration', 'configuration', 'id', '%s');`, path.Join(folderTmp, workload), path.Join(folderTmp, workload), path.Join(folderTmp, conf)))
+		gormDB.Exec(fmt.Sprintf(`INSERT INTO manifest (id, version, repo_id, path) VALUES
+			('workload', 'v1', 'id', '%s'),
+			('workload2', 'v1','id','%s');`, path.Join(folderTmp, workload), path.Join(folderTmp, workload)))
 	})
 
 	Context("namespace", func() {
@@ -123,11 +110,6 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
@@ -140,22 +122,12 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
 			err = deviceRepo.UpdateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: false,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).NotTo(BeNil())
 
@@ -174,33 +146,18 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
 			err = deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test1",
 				IsDefault: false,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
 			err = deviceRepo.UpdateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test1",
 				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
@@ -215,52 +172,10 @@ var _ = Describe("Device repository", Ordered, func() {
 			Expect(n.IsDefault).To(BeTrue())
 		})
 
-		It("updating a namespace successfully", func() {
-			gormDB.Exec(`INSERT INTO manifest (id, ref_type, name, repo_id, path) VALUES
-			('configuration1', 'configuration', 'configuration', 'id', 'test');`)
-
-			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
-				Name:      "test",
-				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
-			})
-			Expect(err).To(BeNil())
-
-			err = deviceRepo.UpdateNamespace(context.TODO(), entity.Namespace{
-				Name:      "test",
-				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration1",
-					},
-				},
-			})
-			Expect(err).To(BeNil())
-
-			count := 0
-			gormDB.Raw("SELECT count(*) from namespace;").Scan(&count)
-			Expect(count).To(Equal(1))
-
-			var n = struct {
-				ConfigurationID string
-			}{}
-			gormDB.Raw("SELECT configuration_id from namespace where id = ?;", "test").Scan(&n)
-			Expect(n.ConfigurationID).To(Equal("configuration1"))
-		})
-
 		It("cannot remove last namespace", func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
@@ -276,22 +191,12 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
 			err = deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "isdefault",
 				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
@@ -309,22 +214,12 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
 			err = deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test1",
 				IsDefault: false,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
@@ -350,22 +245,12 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
 			err = deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "isdefault",
 				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
@@ -380,9 +265,9 @@ var _ = Describe("Device repository", Ordered, func() {
 		})
 
 		It("get namespaces successfully", func() {
-			err := gormDB.Exec(`INSERT INTO namespace (id, is_default, configuration_id) VALUES
-				('first',true,'configuration'),
-				('second',false,'configuration');`).Error
+			err := gormDB.Exec(`INSERT INTO namespace (id, is_default) VALUES
+				('first',true),
+				('second',false);`).Error
 			Expect(err).To(BeNil())
 
 			count := 0
@@ -398,22 +283,12 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "test",
 				IsDefault: true,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
 			err = deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "otherone",
 				IsDefault: false,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
@@ -436,15 +311,10 @@ var _ = Describe("Device repository", Ordered, func() {
 			Expect(len(n.Devices)).To(Equal(1))
 		})
 
-		It("get namespace with workload and configuration successfully", func() {
+		It("get namespace with manifest and configuration successfully", func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "otherone",
 				IsDefault: false,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
@@ -461,8 +331,6 @@ var _ = Describe("Device repository", Ordered, func() {
 			Expect(err).To(BeNil())
 			Expect(n.Name).To(Equal("otherone"))
 			Expect(n.IsDefault).To(BeTrue())
-			Expect(n.Configuration.Id).To(Equal("configuration"))
-			Expect(n.Configuration.GetKind().String()).To(Equal("configuration"))
 
 			// workload
 			Expect(len(n.Workloads)).To(Equal(2))
@@ -473,11 +341,6 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "otherone",
 				IsDefault: false,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
@@ -494,8 +357,6 @@ var _ = Describe("Device repository", Ordered, func() {
 			Expect(err).To(BeNil())
 			Expect(n.Name).To(Equal("otherone"))
 			Expect(n.IsDefault).To(BeTrue())
-			Expect(n.Configuration.Id).To(Equal("configuration"))
-			Expect(n.Configuration.GetKind().String()).To(Equal("configuration"))
 
 			// devices
 			Expect(len(n.Devices)).To(Equal(2))
@@ -507,11 +368,6 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "otherone",
 				IsDefault: false,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
@@ -527,9 +383,6 @@ var _ = Describe("Device repository", Ordered, func() {
 			Expect(err).To(BeNil())
 			Expect(n.Name).To(Equal("otherone"))
 			Expect(n.IsDefault).To(BeTrue())
-			Expect(n.Configuration.Id).To(Equal("configuration"))
-			Expect(n.Configuration.GetKind().String()).To(Equal("configuration"))
-
 			// devices
 			Expect(len(n.Devices)).To(Equal(1))
 			Expect(n.Devices[0]).To(Equal("device2"))
@@ -539,11 +392,6 @@ var _ = Describe("Device repository", Ordered, func() {
 			err := deviceRepo.CreateNamespace(context.TODO(), entity.Namespace{
 				Name:      "otherone",
 				IsDefault: false,
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
@@ -559,8 +407,6 @@ var _ = Describe("Device repository", Ordered, func() {
 			Expect(err).To(BeNil())
 			Expect(n.Name).To(Equal("otherone"))
 			Expect(n.IsDefault).To(BeTrue())
-			Expect(n.Configuration.Id).To(Equal("configuration"))
-			Expect(n.Configuration.GetKind().String()).To(Equal("configuration"))
 
 			// devices
 			Expect(len(n.Devices)).To(Equal(0))
@@ -571,20 +417,16 @@ var _ = Describe("Device repository", Ordered, func() {
 
 	Context("set", func() {
 		BeforeEach(func() {
-			gormDB.Exec(`INSERT INTO namespace (id, is_default, configuration_id) VALUES
-			('namespace1', true, 'configuration'),
-			('namespace2', false, 'configuration');`)
+			err := gormDB.Exec(`INSERT INTO namespace (id, is_default) VALUES
+			('namespace1', true),
+			('namespace2', false);`).Error
+			Expect(err).To(BeNil())
 		})
 
 		It("create successfully a set", func() {
 			err := deviceRepo.CreateSet(context.TODO(), entity.Set{
 				Name:        "set1",
 				NamespaceID: "namespace1",
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
@@ -596,31 +438,13 @@ var _ = Describe("Device repository", Ordered, func() {
 		It("unable to create set without namespace", func() {
 			err := deviceRepo.CreateSet(context.TODO(), entity.Set{
 				Name: "set1",
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).ToNot(BeNil())
 		})
 
-		It("successfully retrieve a set with configuration", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
-				('set1', 'namespace1', 'configuration');`).Error
-			Expect(eerr).To(BeNil())
-
-			set, err := deviceRepo.GetSet(context.TODO(), "set1")
-			Expect(err).To(BeNil())
-
-			Expect(set.Configuration).ToNot(BeNil())
-			Expect(set.Configuration.Id).To(Equal("configuration"))
-			Expect(set.Configuration.GetKind().String()).To(Equal("configuration"))
-		})
-
 		It("successfully retrieve a set with devices", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
-				('set1', 'namespace1', 'configuration');`).Error
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id) VALUES
+				('set1', 'namespace1');`).Error
 			Expect(eerr).To(BeNil())
 
 			eerr = gormDB.Exec(`INSERT INTO device (id, enroled, registered, namespace_id, device_set_id) VALUES
@@ -635,9 +459,9 @@ var _ = Describe("Device repository", Ordered, func() {
 			Expect(set.Devices[1]).To(Equal("device2"))
 		})
 
-		It("successfully retrieve a set with workloads", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
-				('set1', 'namespace1', 'configuration');`).Error
+		It("successfully retrieve a set with manifests", func() {
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id) VALUES
+				('set1', 'namespace1');`).Error
 			Expect(eerr).To(BeNil())
 
 			eerr = gormDB.Exec(`INSERT INTO sets_manifests (manifest_id, device_set_id) VALUES
@@ -653,9 +477,9 @@ var _ = Describe("Device repository", Ordered, func() {
 		})
 
 		It("successfully retrieve all sets", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
-				('set', 'namespace2','configuration'),
-				('set1', 'namespace1', 'configuration');`).Error
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id) VALUES
+				('set', 'namespace2'),
+				('set1', 'namespace1');`).Error
 			Expect(eerr).To(BeNil())
 
 			sets, err := deviceRepo.GetSets(context.TODO())
@@ -666,8 +490,8 @@ var _ = Describe("Device repository", Ordered, func() {
 		})
 
 		It("successfully delete set", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
-				('set', 'namespace1', 'configuration');`).Error
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id) VALUES
+				('set', 'namespace1');`).Error
 			Expect(eerr).To(BeNil())
 
 			err := deviceRepo.DeleteSet(context.TODO(), "set")
@@ -679,57 +503,30 @@ var _ = Describe("Device repository", Ordered, func() {
 			Expect(count).To(Equal(0))
 		})
 
-		It("successfully update set", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
-				('set', 'namespace1', 'configuration');`).Error
-			Expect(eerr).To(BeNil())
-
-			err := deviceRepo.UpdateSet(context.TODO(), entity.Set{
-				Name:        "set",
-				NamespaceID: "namespace1",
-			})
-			Expect(err).To(BeNil())
-
-			set, err := deviceRepo.GetSet(context.TODO(), "set")
-			Expect(err).To(BeNil())
-			Expect(set.Configuration).To(BeNil())
-		})
-
 		It("successfully update set with new namespace id", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
-				('set', 'namespace1', 'configuration');`).Error
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id) VALUES
+				('set', 'namespace1');`).Error
 			Expect(eerr).To(BeNil())
 
 			err := deviceRepo.UpdateSet(context.TODO(), entity.Set{
 				Name:        "set",
 				NamespaceID: "namespace2",
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).To(BeNil())
 
 			set, err := deviceRepo.GetSet(context.TODO(), "set")
 			Expect(err).To(BeNil())
-			Expect(set.Configuration).NotTo(BeNil())
 			Expect(set.NamespaceID).To(Equal("namespace2"))
 		})
 
 		It("unable to update set when namespace does not exists", func() {
-			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id, configuration_id) VALUES
-				('set', 'namespace1', 'configuration');`).Error
+			eerr := gormDB.Exec(`INSERT INTO device_set (id, namespace_id) VALUES
+				('set', 'namespace1');`).Error
 			Expect(eerr).To(BeNil())
 
 			err := deviceRepo.UpdateSet(context.TODO(), entity.Set{
 				Name:        "set",
 				NamespaceID: "nonamespace",
-				Configuration: &entity.Configuration{
-					ObjectMeta: entity.ObjectMeta{
-						Id: "configuration",
-					},
-				},
 			})
 			Expect(err).NotTo(BeNil())
 		})
@@ -748,7 +545,7 @@ var _ = Describe("Device repository", Ordered, func() {
 				Expect(device.SetID).To(BeNil())
 			})
 
-			It("successfully retrieve a device with workloads", func() {
+			It("successfully retrieve a device with manifests", func() {
 				tx := gormDB.Exec(`INSERT INTO device (id, enroled, registered, namespace_id) VALUES
 				('device', 'enroled', true, 'namespace1');`)
 				Expect(tx.Error).To(BeNil())
@@ -787,9 +584,6 @@ var _ = Describe("Device repository", Ordered, func() {
 					EnrolStatus: entity.PendingEnrolStatus,
 					Registred:   false,
 					NamespaceID: "namespace1",
-					Configuration: &entity.Configuration{
-						ObjectMeta: entity.ObjectMeta{Id: "configuration"},
-					},
 				})
 				Expect(err).To(BeNil())
 
@@ -806,9 +600,6 @@ var _ = Describe("Device repository", Ordered, func() {
 					EnrolStatus: entity.PendingEnrolStatus,
 					Registred:   false,
 					NamespaceID: "namespace1",
-					Configuration: &entity.Configuration{
-						ObjectMeta: entity.ObjectMeta{Id: "configuration"},
-					},
 				})
 				Expect(err).To(BeNil())
 
@@ -827,9 +618,6 @@ var _ = Describe("Device repository", Ordered, func() {
 					EnrolStatus: entity.PendingEnrolStatus,
 					Registred:   false,
 					NamespaceID: "namespace1",
-					Configuration: &entity.Configuration{
-						ObjectMeta: entity.ObjectMeta{Id: "configuration"},
-					},
 				}
 
 				err := deviceRepo.CreateDevice(context.TODO(), device)

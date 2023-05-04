@@ -23,12 +23,11 @@ DB Table Details
 Table: namespace
 [ 0] id                                             TEXT                 null: false  primary: true   isArray: false  auto: false  col: TEXT            len: -1      default: []
 [ 1] is_default                                     BOOL                 null: true   primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: [false]
-[ 2] configuration_id                               VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "RLIAgtXsNMsCrQeQjcTaVHqoE",    "is_default": false,    "configuration_id": "AjOsghhgTuxqlXuxaTosWQTsO"}
+{    "id": "KsfuHEftKDZSgHYASOVlyJlPZ",    "is_default": false}
 
 
 
@@ -40,8 +39,6 @@ type Namespace struct {
 	ID string `gorm:"primary_key;column:id;type:TEXT;"`
 	//[ 1] is_default                                     BOOL                 null: true   primary: false  isArray: false  auto: false  col: BOOL            len: -1      default: [false]
 	IsDefault sql.NullBool `gorm:"column:is_default;type:BOOL;default:false;"`
-	//[ 2] configuration_id                               VARCHAR(255)         null: true   primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-	ConfigurationID sql.NullString `gorm:"column:configuration_id;type:VARCHAR;size:255;"`
 }
 
 var namespaceTableInfo = &TableInfo{
@@ -88,27 +85,6 @@ var namespaceTableInfo = &TableInfo{
 			ProtobufFieldName:  "is_default",
 			ProtobufType:       "bool",
 			ProtobufPos:        2,
-		},
-
-		&ColumnInfo{
-			Index:              2,
-			Name:               "configuration_id",
-			Comment:            ``,
-			Notes:              ``,
-			Nullable:           true,
-			DatabaseTypeName:   "VARCHAR",
-			DatabaseTypePretty: "VARCHAR(255)",
-			IsPrimaryKey:       false,
-			IsAutoIncrement:    false,
-			IsArray:            false,
-			ColumnType:         "VARCHAR",
-			ColumnLength:       255,
-			GoFieldName:        "ConfigurationID",
-			GoFieldType:        "sql.NullString",
-			JSONFieldName:      "configuration_id",
-			ProtobufFieldName:  "configuration_id",
-			ProtobufType:       "string",
-			ProtobufPos:        3,
 		},
 	},
 }

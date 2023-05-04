@@ -11,9 +11,8 @@ import (
 )
 
 var (
-	setID           string
-	namepsaceID     string
-	configurationID string
+	setID       string
+	namepsaceID string
 )
 var deviceToSet = &cobra.Command{
 	Use:   "device",
@@ -24,16 +23,15 @@ var deviceToSet = &cobra.Command{
 			return fmt.Errorf("Please provide a device id")
 		}
 		deviceID := args[len(args)-1]
-		if setID == "" && namepsaceID == "" && configurationID == "" {
-			return fmt.Errorf("Please provide at least a set id, namespace id or configuration id")
+		if setID == "" && namepsaceID == "" {
+			return fmt.Errorf("Please provide at least a set id, namespace id")
 		}
 
 		fn := func(ctx context.Context, client adminGrpc.AdminServiceClient) (*common.Device, error) {
 			req := &adminGrpc.UpdateDeviceRequest{
-				Id:              deviceID,
-				SetId:           setID,
-				NamespaceId:     namepsaceID,
-				ConfigurationId: configurationID,
+				Id:          deviceID,
+				SetId:       setID,
+				NamespaceId: namepsaceID,
 			}
 			return client.UpdateDevice(ctx, req)
 		}
@@ -46,5 +44,4 @@ func init() {
 	setCmd.AddCommand(deviceToSet)
 	deviceToSet.Flags().StringVarP(&setID, "set", "s", "", "set id")
 	deviceToSet.Flags().StringVarP(&namepsaceID, "namespace", "n", "", "namespace id")
-	deviceToSet.Flags().StringVarP(&configurationID, "configuration", "c", "", "configuration id")
 }

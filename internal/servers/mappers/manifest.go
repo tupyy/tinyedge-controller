@@ -8,7 +8,7 @@ import (
 func ManifestToProto(m entity.Manifest) *admin.Manifest {
 	manifest := &admin.Manifest{
 		Id:      m.GetID(),
-		Version: m.GetVersion(),
+		Version: m.GetVersion().String(),
 		Hash:    m.GetHash(),
 	}
 

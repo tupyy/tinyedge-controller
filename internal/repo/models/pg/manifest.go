@@ -22,15 +22,14 @@ DB Table Details
 
 Table: manifest
 [ 0] id                                             VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-[ 1] ref_type                                       USER_DEFINED         null: false  primary: false  isArray: false  auto: false  col: USER_DEFINED    len: -1      default: []
-[ 2] name                                           VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-[ 3] repo_id                                        VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-[ 4] path                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+[ 1] version                                        VARCHAR(30)          null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 30      default: []
+[ 2] repo_id                                        VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+[ 3] path                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 
 
 JSON Sample
 -------------------------------------
-{    "id": "VeAJjAFYXkOFyYcYMkltOZCaf",    "ref_type": "hyjiIDyDVQuKxHHaDiQwWbMsx",    "name": "DfDVWeqNyirdoVwCbxAFiZVDb",    "repo_id": "YeVYAXDkLiCOQViUrPOYnYnDB",    "path": "jIEJZtAOPiLvQmBEeEUnklNyn"}
+{    "id": "hXiyjXhJDXOKlotoiaEtAsVLY",    "version": "wcDKIyvUhLEZZthKtpEpAwWBu",    "repo_id": "rQeFyuUZaibZXGJRquBrvxCAw",    "path": "ryYaRrUQiVXvdAUkKkCBgKlbe"}
 
 
 
@@ -40,13 +39,11 @@ JSON Sample
 type Manifest struct {
 	//[ 0] id                                             VARCHAR(255)         null: false  primary: true   isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 	ID string `gorm:"primary_key;column:id;type:VARCHAR;size:255;"`
-	//[ 1] ref_type                                       USER_DEFINED         null: false  primary: false  isArray: false  auto: false  col: USER_DEFINED    len: -1      default: []
-	RefType string `gorm:"column:ref_type;type:VARCHAR;"`
-	//[ 2] name                                           VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
-	Name string `gorm:"column:name;type:VARCHAR;size:255;"`
-	//[ 3] repo_id                                        VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
+	//[ 1] version                                        VARCHAR(30)          null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 30      default: []
+	Version string `gorm:"column:version;type:VARCHAR;size:30;"`
+	//[ 2] repo_id                                        VARCHAR(255)         null: false  primary: false  isArray: false  auto: false  col: VARCHAR         len: 255     default: []
 	RepoID string `gorm:"column:repo_id;type:VARCHAR;size:255;"`
-	//[ 4] path                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
+	//[ 3] path                                           TEXT                 null: false  primary: false  isArray: false  auto: false  col: TEXT            len: -1      default: []
 	Path string `gorm:"column:path;type:TEXT;"`
 }
 
@@ -77,48 +74,27 @@ var manifestTableInfo = &TableInfo{
 
 		&ColumnInfo{
 			Index:              1,
-			Name:               "ref_type",
+			Name:               "version",
 			Comment:            ``,
 			Notes:              ``,
 			Nullable:           false,
 			DatabaseTypeName:   "VARCHAR",
-			DatabaseTypePretty: "USER_DEFINED",
+			DatabaseTypePretty: "VARCHAR(30)",
 			IsPrimaryKey:       false,
 			IsAutoIncrement:    false,
 			IsArray:            false,
-			ColumnType:         "USER_DEFINED",
-			ColumnLength:       -1,
-			GoFieldName:        "RefType",
+			ColumnType:         "VARCHAR",
+			ColumnLength:       30,
+			GoFieldName:        "Version",
 			GoFieldType:        "string",
-			JSONFieldName:      "ref_type",
-			ProtobufFieldName:  "ref_type",
+			JSONFieldName:      "version",
+			ProtobufFieldName:  "version",
 			ProtobufType:       "string",
 			ProtobufPos:        2,
 		},
 
 		&ColumnInfo{
 			Index:              2,
-			Name:               "name",
-			Comment:            ``,
-			Notes:              ``,
-			Nullable:           false,
-			DatabaseTypeName:   "VARCHAR",
-			DatabaseTypePretty: "VARCHAR(255)",
-			IsPrimaryKey:       false,
-			IsAutoIncrement:    false,
-			IsArray:            false,
-			ColumnType:         "VARCHAR",
-			ColumnLength:       255,
-			GoFieldName:        "Name",
-			GoFieldType:        "string",
-			JSONFieldName:      "name",
-			ProtobufFieldName:  "name",
-			ProtobufType:       "string",
-			ProtobufPos:        3,
-		},
-
-		&ColumnInfo{
-			Index:              3,
 			Name:               "repo_id",
 			Comment:            ``,
 			Notes:              ``,
@@ -135,11 +111,11 @@ var manifestTableInfo = &TableInfo{
 			JSONFieldName:      "repo_id",
 			ProtobufFieldName:  "repo_id",
 			ProtobufType:       "string",
-			ProtobufPos:        4,
+			ProtobufPos:        3,
 		},
 
 		&ColumnInfo{
-			Index:              4,
+			Index:              3,
 			Name:               "path",
 			Comment:            ``,
 			Notes:              ``,
@@ -156,7 +132,7 @@ var manifestTableInfo = &TableInfo{
 			JSONFieldName:      "path",
 			ProtobufFieldName:  "path",
 			ProtobufType:       "string",
-			ProtobufPos:        5,
+			ProtobufPos:        4,
 		},
 	},
 }

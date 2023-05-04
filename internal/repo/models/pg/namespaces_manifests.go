@@ -27,7 +27,7 @@ Table: namespaces_manifests
 
 JSON Sample
 -------------------------------------
-{    "namespace_id": "DZYryhKCufPKeWocbZhyXTyOD",    "manifest_id": "ouFblOHOBXUDTSFPNVPCxAAxm"}
+{    "namespace_id": "SXciblVstLhQOyTxVOkYONQvJ",    "manifest_id": "xWtAMdWQmbKmsDQLBDfUdfCOt"}
 
 
 

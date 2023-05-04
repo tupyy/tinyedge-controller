@@ -33,10 +33,6 @@ func DeviceEntityToModel(device entity.Device) models.Device {
 
 	}
 
-	if device.Configuration != nil {
-		m.ConfigurationID = sql.NullString{Valid: true, String: device.Configuration.Id}
-	}
-
 	if device.SetID != nil {
 		m.DeviceSetID = sql.NullString{Valid: true, String: *device.SetID}
 	}
@@ -78,13 +74,13 @@ func DeviceToEntity(joins []models.DeviceJoin, readFn manifest.ManifestReader) (
 		}
 	}
 
-	e.Workloads = make([]entity.Workload, 0, len(manifests))
+	e.Workloads = make([]entity.ManifestV1, 0, len(manifests))
 	for _, m := range manifests {
 		manifest, err := readManifest(m["path"], m["id"], readFn)
 		if err != nil {
 			return entity.Device{}, fmt.Errorf("unable to read manifest file %q: %w", m["path"], err)
 		}
-		e.Workloads = append(e.Workloads, manifest.(entity.Workload))
+		e.Workloads = append(e.Workloads, manifest.(entity.ManifestV1))
 	}
 
 	return e, nil
@@ -159,16 +155,6 @@ func SetToEntity(s []models.SetJoin, readFn manifest.ManifestReader) (entity.Set
 		NamespaceID: s[0].NamespaceID,
 	}
 
-	if s[0].ConfigurationID != "" {
-		// read conf
-		c, err := readManifest(s[0].ConfigurationPath, s[0].ConfigurationID, readFn)
-		if err != nil {
-			return entity.Set{}, err
-		}
-		conf := c.(entity.Configuration)
-		set.Configuration = &conf
-	}
-
 	idMap := make(uniqueIds)
 	devices := make([]string, 0, len(s))
 	manifests := make([]map[string]string, 0, len(s))
@@ -187,13 +173,13 @@ func SetToEntity(s []models.SetJoin, readFn manifest.ManifestReader) (entity.Set
 	}
 
 	set.Devices = devices
-	set.Workloads = make([]entity.Workload, 0, len(manifests))
+	set.Workloads = make([]entity.ManifestV1, 0, len(manifests))
 	for _, m := range manifests {
 		manifest, err := readManifest(m["path"], m["id"], readFn)
 		if err != nil {
 			return entity.Set{}, fmt.Errorf("unable to read manifest file %q: %w", m["path"], err)
 		}
-		set.Workloads = append(set.Workloads, manifest.(entity.Workload))
+		set.Workloads = append(set.Workloads, manifest.(entity.ManifestV1))
 	}
 
 	return set, nil
@@ -204,9 +190,6 @@ func SetToModel(set entity.Set) models.DeviceSet {
 		ID:          set.Name,
 		NamespaceID: set.NamespaceID,
 	}
-	if set.Configuration != nil {
-		model.ConfigurationID = sql.NullString{Valid: true, String: set.Configuration.Id}
-	}
 	return model
 }
 
@@ -216,9 +199,6 @@ func NamespaceToModel(namespace entity.Namespace) models.Namespace {
 		IsDefault: sql.NullBool{Valid: true, Bool: namespace.IsDefault},
 	}
 
-	if namespace.Configuration != nil {
-		model.ConfigurationID = sql.NullString{Valid: true, String: namespace.Configuration.Id}
-	}
 	return model
 }
 
@@ -253,17 +233,6 @@ func NamespaceModelToEntity(n []models.NamespaceJoin, readFn manifest.ManifestRe
 		IsDefault: false,
 	}
 
-	if n[0].ConfigurationPath != "" {
-		// read conf
-		conf, err := readManifest(n[0].ConfigurationPath, n[0].ConfigurationID, readFn)
-		if err != nil {
-			return entity.Namespace{}, err
-		}
-
-		c := conf.(entity.Configuration)
-		namespace.Configuration = &c
-	}
-
 	if n[0].Namespace.IsDefault.Valid {
 		namespace.IsDefault = n[0].Namespace.IsDefault.Bool
 	}
@@ -292,13 +261,13 @@ func NamespaceModelToEntity(n []models.NamespaceJoin, readFn manifest.ManifestRe
 
 	namespace.Sets = sets
 	namespace.Devices = devices
-	namespace.Workloads = make([]entity.Workload, 0, len(manifests))
+	namespace.Workloads = make([]entity.ManifestV1, 0, len(manifests))
 	for _, m := range manifests {
 		manifest, err := readManifest(m["path"], m["id"], readFn)
 		if err != nil {
 			return entity.Namespace{}, fmt.Errorf("unable to read manifest file %q: %w", m["path"], err)
 		}
-		namespace.Workloads = append(namespace.Workloads, manifest.(entity.Workload))
+		namespace.Workloads = append(namespace.Workloads, manifest.(entity.ManifestV1))
 	}
 
 	return namespace, nil
@@ -311,7 +280,7 @@ func readManifest(filepath string, id string, readFn manifest.ManifestReader) (e
 	}
 	manifest, err := readFn(bytes.NewBuffer(content), func(m entity.Manifest) entity.Manifest {
 		switch v := m.(type) {
-		case entity.Workload:
+		case entity.ManifestV1:
 			v.ObjectMeta.Id = id
 			return v
 		case entity.Configuration:

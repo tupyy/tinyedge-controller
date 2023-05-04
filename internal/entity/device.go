@@ -57,31 +57,28 @@ type Device struct {
 	CertificateSerialNumber string
 	// ID of set in which the device is present
 	SetID *string
-	// Configuration of the device
-	Configuration *Configuration
 	// List of workloads attached to this device
-	Workloads []Workload
+	Workloads []ManifestV1
 }
 
 type Set struct {
 	// Name of the group
-	Name          string
-	Configuration *Configuration
-	NamespaceID   string
+	Name string
+	// NamespaceID is the id the namsepace to which this set blongs
+	NamespaceID string
 	// List of the id of devices in the group
 	Devices []string
 	// List of workload's reference attached to this set
-	Workloads []Workload
+	Workloads []ManifestV1
 }
 
 type Namespace struct {
-	Name          string
-	IsDefault     bool
-	Configuration *Configuration
+	Name      string
+	IsDefault bool
 	// List of sets belonging to his namespace
 	Sets []string
 	// List of devices belonging to this namespace
 	Devices []string
 	// List of workload's reference attached to this namespace
-	Workloads []Workload
+	Workloads []ManifestV1
 }

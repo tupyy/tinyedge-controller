@@ -67,13 +67,11 @@ message ListRequest {
 message AddSetRequest {
     string id = 1;
     string namespace_id = 2;
-    optional string configuration_id = 3;
 }
 
 message UpdateSetRequest {
     string id = 1;
     optional string namespace_id = 2;
-    optional string configuration_id = 3;
 }
 
 message UpdateNamespaceRequest {
@@ -105,7 +103,6 @@ message UpdateDeviceRequest {
     string id = 1;
     string set_id = 2;
     string namespace_id = 3;
-    string configuration_id = 4;
 }
 
 message SetsListResponse {

@@ -56,32 +56,26 @@ func (c *Service) GetDeviceConfiguration(ctx context.Context, deviceID string) (
 }
 
 func (c *Service) getConfiguration(ctx context.Context, device entity.Device) (*entity.Configuration, error) {
-	if device.Configuration != nil {
-		return device.Configuration, nil
-	}
-
 	// if device has no configuration look at the set of the device
 	if device.SetID != nil {
-		set, err := c.deviceReader.GetSet(ctx, *device.SetID)
+		_, err := c.deviceReader.GetSet(ctx, *device.SetID)
 		if err != nil {
 			return nil, err
 		}
-		if set.Configuration != nil {
-			return set.Configuration, nil
-		}
+		return nil, nil
 	}
 
 	// if the device has no set or the set has no configuration just grab the configuration from namespace
-	namespace, err := c.deviceReader.GetNamespace(ctx, device.NamespaceID)
+	_, err := c.deviceReader.GetNamespace(ctx, device.NamespaceID)
 	if err != nil {
 		return nil, err
 	}
 
 	// namespace always has a configuration
-	return namespace.Configuration, nil
+	return nil, nil
 }
 
-func (c *Service) getWorkloads(ctx context.Context, device entity.Device) ([]entity.Workload, error) {
+func (c *Service) getWorkloads(ctx context.Context, device entity.Device) ([]entity.ManifestV1, error) {
 	if len(device.Workloads) > 0 {
 		return device.Workloads, nil
 	}
@@ -89,7 +83,7 @@ func (c *Service) getWorkloads(ctx context.Context, device entity.Device) ([]ent
 	if device.SetID != nil {
 		sets, err := c.deviceReader.GetSet(ctx, *device.SetID)
 		if err != nil {
-			return []entity.Workload{}, err
+			return []entity.ManifestV1{}, err
 		}
 		if len(sets.Workloads) > 0 {
 			return sets.Workloads, nil
@@ -98,7 +92,7 @@ func (c *Service) getWorkloads(ctx context.Context, device entity.Device) ([]ent
 
 	namespace, err := c.deviceReader.GetNamespace(ctx, device.NamespaceID)
 	if err != nil {
-		return []entity.Workload{}, err
+		return []entity.ManifestV1{}, err
 	}
 	return namespace.Workloads, nil
 }

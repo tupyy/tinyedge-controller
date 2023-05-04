@@ -17,21 +17,18 @@ CREATE TYPE ref_type as ENUM ('workload', 'configuration');
 
 CREATE TABLE manifest (
     id varchar(255) PRIMARY KEY,
-    ref_type ref_type NOT NULL,
-    name varchar(255) NOT NULL,
+    version varchar(30) NOT NULL,
     repo_id varchar(255) NOT NULL REFERENCES repo(id) ON DELETE CASCADE,
     path TEXT NOT NULL
 );
 
 CREATE TABLE namespace (
     id TEXT PRIMARY KEY,
-    is_default BOOLEAN DEFAULT false,
-    configuration_id varchar(255) REFERENCES manifest(id) ON DELETE CASCADE
+    is_default BOOLEAN DEFAULT false
 );
 
 CREATE TABLE device_set (
     id TEXT PRIMARY KEY,
-    configuration_id varchar(255) REFERENCES manifest(id) ON DELETE SET NULL,
     namespace_id varchar(255) NOT NULL REFERENCES namespace(id) ON DELETE CASCADE
 );
 
@@ -43,8 +40,7 @@ CREATE TABLE device (
     registered BOOLEAN NOT NULL DEFAULT false,
     certificate_sn TEXT,
     namespace_id varchar(255) NOT NULL REFERENCES namespace(id) ON DELETE SET NULL,
-    device_set_id varchar(255) REFERENCES device_set(id) ON DELETE SET NULL,
-    configuration_id varchar(255) REFERENCES manifest(id) ON DELETE SET NULL
+    device_set_id varchar(255) REFERENCES device_set(id) ON DELETE SET NULL
 );
 
 CREATE TABLE devices_manifests (

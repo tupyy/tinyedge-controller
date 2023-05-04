@@ -107,11 +107,6 @@ func (a *AdminServer) AddSet(ctx context.Context, req *pb.AddSetRequest) (*commo
 		Name:        req.Id,
 		NamespaceID: req.NamespaceId,
 	}
-	if req.ConfigurationId != nil {
-		set.Configuration = &entity.Configuration{
-			ObjectMeta: entity.ObjectMeta{Id: *req.ConfigurationId},
-		}
-	}
 
 	err := a.deviceService.CreateSet(ctx, set)
 	if err != nil {
@@ -125,9 +120,6 @@ func (a *AdminServer) AddSet(ctx context.Context, req *pb.AddSetRequest) (*commo
 		}
 	}
 	pbSet := &common.Set{Name: req.Id, Namespace: req.NamespaceId}
-	if req.ConfigurationId != nil {
-		pbSet.Configuration = *req.ConfigurationId
-	}
 
 	return pbSet, nil
 }

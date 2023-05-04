@@ -20,17 +20,15 @@ func ReadManifest(r io.Reader, transformFn ...func(entity.Manifest) entity.Manif
 		return nil, err
 	}
 
-	kind, err := getKind(content)
+	version, err := getVersion(content)
 	if err != nil {
 		return nil, err
 	}
 
 	var manifest entity.Manifest
-	switch kind {
-	case entity.WorkloadManifestKind:
-		manifest, err = parseWorkloadManifest(content)
-	case entity.ConfigurationManifestKind:
-		manifest, err = parseConfigurationManifest(content)
+	switch version {
+	case entity.ManifestVersionV1:
+		manifest, err = parseManifestV1(content)
 	}
 
 	if err != nil {
@@ -44,19 +42,18 @@ func ReadManifest(r io.Reader, transformFn ...func(entity.Manifest) entity.Manif
 	return manifest, nil
 }
 
-func getKind(content []byte) (entity.ManifestKind, error) {
+func getVersion(content []byte) (entity.Version, error) {
 	type anonymousStruct struct {
-		Kind string `yaml:"kind"`
+		Version string `yaml:"version"`
 	}
 	var a anonymousStruct
 	if err := goyaml.Unmarshal(content, &a); err != nil {
-		return 0, fmt.Errorf("unknown struct: %s", err)
+		return entity.ManifestUnknownVersion, fmt.Errorf("unknown struct: %s", err)
 	}
-	switch strings.ToLower(a.Kind) {
-	case "workload":
-		return entity.WorkloadManifestKind, nil
-	case "configuration":
-		return entity.ConfigurationManifestKind, nil
+	switch strings.ToLower(a.Version) {
+	case "v1":
+		return entity.ManifestVersionV1, nil
+	default:
+		return entity.ManifestUnknownVersion, nil
 	}
-	return 0, fmt.Errorf("unknown kind: %q", a.Kind)
 }

@@ -27,9 +27,6 @@ var addSet = &cobra.Command{
 				Id:          args[0],
 				NamespaceId: namespaceID,
 			}
-			if configurationID != "" {
-				req.ConfigurationId = &configurationID
-			}
 			return client.AddSet(ctx, req)
 		}
 
@@ -40,6 +37,5 @@ var addSet = &cobra.Command{
 func init() {
 	addCmd.AddCommand(addSet)
 
-	addSet.Flags().StringVarP(&configurationID, "configuration", "", "", "configuration id")
 	addSet.Flags().StringVarP(&namespaceID, "namespace", "", "", "namespace id")
 }
